@@ -1,27 +1,34 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
 public class DriveTrain {
-    private final DcMotor leftDrive;
-    private final DcMotor rightDrive;
+    private final DcMotor lf;
+    private final DcMotor lb;
+    private final DcMotor rf;
+    private final DcMotor rb;
 
     public DriveTrain(HardwareMap hardwareMap){
-        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        lf = hardwareMap.get(DcMotor.class, "lf");
+        lb = hardwareMap.get(DcMotor.class, "lf");
+        rf = hardwareMap.get(DcMotor.class, "lf");
+        rb = hardwareMap.get(DcMotor.class, "lf");
+        lf.setDirection(DcMotorSimple.Direction.REVERSE);
+        lb.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void drive(double drive, double turn){
         double leftPower = Range.clip(drive + turn, -1.0, 1.0);
         double rightPower = Range.clip(drive - turn, -1.0, 1.0);
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+        lf.setPower(leftPower);
+        rf.setPower(rightPower);
     }
 
     public void stop(){
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
+        lf.setPower(0);
+        rf.setPower(0);
     }
 }
