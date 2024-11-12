@@ -32,7 +32,7 @@ public class ControlMode() extends OpMode{
     }
     @Override
     public void loop() {
-
+        //intake
     }
     @Override
     public void stop() {
