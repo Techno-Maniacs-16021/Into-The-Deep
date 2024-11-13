@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.robots.IntakeV1;
 import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 @TeleOp(name = "TeleOp")
 @Config
 public class ControlMode extends OpMode{
+    IntakeV1 intake = new IntakeV1(hardwareMap);
     @Override
     public void init() {
 
@@ -34,7 +36,8 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void loop() {
-
+        telemetry.addData("Color", intake.sampleDetails());
+        telemetry.update();
         //sample intake
             //intake flat on floor(45 degrees)
                 //rotation set to lower angle
