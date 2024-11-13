@@ -13,8 +13,8 @@ public class IntakeV1 {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 
         //TODO: set configurations
-        colorPin0 = hardwareMap.digitalChannel.get("digital0");
-        colorPin1 = hardwareMap.digitalChannel.get("digital1");
+        colorPin0 = hardwareMap.digitalChannel.get("crf0");
+        colorPin1 = hardwareMap.digitalChannel.get("crf1");
     }
     public static void updateLoop (){
         //	     P1 T	    P1 F
@@ -23,9 +23,11 @@ public class IntakeV1 {
     }
     public String sampleDetails(){
         boolean p1 = colorPin0.getState();
-        return colorPin0.getState()&&colorPin1.getState()
-                ? "Yellow": colorPin0.getState()&&!colorPin1.getState()
-                ? "red" : !colorPin0.getState()&&colorPin1.getState()
-                ? "blue" : "none";
+        return( 
+        colorPin0.getState()&&colorPin1.getState() ? "Yellow"
+        : colorPin0.getState()&&!colorPin1.getState() ? "Red" 
+        : !colorPin0.getState()&&colorPin1.getState() ? "Blue" 
+        : "None"
+        );
     }
 }

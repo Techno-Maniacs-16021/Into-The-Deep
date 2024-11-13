@@ -36,7 +36,7 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void loop() {
-        telemetry.addData("Color", intake.sampleDetails());
+        telemetry.addData("Sample in intake: ", intake.sampleDetails());
         telemetry.update();
         //sample intake
             //intake flat on floor(45 degrees)
@@ -57,6 +57,7 @@ public class ControlMode extends OpMode{
                     //close gate and intake off
                     //return rotation and tilt to neutral
                     //set to deposit sample mode
+                //Red and Blue alliance mode to spit out wrong samples
 
         //specimen intake
             //slides to intake position
