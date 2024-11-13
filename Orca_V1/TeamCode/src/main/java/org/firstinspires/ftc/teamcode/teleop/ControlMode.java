@@ -34,7 +34,7 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void loop() {
-        
+
         //sample intake
             //intake flat on floor(45 degrees)
                 //rotation set to lower angle
