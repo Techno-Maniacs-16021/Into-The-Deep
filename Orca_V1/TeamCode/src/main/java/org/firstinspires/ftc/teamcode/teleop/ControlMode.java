@@ -21,10 +21,12 @@ import java.util.List;
 @TeleOp(name = "TeleOp")
 @Config
 public class ControlMode extends OpMode{
-    IntakeV1 intake = new IntakeV1(hardwareMap);
+    IntakeV1 intake;
+    ElapsedTime runningTime = new ElapsedTime();
+
     @Override
     public void init() {
-
+        intake = new IntakeV1(hardwareMap);
     }
     @Override
     public void init_loop(){
@@ -32,12 +34,30 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void start(){
-//
+        runningTime.reset();
     }
     @Override
     public void loop() {
         telemetry.addData("Sample in intake: ", intake.sampleDetails());
         telemetry.update();
+        if(gamepad1.cross)
+            intake.neutralPosition();
+        if(gamepad1.dpad_up)
+            intake.tiltUp((int) runningTime.milliseconds());
+        else if(gamepad1.dpad_down)
+            intake.tiltDown((int) runningTime.milliseconds());
+
+        if(gamepad1.dpad_right)
+            intake.rotateForward((int) runningTime.milliseconds());
+        else if(gamepad1.dpad_left)
+            intake.rotateBackward((int) runningTime.milliseconds());
+
+        if(gamepad1.right_trigger!=0)
+            intake.intake(gamepad1.right_trigger);
+        else if(!(intake.sampleDetails().equals("red")))
+            intake.intake(0);
+
+        intake.updateLoop();
         //sample intake
             //intake flat on floor(45 degrees)
                 //rotation set to lower angle
