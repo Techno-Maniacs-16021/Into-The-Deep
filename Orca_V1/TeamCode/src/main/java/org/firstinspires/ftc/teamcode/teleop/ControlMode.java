@@ -21,12 +21,12 @@ import java.util.List;
 @TeleOp(name = "TeleOp")
 @Config
 public class ControlMode extends OpMode{
-    IntakeV1 intake;
+    OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
 
     @Override
     public void init() {
-        intake = new IntakeV1(hardwareMap);
+        orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
     }
     @Override
     public void init_loop(){
@@ -38,26 +38,26 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void loop() {
-        telemetry.addData("Sample in intake: ", intake.sampleDetails());
+        telemetry.addData("Sample in intake: ", orca.intake.sampleDetails());
         telemetry.update();
         if(gamepad1.cross)
-            intake.neutralPosition();
+            orca.intake.neutralPosition();
         if(gamepad1.dpad_up)
-            intake.tiltUp((int) runningTime.milliseconds());
+            orca.intake.tiltUp((int) runningTime.milliseconds());
         else if(gamepad1.dpad_down)
-            intake.tiltDown((int) runningTime.milliseconds());
+            orca.intake.tiltDown((int) runningTime.milliseconds());
 
         if(gamepad1.dpad_right)
-            intake.rotateForward((int) runningTime.milliseconds());
+            orca.intake.rotateForward((int) runningTime.milliseconds());
         else if(gamepad1.dpad_left)
-            intake.rotateBackward((int) runningTime.milliseconds());
+            orca.intake.rotateBackward((int) runningTime.milliseconds());
 
         if(gamepad1.right_trigger!=0)
-            intake.intake(gamepad1.right_trigger);
+            orca.intake.intake(gamepad1.right_trigger);
         else if(!(intake.sampleDetails().equals("red")))
-            intake.intake(0);
+            orca.intake.intake(0);
 
-        intake.updateLoop();
+        orca.intake.updateLoop();
         //sample intake
             //intake flat on floor(45 degrees)
                 //rotation set to lower angle
