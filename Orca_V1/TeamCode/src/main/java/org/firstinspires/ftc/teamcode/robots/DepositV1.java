@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.robots;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,14 +17,15 @@ public class DepositV1{
     DcMotorEx leftSlides,rightSlides;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
-    double SAMPLE_DEPOSIT = 0, SPECIMEN_DEPOSIT_PRIME = 0, SPECIMEN_DEPOSIT = 0;
+    boolean flip = false;
+    double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 0, SPECIMEN_DEPOSIT = 0;
     double tiltPosition = 0, clawPosition = 0, depositPosition = 0;
     PIDController slidesPID;
 
 
-    double p = 0,i = 0,d = 0,f = 0;
+    double p = 1.25,i = 0,d = 0,f = 0.2;
     //TODO: Set to false
-    boolean pidTuning = true;
+    boolean pidTuning = false;
     double slidePower;
     String depositCommand = "retract";
     public  DepositV1(HardwareMap hardwareMap){
@@ -42,6 +45,12 @@ public class DepositV1{
         specimenClaw.setPwmRange(new PwmControl.PwmRange(500,2500));
 
         depositLinkage.setDirection(Servo.Direction.REVERSE);
+        rightSlides.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //TODO: reset vars
 
@@ -76,7 +85,7 @@ public class DepositV1{
     public void controlLoop(boolean leftBumper, boolean rightBumper, boolean dpadRight, boolean dpadDown){
         if(depositCommand.equals("sample")){
             if(rightBumper){
-                depositPosition=1;
+                depositPosition = 1;
             }
             else if(leftBumper){
                 resetDeposit();
@@ -94,11 +103,11 @@ public class DepositV1{
 
         }
         else{
-            if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 5&&currentPos>0.2){
+            if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 7&&currentPos>0.1){
                 slidePower = -1;
             }
             else{
-                slidePower = -0.1;
+                slidePower = -0.2;
             }
             if(dpadRight){
                 tiltPosition = 1;
@@ -112,9 +121,9 @@ public class DepositV1{
     }
 
     public void resetDeposit(){
-depositPosition = 0;
-clawPosition = 0 ;
-tiltPosition = 0;
+        depositPosition = 0;
+        clawPosition = 0 ;
+        tiltPosition = 0;
     }
     public void setSample(){
         depositCommand = "sample";
@@ -129,5 +138,8 @@ tiltPosition = 0;
     }
     public void retract(){
 
+    }
+    public String getDepositCommand(){
+        return depositCommand + ": " + depositPosition;
     }
 }

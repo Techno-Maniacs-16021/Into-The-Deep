@@ -24,11 +24,11 @@ public class IntakeV1 {
 
     AnalogInput rotation;
 
-    double rotationPosition = 0.7, tiltPosition = 0.9, gatePosition = 0;
-    double ANGLED_ROTATION = 0.1, ANGLED_TILT = 0.2,
-            VERTICAL_ROTATION = 0.25, VERTICAL_ROTATION_OFFSET = 0.35, VERTICAL_TILT = 0,
-            RETRACT_ROTATION=0.7, RETRACT_TILT = 0.9,
-            TRANSFER_ROTATION = 0.9, TRANSFER_TILT = 0.9;
+    double rotationPosition = 0.7, tiltPosition = 1, gatePosition = 0;
+    double ANGLED_ROTATION = 0.15, ANGLED_TILT = 0.25,
+            VERTICAL_ROTATION = 0.16, VERTICAL_ROTATION_OFFSET = 0.26, VERTICAL_TILT = 0.15,
+            RETRACT_ROTATION=0.7, RETRACT_TILT = 1,
+            TRANSFER_ROTATION = 1, TRANSFER_TILT = 1;
     int globalTime = 0;
     String intakeCommand = "retract", intakeMode = "angled";
     String colorToEject = "red";
@@ -81,8 +81,8 @@ public class IntakeV1 {
     }
     public String sampleDetails() {
         return (
-                colorPin0.getState() && colorPin1.getState() ? "yellow"
-                        : !colorPin0.getState() && colorPin1.getState() ? "red"
+                colorPin0.getState() && colorPin1.getState() ? "blue"
+                        : !colorPin0.getState() && colorPin1.getState() ? "blue"
                         : colorPin0.getState() && !colorPin1.getState() ? "blue"
                         : "none"
         );
@@ -135,7 +135,7 @@ public class IntakeV1 {
 
     public void slideControlLoop(double slidePower){
         if(intakeCommand.equals("retract")){
-            if(slides.getCurrent(CurrentUnit.AMPS)<9&&setSlidesPower!=-0.1){
+            if(slides.getCurrent(CurrentUnit.AMPS)<7&&setSlidesPower!=-0.1){
                 slides.setPower(-1);
                 setSlidesPower = -1;
             }
@@ -149,18 +149,21 @@ public class IntakeV1 {
         }
         else if(intakeCommand.equals("transfer")){
             slides.setPower(-0.1);
+            setSlidesPower = 0;
         }
         else{
             slides.setPower(slidePower);
+            setSlidesPower = 0;
         }
     }
     public void intakeModuleControlLoop(boolean cross, boolean circle, boolean triangle){
         if(intakeCommand.equals("intake")){
-            if(sampleDetails().equals(colorToEject)){
-                gatePosition = 1;
-                intake.setPower(0.5);
-            }
-            else if(intakeMode.equals("vertical")){
+//            if(sampleDetails().equals(colorToEject)){
+//                //gatePosition = 1;
+//                //intake.setPower(0.3);
+//            }
+//            else
+                if(intakeMode.equals("vertical")){
                 gatePosition = 0;
                 //intake vertically(90 degrees)
                 //rotation set to a higher angle
@@ -209,11 +212,11 @@ public class IntakeV1 {
         else if(intakeCommand.equals("transfer")){
             rotationPosition = TRANSFER_ROTATION;
             tiltPosition = TRANSFER_TILT;
-            if(rotation.getVoltage()<0&&!sampleDetails().equals("none")){
+            if(rotation.getVoltage()<1.05&&!sampleDetails().equals("none")){
                 gatePosition = 1;
                 intake.setPower(1);
             }
-            else if(rotation.getVoltage()<0&&sampleDetails().equals("none")){
+            else if(rotation.getVoltage()<1.05&&sampleDetails().equals("none")){
                 gatePosition = 0;
                 intake.setPower(0);
                 intakeCommand = "retract";
@@ -246,6 +249,9 @@ public class IntakeV1 {
     }
     public String getIntakeCommand(){
         return intakeCommand;
+    }
+    public AnalogInput currentRotationPosition(){
+        return rotation;
     }
 
 }

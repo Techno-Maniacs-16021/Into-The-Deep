@@ -3,7 +3,12 @@ package org.firstinspires.ftc.teamcode.teleop;
 import android.util.Log;
 import android.util.Size;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.dashboard.canvas.Canvas;
+
 import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
@@ -16,6 +21,7 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.localization.Drawing;
 import org.firstinspires.ftc.teamcode.robots.IntakeV1;
 import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 
@@ -30,6 +36,7 @@ public class ControlMode extends OpMode{
     public static double p,i,d,f,target;
     @Override
     public void init() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
     }
     @Override
@@ -44,6 +51,12 @@ public class ControlMode extends OpMode{
             orca.intake().setColorToEject("blue");
         }
         orca.deposit().PIDTuning(p,i,d,f,target);
+        orca.deposit().refresh(gamepad1.left_bumper, gamepad1.right_bumper, gamepad1.dpad_right,gamepad1.dpad_down);
+        telemetry.addData("Current Pos: ", orca.deposit().getCurrentPosition());
+        telemetry.addData("Target Pos: ", target);
+        telemetry.update();
+        TelemetryPacket packet = new TelemetryPacket();
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
     }
     @Override
@@ -56,6 +69,9 @@ public class ControlMode extends OpMode{
         telemetry.addData("Current Pos: ", orca.deposit().getCurrentPosition());
         telemetry.addData("Target Pos: ", target);
         telemetry.addData("intake command: ", orca.intake().getIntakeCommand());
+        telemetry.addData("deposit command: ", orca.deposit().getDepositCommand());
+
+        telemetry.addData("rotation position: ", orca.intake().currentRotationPosition().getVoltage());
         telemetry.update();
         /*
         if(gamepad1.cross)
@@ -75,8 +91,6 @@ public class ControlMode extends OpMode{
         else if(!(orca.intake().sampleDetails().equals("red")))
             orca.intake().intakeSample(0);
         */
-        Servo servo = hardwareMap.get(ServoImplEx.class,"depositLinkage");
-        servo.setPosition(0);
         orca.intake().refresh(slidePower,gamepad1.cross,gamepad1.circle,gamepad1.triangle);
         orca.deposit().refresh(gamepad1.left_bumper, gamepad1.right_bumper, gamepad1.dpad_right,gamepad1.dpad_down);
         orca.refresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
