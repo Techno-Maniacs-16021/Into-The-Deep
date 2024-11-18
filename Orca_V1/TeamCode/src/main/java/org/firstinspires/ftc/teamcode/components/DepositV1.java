@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots;
+package org.firstinspires.ftc.teamcode.components;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class DepositV1{
@@ -27,7 +28,7 @@ public class DepositV1{
     //TODO: Set to false
     boolean pidTuning = false;
     double slidePower;
-    String depositCommand = "retract";
+    DepositCommand depositCommand;
     public  DepositV1(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -55,6 +56,8 @@ public class DepositV1{
         //TODO: reset vars
 
         slidesPID = new PIDController(p,i,d);
+
+        depositCommand = DepositCommand.RETRACT;
     }
     public void refresh(boolean leftBumper, boolean rightBumper, boolean dpadRight, boolean dpadDown){
         leftSlides.setPower(slidePower);
@@ -83,42 +86,52 @@ public class DepositV1{
        }
     }
     public void controlLoop(boolean leftBumper, boolean rightBumper, boolean dpadRight, boolean dpadDown){
-        if(depositCommand.equals("sample")){
-            if(rightBumper){
-                depositPosition = 1;
-            }
-            else if(leftBumper){
-                resetDeposit();
-                depositCommand = "retract";
-            }
+        switch (depositCommand) {
+            case SAMPLE:
+                handleSample(leftBumper, rightBumper);
+                break;
+            case SPECIMEN:
+                handleSpecimen(leftBumper, dpadDown);
+                break;
+            case RETRACT:
+                handleRetract(rightBumper, dpadRight);
+                break;
         }
-        else if(depositCommand.equals("specimen")){
-            if(dpadDown){
-                target = SPECIMEN_DEPOSIT;
-            }
-            if(leftBumper){
-                resetDeposit();
-                depositCommand = "retract";
-            }
-
-        }
-        else{
-            if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 7&&currentPos>0.1){
-                slidePower = -1;
-            }
-            else{
-                slidePower = -0.2;
-            }
-            if(dpadRight){
-                tiltPosition = 1;
-                System.out.println("button pressed");
-            }
-            if(rightBumper){
-                clawPosition = 1;
-            }
-        }
-
     }
+
+    private void handleSample(boolean leftBumper, boolean rightBumper) {
+        if (rightBumper) {
+            depositPosition = 1;
+        } else if (leftBumper) {
+            resetDeposit();
+            depositCommand = DepositCommand.RETRACT;
+        }
+    }
+
+    private void handleSpecimen(boolean leftBumper, boolean dpadDown) {
+        if (dpadDown) {
+            target = SPECIMEN_DEPOSIT;
+        }
+        if (leftBumper) {
+            resetDeposit();
+            depositCommand = DepositCommand.RETRACT;
+        }
+    }
+
+    private void handleRetract(boolean rightBumper, boolean dpadRight) {
+        if ((leftSlides.getCurrent(CurrentUnit.AMPS) + rightSlides.getCurrent(CurrentUnit.AMPS)) / 2 < 7 && currentPos > 0.1) {
+            slidePower = -1;
+        } else {
+            slidePower = -0.2;
+        }
+        if (dpadRight) {
+            tiltPosition = 1;
+        }
+        if (rightBumper) {
+            clawPosition = 1;
+        }
+    }
+
 
     public void resetDeposit(){
         depositPosition = 0;
@@ -126,11 +139,11 @@ public class DepositV1{
         tiltPosition = 0;
     }
     public void setSample(){
-        depositCommand = "sample";
+        depositCommand = DepositCommand.SAMPLE;
         target = SAMPLE_DEPOSIT;
     }
     public void setSpecimen(){
-        depositCommand = "specimen";
+        depositCommand = DepositCommand.SPECIMEN;
         target = SPECIMEN_DEPOSIT_PRIME;
     }
     public double getCurrentPosition(){
@@ -141,5 +154,12 @@ public class DepositV1{
     }
     public String getDepositCommand(){
         return depositCommand + ": " + depositPosition;
+    }
+
+    public void logTelemetry(Telemetry telemetry) {
+        telemetry.addData("Deposit Command", depositCommand);
+        telemetry.addData("Current Position", currentPos);
+        telemetry.addData("Target Position", target);
+        telemetry.addData("Slide Power", slidePower);
     }
 }
