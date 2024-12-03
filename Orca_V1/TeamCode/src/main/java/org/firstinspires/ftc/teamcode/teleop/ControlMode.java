@@ -65,7 +65,8 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void loop() {
-        telemetry.addData("Sample in intake: ", orca.intake().sampleDetails());
+        //TODO: remove readSampleDetails to prevent hit on looptimes
+        telemetry.addData("Sample in intake: ", orca.intake().readSampleDetails());
         telemetry.addData("Current Pos: ", orca.deposit().getCurrentPosition());
         telemetry.addData("Target Pos: ", target);
         telemetry.addData("intake command: ", orca.intake().getIntakeCommand());

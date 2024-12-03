@@ -14,6 +14,12 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
+
 public class IntakeV1 {
     //color sensor
     DigitalChannel colorPin0,colorPin1;
@@ -23,6 +29,8 @@ public class IntakeV1 {
     DcMotorEx intake, slides;
 
     AnalogInput rotation;
+    int nSensorSamples = 50;
+    ArrayList<String> colorSensorInputs = new ArrayList<String>();
 
     double rotationPosition = 0.7, tiltPosition = 1, gatePosition = 0;
     double ANGLED_ROTATION = 0.15, ANGLED_TILT = 0.25,
@@ -66,6 +74,11 @@ public class IntakeV1 {
         intakeCommand = "retract";
         intakeMode = "angled";
 
+        //initializes arraylist
+        for(int i = 0; i < nSensorSamples; i++){
+            colorSensorInputs.add("none");
+        }
+
     }
     public void refresh (double slidePower,boolean cross, boolean circle, boolean triangle){
         tilt.setPosition(tiltPosition);
@@ -73,19 +86,40 @@ public class IntakeV1 {
         leftRotation.setPosition(rotationPosition);
         gate.setPosition(gatePosition);
         //TODO: Make all the powers set using variables like above
+        //TODO: fix color eject
         //colorEject();
 
         slideControlLoop(slidePower);
         intakeModuleControlLoop(cross,circle,triangle);
+        updateSampleDetails();
 
     }
-    public String sampleDetails() {
+    public String readSampleDetails() {
+        int blue = 0, red = 0, yellow = 0, none = 0;
+        for(String color:colorSensorInputs){
+            if(color.equals("blue"))
+                blue++;
+            else if(color.equals("red"))
+                red++;
+            else if(color.equals("yellow"))
+                yellow++;
+            else
+                none++;
+        }
         return (
+                blue>red && blue>yellow && blue>none ? "blue"
+                : red>blue && red>yellow && red>none ? "red"
+                : yellow>red && yellow>blue && yellow>none ? "yellow"
+                : "none"
+        );
+    }
+    public void updateSampleDetails(){
+        colorSensorInputs.add(
                 colorPin0.getState() && colorPin1.getState() ? "blue"
                         : !colorPin0.getState() && colorPin1.getState() ? "blue"
                         : colorPin0.getState() && !colorPin1.getState() ? "blue"
-                        : "none"
-        );
+                        : "none");
+        colorSensorInputs.remove(0);
     }
        /*
     public void neutralPosition(){
@@ -142,7 +176,7 @@ public class IntakeV1 {
             else{
                 slides.setPower(-0.1);
                 setSlidesPower = -0.1;
-                if(!sampleDetails().equals("none")) {
+                if(!readSampleDetails().equals("none")) {
                     intakeCommand = "transfer";
                 }
             }
@@ -212,11 +246,11 @@ public class IntakeV1 {
         else if(intakeCommand.equals("transfer")){
             rotationPosition = TRANSFER_ROTATION;
             tiltPosition = TRANSFER_TILT;
-            if(rotation.getVoltage()<1.05&&!sampleDetails().equals("none")){
+            if(rotation.getVoltage()<1.05&&!readSampleDetails().equals("none")){
                 gatePosition = 1;
                 intake.setPower(1);
             }
-            else if(rotation.getVoltage()<1.05&&sampleDetails().equals("none")){
+            else if(rotation.getVoltage()<1.05&&readSampleDetails().equals("none")){
                 gatePosition = 0;
                 intake.setPower(0);
                 intakeCommand = "retract";
