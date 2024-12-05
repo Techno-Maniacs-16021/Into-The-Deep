@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.util.ArrayList;
 public class IntakeV1 {
     //color sensor
     DigitalChannel colorPin0,colorPin1;
@@ -23,6 +24,8 @@ public class IntakeV1 {
     DcMotorEx intake, slides;
 
     AnalogInput rotation;
+    int nSensorSamples = 50;
+    ArrayList<String> colorSensorInputs = new ArrayList<String>();
 
     double rotationPosition = 0.7, tiltPosition = 1, gatePosition = 0;
     double ANGLED_ROTATION = 0.15, ANGLED_TILT = 0.25,
@@ -66,6 +69,11 @@ public class IntakeV1 {
         intakeCommand = IntakeCommand.RETRACT;
         intakeMode = IntakeMode.ANGLED;
 
+        //initializes arraylist
+        for(int i = 0; i < nSensorSamples; i++){
+            colorSensorInputs.add("none");
+        }
+
     }
     public void refresh (double slidePower,boolean cross, boolean circle, boolean triangle){
 
@@ -86,6 +94,10 @@ public class IntakeV1 {
 
         //TODO: Make all the powers set using variables like above
         //colorEject();
+        //TODO: fix color eject
+        slideControlLoop(slidePower);
+        intakeModuleControlLoop(cross,circle,triangle);
+        updateSampleDetails();
 
         slideControlLoop(slidePower);
         tilt.setPosition(tiltPosition);
@@ -145,14 +157,78 @@ public class IntakeV1 {
     }
 
 
-    public String sampleDetails() {
+    public String readSampleDetails() {
+        int blue = 0, red = 0, yellow = 0, none = 0;
+        for(String color:colorSensorInputs){
+            if(color.equals("blue"))
+                blue++;
+            else if(color.equals("red"))
+                red++;
+            else if(color.equals("yellow"))
+                yellow++;
+            else
+                none++;
+        }
         return (
-                colorPin0.getState() && colorPin1.getState() ? "blue"
-                        : !colorPin0.getState() && colorPin1.getState() ? "blue"
-                        : colorPin0.getState() && !colorPin1.getState() ? "blue"
+                blue>red && blue>yellow && blue>none ? "blue"
+                        : red>blue && red>yellow && red>none ? "red"
+                        : yellow>red && yellow>blue && yellow>none ? "yellow"
                         : "none"
         );
     }
+    public void updateSampleDetails(){
+        colorSensorInputs.add(
+                colorPin0.getState() && colorPin1.getState() ? "blue"
+                        : !colorPin0.getState() && colorPin1.getState() ? "blue"
+                        : colorPin0.getState() && !colorPin1.getState() ? "blue"
+                        : "none");
+        colorSensorInputs.remove(0);
+    }
+       /*
+    public void neutralPosition(){
+        tiltPosition = 0.5;
+        rotationPosition = 0.5;
+        //gatePosition = 0.5;
+    }
+    public void colorEject(){
+        if(sampleDetails().equals("red")){
+            gatePosition=0.8;
+            intake.setPower(1);
+        }
+        else{
+            gatePosition = 0;
+            intake.setPower(0);
+        }
+    }
+
+    public void rotateForward(int time){
+        if((time-globalTime)>200){
+            rotationPosition-=0.05;
+            globalTime = time;
+        }
+    }
+    public void rotateBackward(int time){
+        if((time-globalTime)>200){
+            rotationPosition+=0.05;
+            globalTime = time;
+        }
+    }
+    public void tiltUp(int time){
+        if((time-globalTime)>200){
+            tiltPosition+=0.05;
+            globalTime = time;
+        }
+    }
+    public void tiltDown(int time){
+        if((time-globalTime)>200){
+            tiltPosition-=0.05;
+            globalTime = time;
+        }
+    }
+    public void intakeSample(double power){
+        intake.setPower(power);
+    }
+    */
 
     public void slideControlLoop(double slidePower){
         if(intakeCommand == IntakeCommand.RETRACT){
@@ -163,7 +239,7 @@ public class IntakeV1 {
             else{
                 slides.setPower(-0.1);
                 setSlidesPower = -0.1;
-                if(!sampleDetails().equals("none")) {
+                if(!readSampleDetails().equals("none")) {
                     intakeCommand = IntakeCommand.TRANSFER;
                 }
             }

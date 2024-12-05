@@ -80,7 +80,8 @@ public class ControlMode extends OpMode{
 
     }
     private void updateTelemetry() {
-        telemetry.addData("Sample in intake", orca.intake().sampleDetails());
+        //TODO: Remove read sample to fix loop times
+        telemetry.addData("Sample in intake", orca.intake().readSampleDetails());
         telemetry.addData("Current Pos", orca.deposit().getCurrentPosition());
         telemetry.addData("Target Pos", target);
         telemetry.addData("Intake Command", orca.intake().getIntakeCommand());
