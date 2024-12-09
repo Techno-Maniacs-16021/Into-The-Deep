@@ -2,11 +2,15 @@ package org.firstinspires.ftc.teamcode.localization;
 
 
 
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.zyxOrientation;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriver;
 import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriverRR;
+import com.acmerobotics.roadrunner.ftc.LazyImu;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -22,6 +26,9 @@ import org.firstinspires.ftc.teamcode.messages.PoseMessage;
  */
 public class PinpointDrive extends MecanumDrive {
     public static class Params {
+
+        public String pinpointDeviceName = "pinpoint";
+
         /*
         Set the odometry pod positions relative to the point that the odometry computer tracks around.
         The X pod offset refers to how far sideways from the tracking point the
@@ -54,6 +61,8 @@ public class PinpointDrive extends MecanumDrive {
          */
         public GoBildaPinpointDriver.EncoderDirection xDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
         public GoBildaPinpointDriver.EncoderDirection yDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
+
+        public boolean usePointpointIMUForTuning = true;
     }
 
     public static Params PARAMS = new Params();
@@ -64,6 +73,10 @@ public class PinpointDrive extends MecanumDrive {
         super(hardwareMap, pose);
         FlightRecorder.write("PINPOINT_PARAMS",PARAMS);
         pinpoint = hardwareMap.get(GoBildaPinpointDriverRR.class,"pinpoint");
+
+        if (PARAMS.usePointpointIMUForTuning) {
+            lazyImu = new LazyImu(hardwareMap, PARAMS.pinpointDeviceName, new RevHubOrientationOnRobot(zyxOrientation(0,0,0)));
+        }
 
         // RR localizer note: don't love this conversion (change driver?)
         pinpoint.setOffsets(PARAMS.xOffset, PARAMS.yOffset);
