@@ -14,25 +14,30 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.util.ArrayList;
+
 public class IntakeV1 {
     //color sensor
     DigitalChannel colorPin0,colorPin1;
     //servos
-    ServoImplEx tilt, rightRotation, leftRotation, gate;
+    ServoImplEx tilt, rotation, gate;
     //motor
     DcMotorEx intake, slides;
 
-    AnalogInput rotation;
+    AnalogInput currentRotation, currentTilt;
 
-    double rotationPosition = 0.7, tiltPosition = 1, gatePosition = 0;
-    double ANGLED_ROTATION = 0.15, ANGLED_TILT = 0.25,
-            VERTICAL_ROTATION = 0.16, VERTICAL_ROTATION_OFFSET = 0.26, VERTICAL_TILT = 0.15,
-            RETRACT_ROTATION=0.7, RETRACT_TILT = 1,
-            TRANSFER_ROTATION = 1, TRANSFER_TILT = 1;
+    double rotationPosition = 0.6, tiltPosition = 0.6, gatePosition = 0;
+    double ANGLED_ROTATION = 0.08, ANGLED_TILT = 0.25,
+            VERTICAL_ROTATION = .11, VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0.15,
+            RETRACT_ROTATION = 0.25, RETRACT_TILT = .6,
+            TRANSFER_ROTATION = 1, INTER_TRANSFER_ROTATION = 0.7, TRANSFER_TILT = 0.95,
+            STANDBY_ROTATION = 0.6, STANDBY_TILT = 0.6;
     int globalTime = 0;
-    String intakeCommand = "retract", intakeMode = "angled";
+    String intakeCommand = "standby", intakeMode = "angled";
     String colorToEject = "red";
-    double setSlidesPower = 0;
+    double slidesPower = 0, intakePower = 0;
+    int nSensorSamples = 50;
+    ArrayList<String> colorSensorInputs = new ArrayList<String>();
 
     public IntakeV1(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
@@ -43,49 +48,80 @@ public class IntakeV1 {
         colorPin1 = hardwareMap.digitalChannel.get("crf1");
 
         tilt = hardwareMap.get(ServoImplEx.class,"tilt");
-        rightRotation = hardwareMap.get(ServoImplEx.class,"rRotation");
-        leftRotation = hardwareMap.get(ServoImplEx.class,"lRotation");
+        rotation = hardwareMap.get(ServoImplEx.class,"rotation");
         gate = hardwareMap.get(ServoImplEx.class,"gate");
 
         intake = hardwareMap.get(DcMotorEx.class,"intake");
         slides = hardwareMap.get(DcMotorEx.class,"hSlides");
 
-        rotation = hardwareMap.get(AnalogInput.class, "rotation");
+        currentRotation = hardwareMap.get(AnalogInput.class, "currentRotation");
+        currentTilt = hardwareMap.get(AnalogInput.class, "currentTilt");
 
-        tilt.setPwmRange(new PwmControl.PwmRange(500,2500));
-        rightRotation.setPwmRange(new PwmControl.PwmRange(500,2500));
-        leftRotation.setPwmRange(new PwmControl.PwmRange(500,2500));
-        gate.setPwmRange(new PwmControl.PwmRange(500,2500));
+        tilt.setPwmRange(new PwmControl.PwmRange(510,2490));
+        rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
+        gate.setPwmRange(new PwmControl.PwmRange(510,2490));
 
         tilt.setDirection(Servo.Direction.REVERSE);
+        //gate.setDirection(Servo.Direction.REVERSE);
 
-        //intake.setDirection(DcMotorSimple.Direction.REVERSE);
-        slides.setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        //slides.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //TODO: reset vars
         intakeCommand = "retract";
         intakeMode = "angled";
 
+        for(int i = 0; i < nSensorSamples; i++){
+            colorSensorInputs.add("none");
+        }
     }
-    public void refresh (double slidePower,boolean cross, boolean circle, boolean triangle){
+    public void refresh (double rightTrigger,boolean cross, boolean circle, boolean triangle){
+
         tilt.setPosition(tiltPosition);
-        rightRotation.setPosition(rotationPosition);
-        leftRotation.setPosition(rotationPosition);
+        rotation.setPosition(rotationPosition);
         gate.setPosition(gatePosition);
-        //TODO: Make all the powers set using variables like above
-        //colorEject();
+        slides.setPower(slidesPower);
+        if(colorEject()==1){
+            intake.setPower(1);
+        }
+        else if(colorEject()==-1){
+            intake.setPower(-1);
+        }
+        else {
+            intake.setPower(intakePower);
+        }
 
-        slideControlLoop(slidePower);
+        slideControlLoop(rightTrigger);
         intakeModuleControlLoop(cross,circle,triangle);
+        updateSampleDetails();
 
     }
-    public String sampleDetails() {
+    public String readSampleDetails() {
+        int blue = 0, red = 0, yellow = 0, none = 0;
+        for(String color:colorSensorInputs){
+            if(color.equals("blue"))
+                blue++;
+            else if(color.equals("red"))
+                red++;
+            else if(color.equals("yellow"))
+                yellow++;
+            else
+                none++;
+        }
         return (
-                colorPin0.getState() && colorPin1.getState() ? "blue"
-                        : !colorPin0.getState() && colorPin1.getState() ? "blue"
-                        : colorPin0.getState() && !colorPin1.getState() ? "blue"
+                blue>red && blue>yellow && blue>none ? "blue"
+                        : red>blue && red>yellow && red>none ? "red"
+                        : yellow>red && yellow>blue && yellow>none ? "yellow"
                         : "none"
         );
+    }
+    public void updateSampleDetails(){
+        colorSensorInputs.add(
+                colorPin0.getState() && colorPin1.getState() ? "yellow"
+                        : !colorPin0.getState() && colorPin1.getState() ? "red"
+                        : colorPin0.getState() && !colorPin1.getState() ? "blue"
+                        : "none");
+        colorSensorInputs.remove(0);
     }
        /*
     public void neutralPosition(){
@@ -132,28 +168,31 @@ public class IntakeV1 {
         intake.setPower(power);
     }
     */
-
-    public void slideControlLoop(double slidePower){
-        if(intakeCommand.equals("retract")){
-            if(slides.getCurrent(CurrentUnit.AMPS)<7&&setSlidesPower!=-0.1){
-                slides.setPower(-1);
-                setSlidesPower = -1;
+    public double colorEject(){
+        return 0.0;
+    }
+    public void slideControlLoop(double slidesPower){
+        if(intakeCommand.equals("retract")||intakeCommand.equals("standby")){
+            if(slides.getCurrent(CurrentUnit.AMPS)<7&&this.slidesPower!=-0.25){
+                this.slidesPower = -1;
             }
             else{
-                slides.setPower(-0.1);
-                setSlidesPower = -0.1;
-                if(!sampleDetails().equals("none")) {
+                this.slidesPower = -0.25;
+                if(!readSampleDetails().equals("none")) {
                     intakeCommand = "transfer";
+                    intakePower = -0.5;
+                }
+                else {
+                    intakeCommand = "standby";
+                    intakePower = 0;
                 }
             }
         }
         else if(intakeCommand.equals("transfer")){
-            slides.setPower(-0.1);
-            setSlidesPower = 0;
+            this.slidesPower = -0.25;
         }
         else{
-            slides.setPower(slidePower);
-            setSlidesPower = 0;
+            this.slidesPower = slidesPower;
         }
     }
     public void intakeModuleControlLoop(boolean cross, boolean circle, boolean triangle){
@@ -170,17 +209,17 @@ public class IntakeV1 {
                 //moves down when intaking
                 //returns to higher position when not intaking
                 if(cross){
-                    intake.setPower(1);
+                    intakePower = 1;
                     rotationPosition = VERTICAL_ROTATION;
                     tiltPosition = VERTICAL_TILT;
                 }
                 else if(triangle){
-                    intake.setPower(-1);
+                    intakePower = -1;
                     rotationPosition = VERTICAL_ROTATION_OFFSET;
                     tiltPosition = VERTICAL_TILT;
                 }
                 else{
-                    intake.setPower(0);
+                    intakePower = 0;
                     rotationPosition = VERTICAL_ROTATION_OFFSET;
                     tiltPosition = VERTICAL_TILT;
                 }
@@ -191,13 +230,13 @@ public class IntakeV1 {
                 //rotation set to lower angle
                 //does not move up or down when intaking
                 if(circle){
-                    intake.setPower(1);
+                    intakePower = 1;
                 }
                 else if(triangle){
-                    intake.setPower(-1);
+                    intakePower = -1;
                 }
                 else{
-                    intake.setPower(0);
+                    intakePower = 0;
                 }
                 rotationPosition = ANGLED_ROTATION;
                 tiltPosition = ANGLED_TILT;
@@ -208,17 +247,28 @@ public class IntakeV1 {
         else if(intakeCommand.equals("retract")){
             rotationPosition = RETRACT_ROTATION;
             tiltPosition = RETRACT_TILT;
+            intakePower = 0.5;
+        }
+        else if(intakeCommand.equals("standby")){
+            rotationPosition = STANDBY_ROTATION;
+            tiltPosition = STANDBY_TILT;
+            intakePower = 0;
         }
         else if(intakeCommand.equals("transfer")){
-            rotationPosition = TRANSFER_ROTATION;
-            tiltPosition = TRANSFER_TILT;
-            if(rotation.getVoltage()<1.05&&!sampleDetails().equals("none")){
-                gatePosition = 1;
-                intake.setPower(1);
+            if(currentTilt.getVoltage()>1.25&&rotationPosition != TRANSFER_ROTATION){
+                rotationPosition = INTER_TRANSFER_ROTATION;
             }
-            else if(rotation.getVoltage()<1.05&&sampleDetails().equals("none")){
+            else{
+                rotationPosition = TRANSFER_ROTATION;
+            }
+            tiltPosition = TRANSFER_TILT;
+            if(currentRotation.getVoltage()<1.2&&!readSampleDetails().equals("none")){
+                gatePosition = 1;
+                intakePower = 1;
+            }
+            else if(readSampleDetails().equals("none")){
                 gatePosition = 0;
-                intake.setPower(0);
+                intakePower = 0;
                 intakeCommand = "retract";
             }
         }
@@ -232,7 +282,7 @@ public class IntakeV1 {
     }
     public void startIntaking(){
         intakeCommand = "intake";
-        intakeMode = "angled";
+        intakeMode = "vertical";
     }
     public void angledIntake(){
         intakeCommand = "intake";
@@ -250,8 +300,11 @@ public class IntakeV1 {
     public String getIntakeCommand(){
         return intakeCommand;
     }
-    public AnalogInput currentRotationPosition(){
-        return rotation;
+    public AnalogInput currentRotation(){
+        return currentRotation;
+    }
+    public AnalogInput currentTilt(){
+        return currentTilt;
     }
 
 }

@@ -13,13 +13,12 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class DepositV1{
-    ServoImplEx specimenTilt, specimenClaw, depositLinkage;
+    ServoImplEx clawRotation, specimenClaw, depositLinkage;
     DcMotorEx leftSlides,rightSlides;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
-    boolean flip = false;
     double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 0, SPECIMEN_DEPOSIT = 0;
-    double tiltPosition = 0, clawPosition = 0, depositPosition = 0;
+    double clawRotationPosition = 0, clawPosition = 0, depositPosition = 0;
     PIDController slidesPID;
 
 
@@ -33,16 +32,16 @@ public class DepositV1{
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 
         //TODO: Set Configurations
-        specimenTilt = hardwareMap.get(ServoImplEx.class,"specimenTilt");
-        depositLinkage = hardwareMap.get(ServoImplEx.class,"depositLinkage");
-        specimenClaw = hardwareMap.get(ServoImplEx.class,"specimenClaw");
+        clawRotation = hardwareMap.get(ServoImplEx.class,"clawRotation");
+        depositLinkage = hardwareMap.get(ServoImplEx.class,"linkage");
+        specimenClaw = hardwareMap.get(ServoImplEx.class,"claw");
 
         leftSlides = hardwareMap.get(DcMotorEx.class,"vLSlides");
         rightSlides = hardwareMap.get(DcMotorEx.class,"vRSlides");
 
-        specimenTilt.setPwmRange(new PwmControl.PwmRange(500,2500));
-        depositLinkage.setPwmRange(new PwmControl.PwmRange(500,2500));
-        specimenClaw.setPwmRange(new PwmControl.PwmRange(500,2500));
+        clawRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
+        depositLinkage.setPwmRange(new PwmControl.PwmRange(510,2490)); // Servo was spasing out  so we set to 510 and 2490 to make it start working. We spent too long on this peice of poopf
+        specimenClaw.setPwmRange(new PwmControl.PwmRange(510,2490));
 
         depositLinkage.setDirection(Servo.Direction.REVERSE);
         rightSlides.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -62,7 +61,7 @@ public class DepositV1{
         currentPos = (leftSlides.getCurrentPosition()+rightSlides.getCurrentPosition())/(2*COUNTS_PER_REV_MOTOR);
         controlLoop(leftBumper,rightBumper,dpadRight,dpadDown);
         PIDLoop();
-        specimenTilt.setPosition(tiltPosition);
+        clawRotation.setPosition(clawRotationPosition);
         specimenClaw.setPosition(clawPosition);
         depositLinkage.setPosition(depositPosition);
 
@@ -110,7 +109,7 @@ public class DepositV1{
                 slidePower = -0.2;
             }
             if(dpadRight){
-                tiltPosition = 1;
+                clawRotationPosition = 1;
                 System.out.println("button pressed");
             }
             if(rightBumper){
@@ -123,7 +122,7 @@ public class DepositV1{
     public void resetDeposit(){
         depositPosition = 0;
         clawPosition = 0 ;
-        tiltPosition = 0;
+        clawRotationPosition = 0;
     }
     public void setSample(){
         depositCommand = "sample";

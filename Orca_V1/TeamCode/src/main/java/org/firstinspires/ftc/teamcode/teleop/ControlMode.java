@@ -34,6 +34,8 @@ public class ControlMode extends OpMode{
     ElapsedTime runningTime = new ElapsedTime();
     double slidePower = 0.0;
     public static double p,i,d,f,target;
+
+    String currentAction = "intake";
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -65,13 +67,14 @@ public class ControlMode extends OpMode{
     }
     @Override
     public void loop() {
-        telemetry.addData("Sample in intake: ", orca.intake().sampleDetails());
+        //TODO: remove readSampleDetails
+        telemetry.addData("Sample in intake: ", orca.intake().readSampleDetails());
         telemetry.addData("Current Pos: ", orca.deposit().getCurrentPosition());
         telemetry.addData("Target Pos: ", target);
         telemetry.addData("intake command: ", orca.intake().getIntakeCommand());
         telemetry.addData("deposit command: ", orca.deposit().getDepositCommand());
-
-        telemetry.addData("rotation position: ", orca.intake().currentRotationPosition().getVoltage());
+        telemetry.addData("rotation position: ", orca.intake().currentRotation().getVoltage());
+        telemetry.addData("tilt position: ", orca.intake().currentTilt().getVoltage());
         telemetry.update();
         /*
         if(gamepad1.cross)
@@ -91,34 +94,58 @@ public class ControlMode extends OpMode{
         else if(!(orca.intake().sampleDetails().equals("red")))
             orca.intake().intakeSample(0);
         */
-        orca.intake().refresh(slidePower,gamepad1.cross,gamepad1.circle,gamepad1.triangle);
-        orca.deposit().refresh(gamepad1.left_bumper, gamepad1.right_bumper, gamepad1.dpad_right,gamepad1.dpad_down);
-        orca.refresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
-        slidePower = gamepad1.right_trigger-gamepad1.left_trigger;
 
-        if(gamepad1.circle){
-            orca.intake().angledIntake();
-            //45* intake
+        if(gamepad1.options){
+            currentAction = "sample";
         }
-        else if(gamepad1.cross){
-            orca.intake().verticalIntake();
-            //top down intake
+        else if(orca.intake().getIntakeCommand().equals("transfer")){
+            currentAction = "sample";
         }
-        if (gamepad1.square){
-            //retract
-            orca.intake().retract();
+        else if(gamepad1.share){
+            currentAction = "specimen";
+        }
+        else if(gamepad1.touchpad){
+            currentAction = "intake";
         }
 
-        if(gamepad1.right_trigger>0){
-            orca.intake().startIntaking();
-        //intake mode activate
+
+        if(currentAction.equals("specimen")){
+
         }
+        else if(currentAction.equals("sample")){
+
+        }
+        else {
+            slidePower = gamepad1.right_trigger-gamepad1.left_trigger;
+            if(gamepad1.circle){
+                orca.intake().angledIntake();
+                //45* intake
+            }
+            else if(gamepad1.cross){
+                orca.intake().verticalIntake();
+                //top down intake
+            }
+            if (gamepad1.square){
+                //retract
+                orca.intake().retract();
+            }
+
+            if(gamepad1.right_trigger>0){
+                orca.intake().startIntaking();
+                //intake mode activate
+            }
+        }
+
+
         if(gamepad1.dpad_up){
             orca.deposit().setSample();
         }
         else if(gamepad1.dpad_left){
             orca.deposit().setSpecimen();
         }
+        orca.intake().refresh(slidePower,gamepad1.cross,gamepad1.circle,gamepad1.triangle);
+        orca.deposit().refresh(gamepad1.left_bumper, gamepad1.right_bumper, gamepad1.dpad_right,gamepad1.dpad_down);
+        orca.refresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
         //sample intake
             //intake flat on floor(45 degrees)
                 //rotation set to lower angle
