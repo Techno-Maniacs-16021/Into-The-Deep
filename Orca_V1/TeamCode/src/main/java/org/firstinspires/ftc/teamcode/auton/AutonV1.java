@@ -34,15 +34,15 @@ public class AutonV1 extends LinearOpMode {
                         .setTangent(Math.toRadians(180))
                         .splineToSplineHeading(new Pose2d(-11.4,-25.7,Math.toRadians(135)),Math.toRadians(135))
                         .build(),
-                orca.deposit(),
+                //orca.deposit(),
                 orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
                         .strafeTo(new Vector2d(-8.7,-29))
                         .build(),
-                orca.deposit(),
+                //orca.deposit(),
                 orca.actionBuilder(new Pose2d(-8.7,-29,Math.toRadians(135)))
                         .strafeTo(new Vector2d(-11.4,-25.7))
                         .build(),
-                orca.deposit(),
+                //orca.deposit(),
                 orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
                         .splineToSplineHeading(new Pose2d(-54.3,7.7,Math.toRadians(90)),Math.toRadians(270))
                         .build()

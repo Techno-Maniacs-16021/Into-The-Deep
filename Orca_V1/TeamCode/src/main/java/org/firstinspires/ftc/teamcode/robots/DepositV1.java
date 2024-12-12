@@ -17,8 +17,9 @@ public class DepositV1{
     DcMotorEx leftSlides,rightSlides;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
-    double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 0, SPECIMEN_DEPOSIT = 0;
-    double clawRotationPosition = 0, clawPosition = 0, depositPosition = 0;
+    final double ALLOWED_ERROR = 0.01;
+    double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8;
+    double clawRotationPosition = 0, clawPosition = 0.2, depositPosition = 0;
     PIDController slidesPID;
 
 
@@ -45,6 +46,7 @@ public class DepositV1{
 
         depositLinkage.setDirection(Servo.Direction.REVERSE);
         rightSlides.setDirection(DcMotorSimple.Direction.REVERSE);
+        clawRotation.setDirection(Servo.Direction.REVERSE);
 
         leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -52,14 +54,14 @@ public class DepositV1{
         rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //TODO: reset vars
-
+        p = 1.25; i = 0; d = 0; f = 0.2;
         slidesPID = new PIDController(p,i,d);
     }
-    public void refresh(boolean leftBumper, boolean rightBumper, boolean dpadRight, boolean dpadDown){
+    public void refresh(boolean sample){
         leftSlides.setPower(slidePower);
         rightSlides.setPower(slidePower);
         currentPos = (leftSlides.getCurrentPosition()+rightSlides.getCurrentPosition())/(2*COUNTS_PER_REV_MOTOR);
-        controlLoop(leftBumper,rightBumper,dpadRight,dpadDown);
+        controlLoop(sample);
         PIDLoop();
         clawRotation.setPosition(clawRotationPosition);
         specimenClaw.setPosition(clawPosition);
@@ -67,7 +69,7 @@ public class DepositV1{
 
     }
     public void PIDLoop(){
-        if(!depositCommand.equals("retract")){
+        if(target!=0){
             slidesPID.setPID(p,i,d);
             slidePower = slidesPID.calculate(currentPos,target)+f;
         }
@@ -81,64 +83,60 @@ public class DepositV1{
            this.target = target;
        }
     }
-    public void controlLoop(boolean leftBumper, boolean rightBumper, boolean dpadRight, boolean dpadDown){
-        if(depositCommand.equals("sample")){
-            if(rightBumper){
-                depositPosition = 1;
-            }
-            else if(leftBumper){
-                resetDeposit();
-                depositCommand = "retract";
-            }
-        }
-        else if(depositCommand.equals("specimen")){
-            if(dpadDown){
-                target = SPECIMEN_DEPOSIT;
-            }
-            if(leftBumper){
-                resetDeposit();
-                depositCommand = "retract";
-            }
-
-        }
-        else{
+    public void controlLoop(boolean sample){
+        if(target==0){
             if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 7&&currentPos>0.1){
                 slidePower = -1;
             }
             else{
                 slidePower = -0.2;
             }
-            if(dpadRight){
-                clawRotationPosition = 1;
-                System.out.println("button pressed");
-            }
-            if(rightBumper){
-                clawPosition = 1;
-            }
         }
+        if(target == SPECIMEN_DEPOSIT && slidesReachedTarget() )
+            clawPosition = 0.2;
 
     }
 
-    public void resetDeposit(){
-        depositPosition = 0;
-        clawPosition = 0 ;
-        clawRotationPosition = 0;
-    }
     public void setSample(){
         depositCommand = "sample";
         target = SAMPLE_DEPOSIT;
     }
-    public void setSpecimen(){
+    public void specimenIntake(){
         depositCommand = "specimen";
+        clawPosition = 0;
+        clawRotationPosition = 1;
+    }
+    public void closeClaw(){
+        clawPosition = 1;
+    }
+    public void scoreSpecimen(){
+        target = SPECIMEN_DEPOSIT;
+    }
+    public void setSpecimen(){
         target = SPECIMEN_DEPOSIT_PRIME;
     }
-    public double getCurrentPosition(){
+    public double getCurrentSlidePosition(){
         return currentPos;
     }
     public void retract(){
-
+        depositPosition = 0;
+        clawPosition = 0.2 ;
+        clawRotationPosition = 0;
+        depositCommand = "retract";
+        target = 0;
     }
+    public void depositSample(){
+        depositPosition = 1;
+    }
+    public void resetBucket(){
+        depositPosition = 0;
+    }
+
+
     public String getDepositCommand(){
-        return depositCommand + ": " + depositPosition;
+        return depositCommand;
+    }
+    public boolean slidesReachedTarget(){
+        return Math.abs(target - currentPos) < ALLOWED_ERROR;
     }
 }
