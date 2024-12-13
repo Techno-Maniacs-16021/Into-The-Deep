@@ -24,6 +24,7 @@ public class AutonV1 extends LinearOpMode {
     double slidePower = 0.0;
     public static double p,i,d,f,target;
 
+    Pose2d goUpPlace = new Pose2d(-11.36,-36.59,Math.toRadians(135));
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,21 +36,21 @@ public class AutonV1 extends LinearOpMode {
         Actions.runBlocking(new SequentialAction(
                 orca.actionBuilder(new Pose2d(0, 0, 0))
                         .setTangent(Math.toRadians(180))
-                        .splineToSplineHeading(new Pose2d(-11.4,-25.7,Math.toRadians(135)),Math.toRadians(135))
-                        .build(),
+                        .splineToSplineHeading(goUpPlace,Math.toRadians(135))
+                        .build()
                 //getArmToGround(orca),
                 //orca.deposit(),
-                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
-                        .strafeTo(new Vector2d(-8.7,-29))
-                        .build(),
-                //orca.deposit(),
-                orca.actionBuilder(new Pose2d(-8.7,-29,Math.toRadians(135)))
-                        .strafeTo(new Vector2d(-11.4,-25.7))
-                        .build(),
-                //orca.deposit(),
-                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
-                        .splineToSplineHeading(new Pose2d(-54.3,7.7,Math.toRadians(90)),Math.toRadians(270))
-                        .build()
+//                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
+//                        .strafeTo(new Vector2d(-8.7,-29))
+//                        .build(),
+//                //orca.deposit(),
+//                orca.actionBuilder(new Pose2d(-8.7,-29,Math.toRadians(135)))
+//                        .strafeTo(new Vector2d(-11.4,-25.7))
+//                        .build(),
+//                //orca.deposit(),
+//                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
+//                        .splineToSplineHeading(new Pose2d(-54.3,7.7,Math.toRadians(90)),Math.toRadians(270))
+//                        .build()
         ));
 
         requestOpModeStop();
