@@ -10,9 +10,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robots.OrcaV1;
+import org.firstinspires.ftc.teamcode.auton.AutonBase;
 
 @Autonomous
 @Config
@@ -22,18 +24,20 @@ public class AutonV1 extends LinearOpMode {
     double slidePower = 0.0;
     public static double p,i,d,f,target;
 
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        //orca = initRobot(0,0,0);
         orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
-
         waitForStart();
-
+        runningTime.reset();
         Actions.runBlocking(new SequentialAction(
                 orca.actionBuilder(new Pose2d(0, 0, 0))
                         .setTangent(Math.toRadians(180))
                         .splineToSplineHeading(new Pose2d(-11.4,-25.7,Math.toRadians(135)),Math.toRadians(135))
                         .build(),
+                //getArmToGround(orca),
                 //orca.deposit(),
                 orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
                         .strafeTo(new Vector2d(-8.7,-29))

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
 @TeleOp
@@ -27,6 +28,10 @@ public class ElectronicsTesting extends OpMode {
 
         rotation = hardwareMap.get(AnalogInput.class, "rotation");
         tilt = hardwareMap.get(AnalogInput.class, "tilt");
+
+        servo0.setPwmRange(new PwmControl.PwmRange(510,2490));
+        servo1.setPwmRange(new PwmControl.PwmRange(510,2490));
+
 
     }
     @Override

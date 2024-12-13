@@ -78,7 +78,7 @@ public class IntakeV1 {
         rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
         gate.setPwmRange(new PwmControl.PwmRange(510,2490));
 
-        tilt.setDirection(Servo.Direction.REVERSE);
+        //tilt.setDirection(Servo.Direction.REVERSE);
         //gate.setDirection(Servo.Direction.REVERSE);
 
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -237,7 +237,7 @@ public class IntakeV1 {
 
                 this.slidesPower = -0.25;
 
-                if (!sampleColor.equals("none") && !sampleColor.equals(colorToEject) && retract) {
+                if ((!sampleColor.equals("none") && !sampleColor.equals(colorToEject) && retract)||sampleColor.equals("yellow")) {
                     intakeCommand = "transfer";
                     //TODO: remove when servo is fixed
                     intakePower = REVERSE_INTAKE_POWER_TILT;

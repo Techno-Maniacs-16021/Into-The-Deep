@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots;
 
+import static java.lang.Thread.sleep;
+
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -47,6 +49,7 @@ public class DepositV1{
         depositLinkage.setDirection(Servo.Direction.REVERSE);
         rightSlides.setDirection(DcMotorSimple.Direction.REVERSE);
         clawRotation.setDirection(Servo.Direction.REVERSE);
+        specimenClaw.setDirection(Servo.Direction.REVERSE);
 
         leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -92,7 +95,7 @@ public class DepositV1{
                 slidePower = -0.2;
             }
         }
-        if(target == SPECIMEN_DEPOSIT && slidesReachedTarget() )
+        if(target == SPECIMEN_DEPOSIT && currentPos<1.3 )
             clawPosition = 0.2;
 
     }
@@ -100,6 +103,7 @@ public class DepositV1{
     public void setSample(){
         depositCommand = "sample";
         target = SAMPLE_DEPOSIT;
+        //depositPosition = 0.65;
     }
     public void specimenIntake(){
         depositCommand = "specimen";
@@ -107,7 +111,7 @@ public class DepositV1{
         clawRotationPosition = 1;
     }
     public void closeClaw(){
-        clawPosition = 1;
+        clawPosition = 0.9;
     }
     public void scoreSpecimen(){
         target = SPECIMEN_DEPOSIT;
@@ -139,4 +143,5 @@ public class DepositV1{
     public boolean slidesReachedTarget(){
         return Math.abs(target - currentPos) < ALLOWED_ERROR;
     }
+
 }

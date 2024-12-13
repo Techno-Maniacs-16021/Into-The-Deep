@@ -32,6 +32,7 @@ import java.util.List;
 public class ControlMode extends OpMode{
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
+    ElapsedTime buzzTime = new ElapsedTime();
     double slidePower = 0.0;
     public static double p,i,d,f,target;
     boolean intakeCross = false, intakeCircle = false, intakeTriangle = false, intakeSquare = false;
@@ -65,6 +66,7 @@ public class ControlMode extends OpMode{
     @Override
     public void start(){
         runningTime.reset();
+        buzzTime.reset();
     }
     @Override
     public void loop() {
@@ -105,6 +107,7 @@ public class ControlMode extends OpMode{
         else if(gamepad1.share){
             currentAction = "specimen";
             orca.deposit().specimenIntake();
+            orca.intake().retract();
         }
         else if(gamepad1.touchpad){
             orca.deposit().retract();
@@ -226,6 +229,15 @@ public class ControlMode extends OpMode{
                 //down to specimen clip height on button press
                 //claw open, flip claw down, and retract slides
                 //set to intake mode
+        String allianceColor = orca.intake().getColorToEject().equals("red") ? "blue" : "red";
+        if(orca.intake().getCurrentSample().equals("yellow")&&buzzTime.milliseconds()>300){
+            gamepad1.rumble(50);
+            buzzTime.reset();
+        }
+        else if(orca.intake().getCurrentSample().equals(allianceColor)){
+            gamepad1.rumbleBlips(1);
+        }
+
 
     }
     @Override

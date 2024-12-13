@@ -35,4 +35,7 @@ public class OrcaV1 extends MecanumDrive{
     public DepositV1 deposit(){
         return deposit;
     }
+    public void initialize(){
+
+    }
 }
