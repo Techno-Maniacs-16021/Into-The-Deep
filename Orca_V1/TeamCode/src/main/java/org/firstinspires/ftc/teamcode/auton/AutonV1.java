@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.auton;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.localization.Drawing;
 import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 import org.firstinspires.ftc.teamcode.auton.AutonBase;
 
@@ -52,6 +54,11 @@ public class AutonV1 extends LinearOpMode {
 //                        .splineToSplineHeading(new Pose2d(-54.3,7.7,Math.toRadians(90)),Math.toRadians(270))
 //                        .build()
         ));
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), orca.pose);
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         requestOpModeStop();
     }
