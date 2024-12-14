@@ -27,7 +27,7 @@ public class AutonV1 extends LinearOpMode {
     ElapsedTime runningTime = new ElapsedTime();
     double slidePower = 0.0;
     public static double x1,y1,h1,x2;
-    // -28 --> -30.6, 5.7
+    // -28 --> -31.5, 5.7
 
     Vector2d goUpPlace = new Vector2d(-11.36,-36.59);
     Pose2d depositPlace = new Pose2d(-8.3,-40.2,Math.toRadians(135));
