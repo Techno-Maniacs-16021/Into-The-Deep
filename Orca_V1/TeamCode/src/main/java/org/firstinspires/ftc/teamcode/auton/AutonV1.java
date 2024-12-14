@@ -26,28 +26,40 @@ public class AutonV1 extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
     double slidePower = 0.0;
-    public static double heading = -45;
-    public static int targetx,targety,targeth;
+    public static double x1,y1,h1,x2;
+    // -28 --> -30.6, 5.7
 
     Vector2d goUpPlace = new Vector2d(-11.36,-36.59);
     Pose2d depositPlace = new Pose2d(-8.3,-40.2,Math.toRadians(135));
+    Vector2d preSpecimen = new Vector2d(x1,y1);
+    Vector2d finalSpecimen = new Vector2d(x2,y1);
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         //orca = initRobot(0,0,0);
         orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
+        orca.deposit().specimenIntake();
+        orca.deposit().refresh();
         waitForStart();
         runningTime.reset();
         TelemetryPacket packet = new TelemetryPacket();
+        packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
         packet.fieldOverlay().setStroke("#3F51B5");
         Drawing.drawRobot(packet.fieldOverlay(), orca.pose);
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
         telemetry.update();
         Actions.runBlocking(new SequentialAction(
                 orca.actionBuilder(new Pose2d(0, 0, 0))
-                        .setTangent(Math.toRadians(180))
-                        .splineTo(goUpPlace,Math.toRadians(heading))
-                        .build()
+                        .strafeTo(preSpecimen)
+                        .build(),
+                intakeSampleGround(orca,0),
+                setSpecimen(orca),
+                orca.actionBuilder(new Pose2d(preSpecimen.x,preSpecimen.y,0))
+                        .strafeTo(finalSpecimen)
+                        .build(),
+                depositSpecimen(orca)
+
                 //getArmToGround(orca),
                 //orca.deposit(),
 //                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
@@ -95,7 +107,10 @@ public class AutonV1 extends LinearOpMode {
         return telemetryPacket -> {
             bot.deposit().setSpecimen();
             bot.deposit().refresh();
-            return false;
+            if(bot.deposit().slidesReachedTarget()){
+                return false;
+            }
+            return true;
         };
     }
     public Action setDepositTarget(OrcaV1 bot, double pos ) {
@@ -143,6 +158,35 @@ public class AutonV1 extends LinearOpMode {
             return false;
         };
     }
+
+    public Action makeArmOuty(OrcaV1 bot){
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
+
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+        telemetry.update();
+        return telemetryPacket -> {
+            if(bot.intake().getIntakeCommand().equals("retract")){
+                bot.intake().startIntaking();
+                return true;
+            }
+            if(bot.intake().isArmGoodyOrNottyForAutoonyToDoAutoonyThingies()){
+                return true;
+            }
+
+            bot.intake().refresh(0,false,false,false,false,false);
+            bot.intake().retract();
+            return false;
+        };
+    }
+
+    public Action makeArmInny(OrcaV1 bot){
+        return telemetryPacket -> {
+                bot.intake().retract();
+                return true;
+        };
+    }
+
     public Action intakeSampleGround(OrcaV1 bot , double pos ) {
         return telemetryPacket -> {
             if(bot.intake().getIntakeCommand().equals("retract")){

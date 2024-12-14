@@ -350,6 +350,11 @@ public class IntakeV1 {
             }
         }
     }
+
+    public void makeArmGoDowny(){
+
+    }
+
     public void retract(){
         intakeCommand = "retract";
     }
@@ -407,5 +412,15 @@ public class IntakeV1 {
         this.target = target;
     }
 
+    public boolean isArmGoodyOrNottyForAutoonyToDoAutoonyThingies(){
+        if(currentRotation.getVoltage()>1.2){
+            return true;
+        }
+        return false;
+    }
+
+    public double getRotationVoltage(){
+        return currentRotation.getVoltage();
+    }
 
 }
