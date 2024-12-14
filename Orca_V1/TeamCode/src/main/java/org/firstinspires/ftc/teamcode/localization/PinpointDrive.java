@@ -134,6 +134,13 @@ public class PinpointDrive extends MecanumDrive {
         return pinpoint.getVelocityRR();
     }
 
+    public void resetAll(){
+        pinpoint.resetPosAndIMU();
+    }
+
+    public void calibrate(){
+        pinpoint.recalibrateIMU();
+    }
 
     // for debug logging
     public static final class FTCPoseMessage {

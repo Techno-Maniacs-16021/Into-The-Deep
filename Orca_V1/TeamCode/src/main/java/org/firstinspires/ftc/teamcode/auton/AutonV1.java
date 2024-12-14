@@ -24,10 +24,11 @@ public class AutonV1 extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
     double slidePower = 0.0;
-    public static double p,i,d,f,target;
+    public static double heading = -45;
+    public static int targetx,targety,targeth;
 
-    Pose2d goUpPlace = new Pose2d(-11.36,-36.59,Math.toRadians(135));
-
+    Vector2d goUpPlace = new Vector2d(-11.36,-36.59);
+    Pose2d depositPlace = new Pose2d(-8.3,-40.2,Math.toRadians(135));
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -35,10 +36,15 @@ public class AutonV1 extends LinearOpMode {
         orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
         waitForStart();
         runningTime.reset();
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), orca.pose);
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+        telemetry.update();
         Actions.runBlocking(new SequentialAction(
                 orca.actionBuilder(new Pose2d(0, 0, 0))
                         .setTangent(Math.toRadians(180))
-                        .splineToSplineHeading(goUpPlace,Math.toRadians(135))
+                        .splineTo(goUpPlace,Math.toRadians(heading))
                         .build()
                 //getArmToGround(orca),
                 //orca.deposit(),
@@ -55,10 +61,7 @@ public class AutonV1 extends LinearOpMode {
 //                        .build()
         ));
 
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.fieldOverlay().setStroke("#3F51B5");
-        Drawing.drawRobot(packet.fieldOverlay(), orca.pose);
-        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
 
         requestOpModeStop();
     }

@@ -6,7 +6,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.localization.MecanumDrive;
-public class OrcaV1 extends MecanumDrive{
+import org.firstinspires.ftc.teamcode.localization.PinpointDrive;
+
+public class OrcaV1 extends PinpointDrive{
     //IntakeV1 INTAKE;
     //DepositV1 DEPOSIT;
     private final IntakeV1 intake;
@@ -38,4 +40,7 @@ public class OrcaV1 extends MecanumDrive{
     public void initialize(){
 
     }
+
+
+
 }
