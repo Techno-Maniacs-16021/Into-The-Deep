@@ -135,7 +135,7 @@ public class ControlMode extends OpMode{
             }
         }
         else if(currentAction.equals("sample")){
-            if(gamepad1.right_bumper){
+            if(gamepad1.right_bumper&&!orca.intake().getIntakeCommand().equals("transfer")){
                 orca.deposit().setSample();
             }
             else if(gamepad1.left_bumper){
@@ -184,10 +184,7 @@ public class ControlMode extends OpMode{
 
         orca.intake().refresh(slidePower,intakeCross,intakeCircle,intakeTriangle,intakeSquare,false);
 
-        if(currentAction.equals("specimen"))
-            orca.deposit().refresh(false);
-        else
-            orca.deposit().refresh(true);
+        orca.deposit().refresh();
 
         orca.refresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
         //sample intake

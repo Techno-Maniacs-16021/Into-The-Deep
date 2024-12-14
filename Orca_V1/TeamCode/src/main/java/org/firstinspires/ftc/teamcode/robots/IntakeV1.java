@@ -98,7 +98,7 @@ public class IntakeV1 {
             colorSensorInputs.add("none");
         }
     }
-    public void refresh (double intakePower,boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean PID){
+    public void refresh (double slidesPower,boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean PID){
 
         tilt.setPosition(tiltPosition);
         rotation.setPosition(rotationPosition);
@@ -128,7 +128,7 @@ public class IntakeV1 {
         }
 
         currentPos = slides.getCurrentPosition()/COUNTS_PER_REV_MOTOR;
-        slideControlLoop(intakePower,retract, PID);
+        slideControlLoop(slidesPower,retract, PID);
         intakeModuleControlLoop(verticalIntake,angledIntake,reverseIntake);
         updateSampleDetails();
         sampleColor = readSampleDetails();
@@ -393,7 +393,7 @@ public class IntakeV1 {
         target = pos;
     }
     public boolean slidesReachedTarget(){
-        return Math.abs(target - currentPos) < ALLOWED_ERROR;
+        return Math.abs(target - currentPos) < ALLOWED_ERROR || slides.getCurrent(CurrentUnit.AMPS) > 7;
     }
     public void PIDTuning (double p, double i, double d, double target) {
         if(pidTuning) {
@@ -402,6 +402,9 @@ public class IntakeV1 {
             this.d = d;
             this.target = target;
         }
+    }
+    public void setTarget(double target){
+        this.target = target;
     }
 
 

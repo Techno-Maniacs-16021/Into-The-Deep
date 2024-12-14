@@ -21,7 +21,7 @@ public class DepositV1{
     double target,currentPos;
     final double ALLOWED_ERROR = 0.01;
     double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8;
-    double clawRotationPosition = 0, clawPosition = 0.2, depositPosition = 0;
+    double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
     PIDController slidesPID;
 
 
@@ -60,11 +60,11 @@ public class DepositV1{
         p = 1.25; i = 0; d = 0; f = 0.2;
         slidesPID = new PIDController(p,i,d);
     }
-    public void refresh(boolean sample){
+    public void refresh(){
         leftSlides.setPower(slidePower);
         rightSlides.setPower(slidePower);
         currentPos = (leftSlides.getCurrentPosition()+rightSlides.getCurrentPosition())/(2*COUNTS_PER_REV_MOTOR);
-        controlLoop(sample);
+        controlLoop();
         PIDLoop();
         clawRotation.setPosition(clawRotationPosition);
         specimenClaw.setPosition(clawPosition);
@@ -86,7 +86,7 @@ public class DepositV1{
            this.target = target;
        }
     }
-    public void controlLoop(boolean sample){
+    public void controlLoop(){
         if(target==0){
             if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 7&&currentPos>0.1){
                 slidePower = -1;
@@ -141,7 +141,11 @@ public class DepositV1{
         return depositCommand;
     }
     public boolean slidesReachedTarget(){
-        return Math.abs(target - currentPos) < ALLOWED_ERROR;
+        return (Math.abs(target - currentPos) < ALLOWED_ERROR)||
+        (leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 > 7;
+    }
+    public void setTarget(double target){
+        this.target = target;
     }
 
 }
