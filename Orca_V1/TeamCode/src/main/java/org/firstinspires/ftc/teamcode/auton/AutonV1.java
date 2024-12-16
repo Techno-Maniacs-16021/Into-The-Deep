@@ -26,13 +26,17 @@ public class AutonV1 extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
     double slidePower = 0.0;
-    public static double x1,y1,h1,x2;
-    // -28 --> -31.5, 5.7
+    public static double x1;
+    public static double x2;
+    public static double y1;
+    public static double y2;
+    public static double h1 = 70;
+    public static double h2;
 
-    Vector2d goUpPlace = new Vector2d(-11.36,-36.59);
-    Pose2d depositPlace = new Pose2d(-8.3,-40.2,Math.toRadians(135));
-    Vector2d preSpecimen = new Vector2d(x1,y1);
-    Vector2d finalSpecimen = new Vector2d(x2,y1);
+    Pose2d preSample = new Pose2d(-14.4,-49.5,Math.toRadians(160));
+    Vector2d finalSample = new Vector2d(-7.3,-52.2);
+    Vector2d preSpecimen = new Vector2d(-25.8,-1.7);
+    Vector2d finalSpecimen = new Vector2d(-27.9,-1.7);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -41,7 +45,13 @@ public class AutonV1 extends LinearOpMode {
         orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
         orca.deposit().specimenIntake();
         orca.deposit().refresh();
+        orca.intake().refresh(0,false,false,false,false,false);
+        //orcaRefresh(orca,0,false,false,false,false,false);
+
         waitForStart();
+
+
+
         runningTime.reset();
         TelemetryPacket packet = new TelemetryPacket();
         packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
@@ -49,37 +59,47 @@ public class AutonV1 extends LinearOpMode {
         Drawing.drawRobot(packet.fieldOverlay(), orca.pose);
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
         telemetry.update();
-        Actions.runBlocking(new SequentialAction(
-                orca.actionBuilder(new Pose2d(0, 0, 0))
-                        .strafeTo(preSpecimen)
-                        .build(),
-                intakeSampleGround(orca,0),
-                setSpecimen(orca),
-                orca.actionBuilder(new Pose2d(preSpecimen.x,preSpecimen.y,0))
-                        .strafeTo(finalSpecimen)
-                        .build(),
-                depositSpecimen(orca)
 
-                //getArmToGround(orca),
-                //orca.deposit(),
-//                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
-//                        .strafeTo(new Vector2d(-8.7,-29))
-//                        .build(),
-//                //orca.deposit(),
-//                orca.actionBuilder(new Pose2d(-8.7,-29,Math.toRadians(135)))
-//                        .strafeTo(new Vector2d(-11.4,-25.7))
-//                        .build(),
-//                //orca.deposit(),
-//                orca.actionBuilder(new Pose2d(-11.4,-25.7,Math.toRadians(135)))
-//                        .splineToSplineHeading(new Pose2d(-54.3,7.7,Math.toRadians(90)),Math.toRadians(270))
-//                        .build()
+        Actions.runBlocking(new SequentialAction(
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(0, 0, 0))
+                                .strafeTo(preSpecimen)
+                                .build()
+                        //setSpecimen(orca)
+                        ),
+                //orcaRefresh(orca,0,false,false,false,false,false),
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(preSpecimen.x,preSpecimen.y,0))
+                                .strafeTo(finalSpecimen)
+                                .build()
+                        //depositSpecimen(orca)
+                ),
+                //orcaRefresh(orca,0,false,false,false,false,false),
+                orca.actionBuilder(new Pose2d(finalSpecimen.x,finalSpecimen.y,0))
+                        .setTangent(Math.toRadians(0))
+                        .splineToSplineHeading(preSample,Math.toRadians(-20))
+                        .build(),
+                //intakeSampleGround(orca,0),
+                new ParallelAction(
+                        orca.actionBuilder(preSample)
+                                .strafeTo(finalSample)
+                                .build()
+                        //setSample(orca)
+                ),
+                new ParallelAction(
+                        //depositSample(orca),
+                        //orcaRefresh(orca,0,false,false,false,false,false),
+                        orca.actionBuilder(new Pose2d(finalSample.x,finalSample.y,Math.toRadians(-20)))
+                                .strafeTo(new Vector2d(preSample.position.x,preSample.position.y))
+                                .build()
+                )
         ));
 
 
 
         requestOpModeStop();
     }
-    public Action orcaRefresh(OrcaV1 bot , double slidesPower, boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean pid ) {
+    public Action orcaRefresh(OrcaV1 bot, double slidesPower, boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean pid ) {
         return telemetryPacket -> {
             //TODO: Use this anytime the mechanisms are moving while the robot is moving in a parallel action
             bot.deposit().refresh();
@@ -152,6 +172,8 @@ public class AutonV1 extends LinearOpMode {
                 }
             }
             else{
+                telemetry.addLine("stuck in deposit");
+                telemetry.update();
                 return true;
             }
             bot.deposit().retract();
@@ -159,35 +181,7 @@ public class AutonV1 extends LinearOpMode {
         };
     }
 
-    public Action makeArmOuty(OrcaV1 bot){
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
-
-        FtcDashboard.getInstance().sendTelemetryPacket(packet);
-        telemetry.update();
-        return telemetryPacket -> {
-            if(bot.intake().getIntakeCommand().equals("retract")){
-                bot.intake().startIntaking();
-                return true;
-            }
-            if(bot.intake().isArmGoodyOrNottyForAutoonyToDoAutoonyThingies()){
-                return true;
-            }
-
-            bot.intake().refresh(0,false,false,false,false,false);
-            bot.intake().retract();
-            return false;
-        };
-    }
-
-    public Action makeArmInny(OrcaV1 bot){
-        return telemetryPacket -> {
-                bot.intake().retract();
-                return true;
-        };
-    }
-
-    public Action intakeSampleGround(OrcaV1 bot , double pos ) {
+    public Action intakeSampleGround(OrcaV1 bot , double pos) {
         return telemetryPacket -> {
             if(bot.intake().getIntakeCommand().equals("retract")){
                 //TODO: When we implement PID, we can change this

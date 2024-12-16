@@ -32,7 +32,13 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(6, 70, Math.toRadians(90)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-27.9,-1.7,0))
+                        .setTangent(Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(-14.4,-49.5,Math.toRadians(160)),Math.toRadians(-20))
+                        .strafeTo(new Vector2d(-7.3,-52.2))
+                        .strafeTo(new Vector2d(-14.4,-49.5))
+                        .build()
+        /*myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(6, 70, Math.toRadians(90)))
                     // Does all the tingies for placing down your facy thingie
                     .strafeTo(preSpecimen.component1())
                         // Make arm go down and slides go up
@@ -111,7 +117,7 @@ public class MeepMeepTesting {
                 // Goes to part the big pretty robot
                     .setTangent(Math.toRadians(45+180))
                     .splineToLinearHeading(parkingPlace,Math.toRadians(180))
-                    .build()
+                    .build()*/
         );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_OFFICIAL)

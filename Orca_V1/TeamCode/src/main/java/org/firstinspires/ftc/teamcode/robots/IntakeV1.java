@@ -36,7 +36,7 @@ public class IntakeV1 {
             EJECT_TILT = 0.5,
             TRANSFER_ROTATION = 1, INTER_TRANSFER_ROTATION = 0.7, TRANSFER_TILT = 0.95,
             STANDBY_ROTATION = 0.6, STANDBY_TILT = 0.6;
-    double rotationPosition = STANDBY_ROTATION, tiltPosition = STANDBY_TILT, gatePosition = 0;
+    double rotationPosition = 0.7, tiltPosition = STANDBY_TILT, gatePosition = 0;
 
     final double COUNTS_PER_REV_MOTOR = 145.1*(2/1);
     final double REVERSE_INTAKE_POWER_TILT = -0.2;
@@ -88,7 +88,7 @@ public class IntakeV1 {
         slides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //TODO: reset vars
         target = 0; currentPos = 0;
-        intakeCommand = "retract";
+        intakeCommand = "standby";
         intakeMode = "angled";
 
         p = 0.0;i = 0.0;d = 0.0;

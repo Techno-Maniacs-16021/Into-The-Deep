@@ -19,7 +19,7 @@ public class DepositV1{
     DcMotorEx leftSlides,rightSlides;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
-    final double ALLOWED_ERROR = 0.01;
+    final double ALLOWED_ERROR = 0.03;
     double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8;
     double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
     PIDController slidesPID;
