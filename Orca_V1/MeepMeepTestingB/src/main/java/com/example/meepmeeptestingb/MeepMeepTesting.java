@@ -10,7 +10,6 @@ public class MeepMeepTesting {
 
     public static void main(String[] args) {
 
-
         Pose2d preSpecimen = new Pose2d(5.7,32,Math.toRadians(90));
         Pose2d finalSpecimen = new Pose2d(5.7,30,Math.toRadians(90));
 
