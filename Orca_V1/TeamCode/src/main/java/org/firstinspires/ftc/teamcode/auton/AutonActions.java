@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 public abstract class AutonActions  extends LinearOpMode {
     public OrcaV1 initRobot(double x, double y, double heading){
         OrcaV1 orcaV1 = new OrcaV1(hardwareMap,new Pose2d(x,y,heading));
-        orcaV1.initialize();
+        orcaV1.init();
         return orcaV1;
     }
     public Action depositSample(OrcaV1 orcav1,int runningMS){

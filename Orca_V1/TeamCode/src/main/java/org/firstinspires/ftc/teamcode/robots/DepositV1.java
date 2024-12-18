@@ -14,18 +14,22 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.util.ArrayList;
+
 public class DepositV1{
     ServoImplEx clawRotation, specimenClaw, depositLinkage;
     DcMotorEx leftSlides,rightSlides;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
-    final double ALLOWED_ERROR = 0.03;
-    double SAMPLE_DEPOSIT = 3.9, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8;
+    final double ALLOWED_ERROR = 0.012;
+    double SAMPLE_DEPOSIT = 3.8, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8, PARK = 1.4;
     double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
     PIDController slidesPID;
+    ArrayList<Double> positionLog = new ArrayList<>();
+    int posLogLength = 100;
 
 
-    double p = 1.25,i = 0,d = 0,f = 0.2;
+    double p = 1.4,i = 0,d = 0,f = 0.2;
     //TODO: Set to false
     boolean pidTuning = false;
     double slidePower;
@@ -57,13 +61,19 @@ public class DepositV1{
         rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //TODO: reset vars
-        p = 1.25; i = 0; d = 0; f = 0.2;
+        p = 1.4; i = 0; d = 0; f = 0.2;
         slidesPID = new PIDController(p,i,d);
+
+        for(int k = 0; k < posLogLength; k++){
+            positionLog.add(0.0);
+        }
     }
     public void refresh(){
         leftSlides.setPower(slidePower);
         rightSlides.setPower(slidePower);
         currentPos = (leftSlides.getCurrentPosition()+rightSlides.getCurrentPosition())/(2*COUNTS_PER_REV_MOTOR);
+        positionLog.add(currentPos);
+        positionLog.remove(0);
         controlLoop();
         PIDLoop();
         clawRotation.setPosition(clawRotationPosition);
@@ -120,16 +130,29 @@ public class DepositV1{
     }
     public void setSpecimen(){
         target = SPECIMEN_DEPOSIT_PRIME;
+        depositCommand = "specimen";
+    }
+    public void setPark(){
+        target = PARK;
+        depositCommand = "park";
+        clawRotationPosition = 1;
+        clawPosition = 0.7;
+        depositPosition = 0;
     }
     public double getCurrentSlidePosition(){
         return currentPos;
     }
+    public double getTarget(){return target;}
     public void retract(){
         depositPosition = 0;
         clawPosition = 0.2 ;
         clawRotationPosition = 0;
         depositCommand = "retract";
         target = 0;
+    }
+    public void init(){
+        clawPosition = 1;
+        clawRotationPosition = 1;
     }
     public void depositSample(){
         depositPosition = 1;
@@ -143,8 +166,10 @@ public class DepositV1{
         return depositCommand;
     }
     public boolean slidesReachedTarget(){
-        return (Math.abs(target - currentPos) < ALLOWED_ERROR)||
-        (leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 > 7;
+        double avgRateChange1 = Math.abs(positionLog.get(99)-positionLog.get(0))/100;
+        double avgRateChange2 = Math.abs(positionLog.get(9)-positionLog.get(0))/100;
+        return (avgRateChange1 < ALLOWED_ERROR)&&(avgRateChange2 < ALLOWED_ERROR*0.5)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15;
+        //(leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 > 7;
     }
     public void setTarget(double target){
         this.target = target;

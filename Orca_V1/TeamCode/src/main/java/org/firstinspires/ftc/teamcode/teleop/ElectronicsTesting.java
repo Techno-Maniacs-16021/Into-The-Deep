@@ -36,7 +36,8 @@ public class ElectronicsTesting extends OpMode {
     }
     @Override
     public void init_loop(){
-
+        //servo0.setPosition(0);
+        servo1.setPosition(1);
     }
     @Override
     public void start(){
