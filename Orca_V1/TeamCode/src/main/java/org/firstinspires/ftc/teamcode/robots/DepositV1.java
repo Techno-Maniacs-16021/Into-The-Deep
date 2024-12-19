@@ -156,9 +156,13 @@ public class DepositV1{
         depositCommand = "retract";
         target = 0;
     }
-    public void init(){
+    public void specimenInit(){
         clawPosition = 1;
         clawRotationPosition = 1;
+    }
+    public void sampleInit(){
+        clawPosition = 0;
+        clawRotationPosition = 0;
     }
     public void depositSample(){
         depositPosition = 1;

@@ -38,18 +38,14 @@ public class ZeroPlusFour extends LinearOpMode {
     Pose2d sampleNumberTwoStart = new Pose2d(-19.5,-28.6,Math.toRadians(-147.9));
     Pose2d sampleNumberTwoEnd = new Pose2d(-21.55,-41.27,Math.toRadians(178));
     Pose2d sampleNumberThree = new Pose2d(-17.6,-46,Math.toRadians(-140));*/
-
-    Pose2d sample1 = new Pose2d(-27.08,-23.39,Math.toRadians(-123.3));
-    Pose2d sample2 = new Pose2d(-15.3,-50,Math.toRadians(-176.3));
-
-    Pose2d sample3 = new Pose2d(-16.5,-51,Math.toRadians(-155.6));
-
+    Vector2d sample1 = new Vector2d(-11.43,-9.55);
+    Pose2d sample2 = new Pose2d(-17.84,-48.99,Math.toRadians(160));
+    Pose2d sample3 = new Pose2d(-15.3,-50,Math.toRadians(-176.3));
+    Pose2d sample4 = new Pose2d(-16.5,-51,Math.toRadians(-155.6));
     Pose2d park = new Pose2d(-54.2,-14.6, Math.toRadians(-90));
     Pose2d submersible = new Pose2d(-54.2,-29, Math.toRadians(-90));
     Pose2d lineUpSample = new Pose2d(-13.5,-43.3,Math.toRadians(135));
-
     Pose2d finalSample = new Pose2d(-8.8,-50,Math.toRadians(135));
-    Vector2d specimen = new Vector2d(-30.65,-0.45);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -67,7 +63,7 @@ public class ZeroPlusFour extends LinearOpMode {
             else if(gamepad1.triangle){
                 orca.intake().setColorToEject("blue");
             }
-            orca.init();
+            orca.sampleInit();
         }
         waitForStart();
 
@@ -102,31 +98,14 @@ public class ZeroPlusFour extends LinearOpMode {
         //requestOpModeStop();
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                        orca.actionBuilder(new Pose2d(0, 0, 0))
-                                .strafeTo(specimen)
-                                .build(),
-                        setSpecimen(orca)
-                ),
-                depositSpecimen(orca),
-                //sample 1
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimen.x,specimen.y,0))
-                                .strafeToLinearHeading(sample1.component1(),sample1.heading.toDouble())
-                                .build(),
-                        retractDeposit(orca)
-                ),
-                print("reached pos@"+runningTime),
-                intakeSampleGround(orca),
-                new ParallelAction(
-                        orca.actionBuilder(sample1)
+                        orca.actionBuilder(new Pose2d(0, 0, Math.toRadians(180)))
+                                .strafeTo(sample1)
                                 .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
                                 .build(),
-                        retractIntake(orca)
+                        setSample(orca)
                 ),
-
-                setSample(orca),
                 orca.actionBuilder(lineUpSample)
-                        .strafeTo(finalSample.component1())
+                        .strafeToLinearHeading(finalSample.component1(),finalSample.heading.toDouble())
                         .build(),
                 depositSample(orca),
                 //sample 2
@@ -138,7 +117,6 @@ public class ZeroPlusFour extends LinearOpMode {
                 ),
                 print("reached pos@"+runningTime),
                 intakeSampleGround(orca),
-
                 new ParallelAction(
                         orca.actionBuilder(sample2)
                                 .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
@@ -151,7 +129,6 @@ public class ZeroPlusFour extends LinearOpMode {
                         .strafeTo(finalSample.component1())
                         .build(),
                 depositSample(orca),
-
                 //sample 3
                 new ParallelAction(
                         orca.actionBuilder(finalSample)
@@ -164,6 +141,29 @@ public class ZeroPlusFour extends LinearOpMode {
 
                 new ParallelAction(
                         orca.actionBuilder(sample3)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
+                                .build(),
+                        retractIntake(orca)
+                ),
+
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
+
+                //sample 4
+                new ParallelAction(
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(sample4.component1(),sample4.heading.toDouble())
+                                .build(),
+                        retractDeposit(orca)
+                ),
+                print("reached pos@"+runningTime),
+                intakeSampleGround(orca),
+
+                new ParallelAction(
+                        orca.actionBuilder(sample4)
                                 .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
                                 .build(),
                         retractIntake(orca)

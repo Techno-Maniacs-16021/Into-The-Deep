@@ -67,7 +67,7 @@ public class OnePlusThree extends LinearOpMode {
             else if(gamepad1.triangle){
                 orca.intake().setColorToEject("blue");
             }
-            orca.init();
+            orca.specimenInit();
         }
         waitForStart();
 

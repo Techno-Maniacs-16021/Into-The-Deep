@@ -37,8 +37,13 @@ public class OrcaV1 extends PinpointDrive{
     public DepositV1 deposit(){
         return deposit;
     }
-    public void init(){
-        deposit.init();
+    public void specimenInit(){
+        deposit.specimenInit();
+        intake.refresh(0,false,false,false,false,false);
+        deposit.refresh();
+    }
+    public void sampleInit(){
+        deposit.sampleInit();
         intake.refresh(0,false,false,false,false,false);
         deposit.refresh();
     }
