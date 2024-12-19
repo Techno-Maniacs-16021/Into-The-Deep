@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 
 @Autonomous
 @Config
-public class OnePlusThree extends LinearOpMode {
+public class ZeroPlusFour extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
     double slidePower = 0.0;
@@ -55,7 +55,7 @@ public class OnePlusThree extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         //orca = initRobot(0,0,0);
-        orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
+        orca = new OrcaV1(hardwareMap,new Pose2d(0,0,Math.toRadians(180)));
         //orcaRefresh(orca,0,false,false,false,false,false);
         while(opModeInInit()&&!opModeIsActive()&&!isStopRequested()){
             telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
@@ -181,9 +181,9 @@ public class OnePlusThree extends LinearOpMode {
                         parkSlides(orca)
                 ),
                 new ParallelAction(
-                orca.actionBuilder(submersible)
-                        .strafeTo(park.component1())
-                        .build(),
+                        orca.actionBuilder(submersible)
+                                .strafeTo(park.component1())
+                                .build(),
                         parkSlides(orca)
                 ),
                 touchBar(orca)
@@ -301,7 +301,7 @@ public class OnePlusThree extends LinearOpMode {
         //the depositSample and depositSpecimen Actions will reach the target and deposit imediately
         return telemetryPacket -> {
             if(bot.intake().getIntakeCommand().equals("transfer")){
-               return true;
+                return true;
             }
             bot.deposit().setSample();
             bot.deposit().refresh();
@@ -433,7 +433,7 @@ public class OnePlusThree extends LinearOpMode {
 
             bot.intake().refresh(0.75,false,true,false,false,false);
             if(!bot.intake().slidesReachedTarget()&&bot.intake().getCurrentSample().equals("none")){
-               return true;
+                return true;
             }
             //bot.intake().retract();
             //bot.intake().refresh(0,false,false,false,true,false);

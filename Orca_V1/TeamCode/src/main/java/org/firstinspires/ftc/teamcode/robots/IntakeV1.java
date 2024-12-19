@@ -145,16 +145,17 @@ public class IntakeV1 {
             else if(color.equals("yellow"))
                 yellow++;
             else
-                return "none";
+                none++;
 
-            System.out.print(color+" ");
+            //System.out.print(color+" ");
         }
         System.out.println();
         return (
-                blue>red && blue>yellow && blue>none ? "blue"
-                        : red>blue && red>yellow && red>none ? "red"
-                        : yellow>red && yellow>blue && yellow>none ? "yellow"
-                        : "none"
+                blue==nSensorSamples ? "blue"
+                        : red==nSensorSamples ? "red"
+                        : none==nSensorSamples ? "none"
+                        //: (intakeCommand.equals("transfer")&&none>(0.75*nSensorSamples)) ? "none"
+                        : "yellow"
         );
     }
     public void updateSampleDetails(){
@@ -167,6 +168,12 @@ public class IntakeV1 {
     }
     public String getCurrentSample(){
         return sampleColor;
+    }
+    private void resetColorSamples(){
+        for(int k = 0; k < nSensorSamples; k++){
+            colorSensorInputs.remove(0);
+            colorSensorInputs.add("none");
+        }
     }
        /*
     public void neutralPosition(){
@@ -332,7 +339,7 @@ public class IntakeV1 {
         else if(intakeCommand.equals("standby")){
             rotationPosition = STANDBY_ROTATION;
             tiltPosition = STANDBY_TILT;
-            intakePower = 0;
+            intakePower = STATIC_INTAKE_POWER;
         }
         else if(intakeCommand.equals("transfer")){
             if(currentTilt.getVoltage()>1.25&&rotationPosition != TRANSFER_ROTATION){
@@ -349,6 +356,10 @@ public class IntakeV1 {
             else if(sampleColor.equals("none")){
                 gatePosition = 0;
                 intakePower = 0;
+                for(int k = 0; k < nSensorSamples; k++){
+                    colorSensorInputs.remove(0);
+                    colorSensorInputs.add("none");
+                }
                 intakeCommand = "standby";
             }
         }
@@ -419,9 +430,6 @@ public class IntakeV1 {
     public double getRotationVoltage(){
         return currentRotation.getVoltage();
     }
-    public void init(){
-        tiltPosition = 1;
-        rotationPosition = 0.75;
-    }
+
 
 }

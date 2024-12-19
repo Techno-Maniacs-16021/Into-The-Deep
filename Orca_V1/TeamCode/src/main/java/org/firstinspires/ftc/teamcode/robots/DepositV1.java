@@ -22,7 +22,7 @@ public class DepositV1{
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
     final double ALLOWED_ERROR = 0.012;
-    double SAMPLE_DEPOSIT = 3.8, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8, PARK = 1.4;
+    double SAMPLE_DEPOSIT = 3.8, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8, PARK = 1.3;
     double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
     PIDController slidesPID;
     ArrayList<Double> positionLog = new ArrayList<>();
@@ -82,7 +82,7 @@ public class DepositV1{
 
     }
     public void PIDLoop(){
-        if(target!=0){
+        if(target!=0&&!depositCommand.equals("park")){
             slidesPID.setPID(p,i,d);
             slidePower = slidesPID.calculate(currentPos,target)+f;
         }
@@ -104,6 +104,9 @@ public class DepositV1{
             else{
                 slidePower = -0.2;
             }
+        }
+        else if(depositCommand.equals("park")){
+            slidePower = -0.3;
         }
         if(target == SPECIMEN_DEPOSIT && currentPos<1.3 )
             clawPosition = 0.2;
@@ -134,10 +137,13 @@ public class DepositV1{
     }
     public void setPark(){
         target = PARK;
-        depositCommand = "park";
+        depositCommand = "prePark";
         clawRotationPosition = 1;
         clawPosition = 0.7;
         depositPosition = 0;
+    }
+    public void park(){
+        depositCommand = "park";
     }
     public double getCurrentSlidePosition(){
         return currentPos;
