@@ -159,6 +159,9 @@ public class ControlMode extends OpMode{
                 orca.intake().verticalIntake();
                 //top down intake
             }
+            if(gamepad1.dpad_left){
+                orca.intake().transfer();
+            }
             if (gamepad1.square){
                 //retract
                 orca.intake().retract();

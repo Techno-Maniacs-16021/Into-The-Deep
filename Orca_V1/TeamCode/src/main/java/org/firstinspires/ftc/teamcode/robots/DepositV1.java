@@ -26,7 +26,7 @@ public class DepositV1{
     double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
     PIDController slidesPID;
     ArrayList<Double> positionLog = new ArrayList<>();
-    int posLogLength = 100;
+    int posLogLength = 24;
 
 
     double p = 1.4,i = 0,d = 0,f = 0.2;
@@ -61,7 +61,7 @@ public class DepositV1{
         rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //TODO: reset vars
-        p = 1.4; i = 0; d = 0; f = 0.2;
+        p = 1.75; i = 0; d = 0; f = 0.2;
         slidesPID = new PIDController(p,i,d);
 
         for(int k = 0; k < posLogLength; k++){
@@ -103,6 +103,10 @@ public class DepositV1{
             }
             else{
                 slidePower = -0.2;
+                leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
         }
         else if(depositCommand.equals("park")){
@@ -176,9 +180,8 @@ public class DepositV1{
         return depositCommand;
     }
     public boolean slidesReachedTarget(){
-        double avgRateChange1 = Math.abs(positionLog.get(99)-positionLog.get(0))/100;
-        double avgRateChange2 = Math.abs(positionLog.get(9)-positionLog.get(0))/100;
-        return (avgRateChange1 < ALLOWED_ERROR)&&(avgRateChange2 < ALLOWED_ERROR*0.5)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15;
+        double avgRateChange1 = Math.abs(positionLog.get(posLogLength-1)-positionLog.get(0))/posLogLength;
+        return (avgRateChange1 < ALLOWED_ERROR)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15;
         //(leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 > 7;
     }
     public void setTarget(double target){

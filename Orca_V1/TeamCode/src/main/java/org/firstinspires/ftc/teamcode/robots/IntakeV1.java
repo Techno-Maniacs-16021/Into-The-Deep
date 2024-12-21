@@ -41,20 +41,25 @@ public class IntakeV1 {
     final double COUNTS_PER_REV_MOTOR = 145.1*(2/1);
     final double REVERSE_INTAKE_POWER_TILT = -0.2;
     final double STATIC_INTAKE_POWER = 0.4;
-    final double INTAKE_EJECT_SLIDES_OFFSET = 0.75;
-
+    final double INTAKE_EJECT_SLIDES_OFFSET = 3;
+    //TODO: set false
     final boolean pidTuning = false;
-
-    double target,currentPos,ALLOWED_ERROR;
-    double p = 0.0,i = 0,d = 0;
+    boolean isPIDActive = false;
+    double target,currentPos;
+    double ALLOWED_ERROR = 0.01;
+    double p = 0.0,i = 0,d = 0,f=0;
 
     int globalTime = 0;
+    boolean recentlyEjected = false;
     String intakeCommand = "standby", intakeMode = "angled";
     String colorToEject = "red";
     String sampleColor = "none";
     double slidesPower = 0, intakePower = 0;
-    int nSensorSamples = 50;
+    int nSensorSamples = 40;
     ArrayList<String> colorSensorInputs = new ArrayList<String>();
+
+    int posLogLength = 12;
+    ArrayList<Double> positionLog = new ArrayList<>();
 
     public IntakeV1(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
@@ -91,25 +96,33 @@ public class IntakeV1 {
         intakeCommand = "standby";
         intakeMode = "angled";
 
-        p = 0.0;i = 0.0;d = 0.0;
+        p = 2.25;i = 0.0;d = 0.1;f=0.2;
         slidesPID = new PIDController(p,i,d);
 
         for(int k = 0; k < nSensorSamples; k++){
             colorSensorInputs.add("none");
         }
+        for(int k = 0; k < posLogLength; k++){
+            positionLog.add(0.0);
+        }
     }
     public void refresh (double slidesPower,boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean PID){
-
+        isPIDActive = PID;
         tilt.setPosition(tiltPosition);
         rotation.setPosition(rotationPosition);
         slides.setPower(this.slidesPower);
+        currentPos = slides.getCurrentPosition()/COUNTS_PER_REV_MOTOR;
+        positionLog.add(currentPos);
+        positionLog.remove(0);
         if(colorEject()<0){
             intake.setPower(colorEject());
+            recentlyEjected = true;
         }
         else if(colorEject()>0){
             if(intakeMode.equals("angled")){
                 gate.setPosition(1);
                 intake.setPower(colorEject());
+                recentlyEjected = true;
             }
             else {
                 //TODO: fix when servo is fixed
@@ -122,12 +135,15 @@ public class IntakeV1 {
                 }
             }
         }
+        else if(recentlyEjected){
+            resetColorSamples();
+            recentlyEjected = false;
+        }
         else {
             intake.setPower(this.intakePower);
             gate.setPosition(gatePosition);
         }
 
-        currentPos = slides.getCurrentPosition()/COUNTS_PER_REV_MOTOR;
         slideControlLoop(slidesPower,retract, PID);
         intakeModuleControlLoop(verticalIntake,angledIntake,reverseIntake);
         updateSampleDetails();
@@ -151,9 +167,9 @@ public class IntakeV1 {
         }
         System.out.println();
         return (
-                blue==nSensorSamples ? "blue"
-                        : red==nSensorSamples ? "red"
-                        : none==nSensorSamples ? "none"
+                blue>nSensorSamples*0.8 ? "blue"
+                        : red>nSensorSamples*0.8 ? "red"
+                        : none>nSensorSamples*0.8 ? "none"
                         //: (intakeCommand.equals("transfer")&&none>(0.75*nSensorSamples)) ? "none"
                         : "yellow"
         );
@@ -166,6 +182,12 @@ public class IntakeV1 {
                         : "none");
         colorSensorInputs.remove(0);
     }
+    public String getCurrentColorReading(){
+        return colorPin0.getState() && colorPin1.getState() ? "yellow"
+                : !colorPin0.getState() && colorPin1.getState() ? "red"
+                : colorPin0.getState() && !colorPin1.getState() ? "blue"
+                : "none";
+    }
     public String getCurrentSample(){
         return sampleColor;
     }
@@ -175,51 +197,6 @@ public class IntakeV1 {
             colorSensorInputs.add("none");
         }
     }
-       /*
-    public void neutralPosition(){
-        tiltPosition = 0.5;
-        rotationPosition = 0.5;
-        //gatePosition = 0.5;
-    }
-    public void colorEject(){
-        if(sampleDetails().equals("red")){
-            gatePosition=0.8;
-            intake.setPower(1);
-        }
-        else{
-            gatePosition = 0;
-            intake.setPower(0);
-        }
-    }
-
-    public void rotateForward(int time){
-        if((time-globalTime)>200){
-            rotationPosition-=0.05;
-            globalTime = time;
-        }
-    }
-    public void rotateBackward(int time){
-        if((time-globalTime)>200){
-            rotationPosition+=0.05;
-            globalTime = time;
-        }
-    }
-    public void tiltUp(int time){
-        if((time-globalTime)>200){
-            tiltPosition+=0.05;
-            globalTime = time;
-        }
-    }
-    public void tiltDown(int time){
-        if((time-globalTime)>200){
-            tiltPosition-=0.05;
-            globalTime = time;
-        }
-    }
-    public void intakeSample(double power){
-        intake.setPower(power);
-    }
-    */
     public double colorEject(){
         //maybe use position instead
         if(currentPos<INTAKE_EJECT_SLIDES_OFFSET&&sampleColor.equals(colorToEject)){
@@ -262,7 +239,7 @@ public class IntakeV1 {
         }
         else if(PID){
             slidesPID.setPID(p, i, d);
-            this.slidesPower = slidesPID.calculate(currentPos, target);
+            this.slidesPower = slidesPID.calculate(currentPos, target)+f;
         }
         else {
             this.slidesPower = slidesPower;
@@ -412,14 +389,17 @@ public class IntakeV1 {
         target = pos;
     }
     public boolean slidesReachedTarget(){
-        return //Math.abs(target - currentPos) < ALLOWED_ERROR ||
-         slides.getCurrent(CurrentUnit.AMPS) > 7;
+        double avgRateChange1 = Math.abs(positionLog.get(posLogLength-1)-positionLog.get(0))/posLogLength;
+        return (!isPIDActive&&slides.getCurrent(CurrentUnit.AMPS) > 7)||
+                (isPIDActive&&(avgRateChange1 < ALLOWED_ERROR)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15);
+
     }
-    public void PIDTuning (double p, double i, double d, double target) {
+    public void PIDTuning (double p, double i, double d, double f,double target) {
         if(pidTuning) {
             this.p = p;
             this.i = i;
             this.d = d;
+            this.f = f;
             this.target = target;
         }
     }
@@ -429,6 +409,9 @@ public class IntakeV1 {
 
     public double getRotationVoltage(){
         return currentRotation.getVoltage();
+    }
+    public boolean isEjecting(){
+        return recentlyEjected;
     }
 
 
