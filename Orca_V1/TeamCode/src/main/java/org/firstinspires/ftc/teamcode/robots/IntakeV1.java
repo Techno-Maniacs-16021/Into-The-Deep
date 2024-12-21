@@ -211,7 +211,20 @@ public class IntakeV1 {
         return 0.0;
     }
     public void slideControlLoop(double slidesPower, boolean retract, boolean PID){
-        if (intakeCommand.equals("retract") || intakeCommand.equals("standby")) {
+        if(intakeCommand.equals("init")){
+            if ((slides.getCurrent(CurrentUnit.AMPS) < 7||currentPos>0.25) && this.slidesPower != -0.25) {
+                this.slidesPower = -1;
+            }
+            else {
+                if (Math.abs(currentPos) < 0.01) {
+                    slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    slides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+                currentPos = 0;
+                this.slidesPower = -0.25;
+            }
+        }
+        else if (intakeCommand.equals("retract") || intakeCommand.equals("standby")) {
             if ((slides.getCurrent(CurrentUnit.AMPS) < 7||currentPos>0.25) && this.slidesPower != -0.25) {
                 this.slidesPower = -1;
             }
@@ -270,7 +283,7 @@ public class IntakeV1 {
                 else if(reverseIntake){
                     intakePower = -1;
                     rotationPosition = VERTICAL_ROTATION_OFFSET;
-                    tiltPosition = VERTICAL_TILT;
+                    tiltPosition = EJECT_TILT;
                 }
                 else{
                     intakePower = STATIC_INTAKE_POWER;
@@ -339,6 +352,12 @@ public class IntakeV1 {
                 }
                 intakeCommand = "standby";
             }
+        }
+        else if(intakeCommand.equals("init")){
+            intakePower = 0;
+            tiltPosition = 0.9;
+            rotationPosition = 0.75;
+
         }
     }
 
@@ -413,6 +432,10 @@ public class IntakeV1 {
     public boolean isEjecting(){
         return recentlyEjected;
     }
+    public void init(){
+        intakeCommand = "init";
+    }
+
 
 
 }

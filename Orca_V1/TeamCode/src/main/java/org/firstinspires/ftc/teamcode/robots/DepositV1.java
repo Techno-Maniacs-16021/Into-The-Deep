@@ -112,8 +112,11 @@ public class DepositV1{
         else if(depositCommand.equals("park")){
             slidePower = -0.3;
         }
-        if(target == SPECIMEN_DEPOSIT && currentPos<1.3 )
+        if(target == SPECIMEN_DEPOSIT && currentPos<1.3 ){
             clawPosition = 0.2;
+            System.out.println("auto let go on deposit claw position");
+        }
+
 
     }
 
@@ -128,9 +131,11 @@ public class DepositV1{
         depositCommand = "specimen";
         clawPosition = 0;
         clawRotationPosition = 1;
+        System.out.println("getting ready to pick up claw postion");
     }
     public void closeClaw(){
         clawPosition = 0.9;
+        System.out.println("pick up specimen claw position");
     }
     public void scoreSpecimen(){
         target = SPECIMEN_DEPOSIT;
@@ -145,6 +150,7 @@ public class DepositV1{
         clawRotationPosition = 1;
         clawPosition = 0.7;
         depositPosition = 0;
+        System.out.println("park claw position");
     }
     public void park(){
         depositCommand = "park";
@@ -159,6 +165,7 @@ public class DepositV1{
         clawRotationPosition = 0;
         depositCommand = "retract";
         target = 0;
+        System.out.println("retracting claw position");
     }
     public void specimenInit(){
         clawPosition = 1;
