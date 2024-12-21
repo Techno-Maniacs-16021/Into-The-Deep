@@ -42,6 +42,9 @@ public class FivePlusZero extends LinearOpMode {
     Pose2d dropOff2 = new Pose2d(-24,35.7,Math.toRadians(35));
     Pose2d dropOff3 = new Pose2d(-27.6,45.6,Math.toRadians(18.8));
 
+    int waitReady = 400;
+    int waitPickup = 200;
+
     /* strafing stuff
     Pose2d pickUp1 = new Pose2d(-49,41.7,Math.toRadians(180));
     Vector2d pickUp2 = new Vector2d(-49,52);
@@ -176,6 +179,9 @@ public class FivePlusZero extends LinearOpMode {
                         setSpecimen(orca)
                 ),
                 depositSpecimen(orca),
+
+                //SPECIMEN 3
+
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-4, Math.toRadians(0)))
                                 .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
@@ -188,7 +194,47 @@ public class FivePlusZero extends LinearOpMode {
                 pickUpSpecimen(orca),
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-8),Math.toRadians(0))
+                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-4),Math.toRadians(0))
+                                .build(),
+                        setSpecimen(orca)
+                ),
+                depositSpecimen(orca),
+
+        //SPECIMEN 4
+
+        new ParallelAction(
+                orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-4, Math.toRadians(0)))
+                        .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
+                        .build(),
+                new SequentialAction(
+                        retractDeposit(orca),
+                        readyPickUpSpecimen(orca)
+                )
+        ),
+                pickUpSpecimen(orca),
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
+                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-4),Math.toRadians(0))
+                                .build(),
+                        setSpecimen(orca)
+                ),
+                depositSpecimen(orca),
+
+                //SPECIMEN 5
+
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-4, Math.toRadians(0)))
+                                .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
+                                .build(),
+                        new SequentialAction(
+                                retractDeposit(orca),
+                                readyPickUpSpecimen(orca)
+                        )
+                ),
+                pickUpSpecimen(orca),
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
+                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-4),Math.toRadians(0))
                                 .build(),
                         setSpecimen(orca)
                 ),
@@ -359,7 +405,7 @@ public class FivePlusZero extends LinearOpMode {
         return telemetryPacket -> {
            bot.deposit().specimenIntake();
            bot.deposit().refresh();
-           sleep(400);
+           sleep(waitReady);
            return false;
         };
     }
@@ -367,7 +413,7 @@ public class FivePlusZero extends LinearOpMode {
         return telemetryPacket -> {
             bot.deposit().closeClaw();
             bot.deposit().refresh();
-            sleep(200);
+            sleep(waitPickup);
             return false;
         };
     }
