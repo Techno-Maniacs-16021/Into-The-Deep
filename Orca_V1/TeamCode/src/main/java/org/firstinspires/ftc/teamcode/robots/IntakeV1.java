@@ -46,7 +46,7 @@ public class IntakeV1 {
     final boolean pidTuning = false;
     boolean isPIDActive = false;
     double target,currentPos;
-    double ALLOWED_ERROR = 0.01;
+    double ALLOWED_ERROR = 0.0125;
     double p = 0.0,i = 0,d = 0,f=0;
 
     int globalTime = 0;
@@ -96,7 +96,7 @@ public class IntakeV1 {
         intakeCommand = "standby";
         intakeMode = "angled";
 
-        p = 2.25;i = 0.0;d = 0.1;f=0.2;
+        p = 2;i = 0.0;d = 0.1;f=0.2;
         slidesPID = new PIDController(p,i,d);
 
         for(int k = 0; k < nSensorSamples; k++){
@@ -339,11 +339,11 @@ public class IntakeV1 {
                 rotationPosition = TRANSFER_ROTATION;
             }
             tiltPosition = TRANSFER_TILT;
-            if(currentRotation.getVoltage()<1.2&&!sampleColor.equals("none")){
+            if(currentRotation.getVoltage()<1.2&&!sampleColor.equals("none")&&!reverseIntake){
                 gatePosition = 1;
                 intakePower = 1;
             }
-            else if(sampleColor.equals("none")){
+            else if(sampleColor.equals("none")||reverseIntake){
                 gatePosition = 0;
                 intakePower = 0;
                 for(int k = 0; k < nSensorSamples; k++){
@@ -410,7 +410,7 @@ public class IntakeV1 {
     public boolean slidesReachedTarget(){
         double avgRateChange1 = Math.abs(positionLog.get(posLogLength-1)-positionLog.get(0))/posLogLength;
         return (!isPIDActive&&slides.getCurrent(CurrentUnit.AMPS) > 7)||
-                (isPIDActive&&(avgRateChange1 < ALLOWED_ERROR)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15);
+                (isPIDActive&&(avgRateChange1 < ALLOWED_ERROR)&&Math.abs(target-currentPos)<ALLOWED_ERROR*25);
 
     }
     public void PIDTuning (double p, double i, double d, double f,double target) {

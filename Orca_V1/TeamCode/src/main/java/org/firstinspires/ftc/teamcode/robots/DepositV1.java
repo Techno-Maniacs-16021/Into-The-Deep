@@ -21,7 +21,7 @@ public class DepositV1{
     DcMotorEx leftSlides,rightSlides;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
-    final double ALLOWED_ERROR = 0.012;
+    final double ALLOWED_ERROR = 0.011;
     double SAMPLE_DEPOSIT = 3.8, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8, PARK = 1.3;
     double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
     PIDController slidesPID;
@@ -174,6 +174,7 @@ public class DepositV1{
     public void sampleInit(){
         clawPosition = 0;
         clawRotationPosition = 0;
+        slidePower = -1;
     }
     public void depositSample(){
         depositPosition = 1;

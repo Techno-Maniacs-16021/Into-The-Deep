@@ -21,11 +21,11 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 
 @Autonomous
 @Config
-public class FivePlusZero extends LinearOpMode {
+public class FourPlusZero extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
-    ElapsedTime waitingTime = new ElapsedTime();
-    boolean waiting = false;
+    ElapsedTime outtakeTime = new ElapsedTime();
+    boolean outtakeWaiting = false;
 
     double slidePower = 0.0;
     public static double x1;
@@ -44,7 +44,7 @@ public class FivePlusZero extends LinearOpMode {
 
     Pose2d dropOff2 = new Pose2d(-24,35.7,Math.toRadians(55));
     Pose2d dropOff3 = new Pose2d(-5.5,35.3,Math.toRadians(90.4));
-    int waitReady = 800;
+    int waitReady = 400;
     int waitPickup = 200;
 
     /* strafing stuff
@@ -86,7 +86,7 @@ public class FivePlusZero extends LinearOpMode {
 
 
         runningTime.reset();
-        waitingTime.reset();
+        outtakeTime.reset();
         TelemetryPacket packet = new TelemetryPacket();
         packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
         packet.fieldOverlay().setStroke("#3F51B5");
@@ -99,8 +99,9 @@ public class FivePlusZero extends LinearOpMode {
                         orca.actionBuilder(new Pose2d(0, 0, 0))
                                 .strafeTo(specimenDrop)
                                 .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(100),depositSpecimen(orca))
+                        setSpecimen(orca)
                 ),
+                depositSpecimen(orca),
                 /*
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(specimenDrop.x,specimenDrop.y,Math.toRadians(0)))
@@ -133,7 +134,7 @@ public class FivePlusZero extends LinearOpMode {
                         orca.actionBuilder(pickUp1)
                                 .turn(dropOff1.heading.toDouble()-pickUp1.heading.toDouble())
                                 .build(),
-                        new SequentialAction(smartWait(900), outtakeSampleGround(orca))
+                        new SequentialAction(outtakeWait(orca,750), outtakeSampleGround(orca))
                 ),
                 new ParallelAction(
                         orca.actionBuilder(dropOff1)
@@ -147,7 +148,7 @@ public class FivePlusZero extends LinearOpMode {
                         orca.actionBuilder(pickUp2)
                                 .turn(dropOff2.heading.toDouble()-pickUp2.heading.toDouble())
                                 .build(),
-                        new SequentialAction(smartWait(900),outtakeSampleGround(orca))
+                        new SequentialAction(outtakeWait(orca,750),outtakeSampleGround(orca))
                 ),
                 new ParallelAction(
                         orca.actionBuilder(dropOff2)
@@ -165,13 +166,10 @@ public class FivePlusZero extends LinearOpMode {
                                 .build(),
                         new SequentialAction(
                                 setIntake(orca, 0.5),
-                                smartWait(250),
+                                outtakeWait(orca,100),
                                 outtakeSampleGround(orca),
                                 retractIntake(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady+400),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
+                                readyPickUpSpecimen(orca)
                         )
                 ),
 
@@ -186,75 +184,75 @@ public class FivePlusZero extends LinearOpMode {
                                 readyPickUpSpecimen(orca)
                         )
                 ),*/
+                pickUpSpecimen(orca),
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-12),Math.toRadians(0))
+                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-3),Math.toRadians(0))
                                 .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(600),depositSpecimen(orca))
+                        setSpecimen(orca)
                 ),
+                depositSpecimen(orca),
 
                 //SPECIMEN 3
 
                 new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-12, Math.toRadians(0)))
+                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-3, Math.toRadians(0)))
                                 .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
                                 .build(),
                         new SequentialAction(
                                 retractDeposit(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                                )
+                                readyPickUpSpecimen(orca)
+                        )
                 ),
+                pickUpSpecimen(orca),
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
+                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-6),Math.toRadians(0))
+                                .build(),
+                        setSpecimen(orca)
+                ),
+                depositSpecimen(orca),
+
+        //SPECIMEN 4
+
+        new ParallelAction(
+                orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-6, Math.toRadians(0)))
+                        .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
+                        .build(),
+                new SequentialAction(
+                        retractDeposit(orca),
+                        readyPickUpSpecimen(orca)
+                )
+        ),
+                pickUpSpecimen(orca),
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
                                 .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-9),Math.toRadians(0))
                                 .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(700),depositSpecimen(orca))
+                        setSpecimen(orca)
                 ),
+                depositSpecimen(orca)
 
-                //SPECIMEN 4
+                //SPECIMEN 5
 
+                /*
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-9, Math.toRadians(0)))
                                 .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
                                 .build(),
                         new SequentialAction(
                                 retractDeposit(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                                )
+                                readyPickUpSpecimen(orca)
+                        )
                 ),
+                pickUpSpecimen(orca),
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-6),Math.toRadians(0))
+                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-12),Math.toRadians(0))
                                 .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(800),depositSpecimen(orca))
+                        setSpecimen(orca)
                 ),
-
-                //SPECIMEN 5
-
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-6, Math.toRadians(0)))
-                                .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
-                                .build(),
-                        new SequentialAction(
-                                retractDeposit(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                                )
-                ),
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-3),Math.toRadians(0))
-                                .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(1000),depositSpecimen(orca))
-                )
+                depositSpecimen(orca)*/
 
         ));
 
@@ -408,28 +406,30 @@ public class FivePlusZero extends LinearOpMode {
     }
     public Action readyPickUpSpecimen(OrcaV1 bot) {
         return telemetryPacket -> {
-            bot.deposit().specimenIntake();
-            bot.deposit().refresh();
-            return false;
+           bot.deposit().specimenIntake();
+           bot.deposit().refresh();
+           sleep(waitReady);
+           return false;
         };
     }
     public Action pickUpSpecimen(OrcaV1 bot) {
         return telemetryPacket -> {
             bot.deposit().closeClaw();
             bot.deposit().refresh();
+            sleep(waitPickup);
             return false;
         };
     }
-    public Action smartWait(double timeMS) {
+    public Action outtakeWait(OrcaV1 bot, double timeMS) {
         return telemetryPacket -> {
-            if(!waiting){
-                waitingTime.reset();
-                waiting = true;
+            if(!outtakeWaiting){
+                outtakeTime.reset();
+                outtakeWaiting = true;
             }
-            if(waitingTime.milliseconds()<timeMS){
+            if(outtakeTime.milliseconds()<timeMS){
                 return true;
             }
-            waiting = false;
+            outtakeWaiting = false;
             return false;
         };
     }
