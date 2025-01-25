@@ -1,31 +1,16 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import android.util.Log;
-import android.util.Size;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.dashboard.canvas.Canvas;
 
-import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.localization.Drawing;
-import org.firstinspires.ftc.teamcode.robots.IntakeV1;
 import org.firstinspires.ftc.teamcode.robots.OrcaV1;
-
-import java.util.List;
 
 @TeleOp(name = "TeleOp")
 @Config
