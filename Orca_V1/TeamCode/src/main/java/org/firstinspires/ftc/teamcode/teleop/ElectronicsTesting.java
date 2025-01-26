@@ -15,17 +15,17 @@ public class ElectronicsTesting extends OpMode {
     ServoImplEx servo0, servo1;
     DcMotorEx motor;
     DigitalChannel colorPin0,colorPin1;
-    AnalogInput rotation, tilt;
+    AnalogInput a0, a1;
 
     @Override
     public void init() {
         servo0 = hardwareMap.get(ServoImplEx.class,"servo0");
         servo1 = hardwareMap.get(ServoImplEx.class,"servo1");
         motor = hardwareMap.get(DcMotorEx.class,"motor");
-        
 
-        rotation = hardwareMap.get(AnalogInput.class, "rotation");
-        tilt = hardwareMap.get(AnalogInput.class, "tilt");
+
+        a0 = hardwareMap.get(AnalogInput.class, "a0");
+        a1 = hardwareMap.get(AnalogInput.class, "a1");
 
         servo0.setPwmRange(new PwmControl.PwmRange(510,2490));
         servo1.setPwmRange(new PwmControl.PwmRange(510,2490));
@@ -47,6 +47,8 @@ public class ElectronicsTesting extends OpMode {
         motor.setPower(gamepad1.right_trigger-gamepad1.left_trigger);
         servo0.setPosition(Range.clip(gamepad1.right_stick_y+0.5,0,1));
         servo1.setPosition(Range.clip(gamepad1.left_stick_y+0.5,0,1));
+        telemetry.addData("a0: ",a0.getVoltage());
+        telemetry.addData("a1: ",a1.getVoltage());
         telemetry.update();
     }
     @Override
