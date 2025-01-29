@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auton;
+package org.firstinspires.ftc.teamcode.auton.oldPaths;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -21,11 +21,9 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 
 @Autonomous
 @Config
-public class OnePlusFour extends LinearOpMode {
+public class OnePlusThree extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
-    ElapsedTime timeSinceAttempt = new ElapsedTime();
-
     double slidePower = 0.0;
     public static double x1;
     public static double x2;
@@ -41,29 +39,17 @@ public class OnePlusFour extends LinearOpMode {
     Pose2d sampleNumberTwoEnd = new Pose2d(-21.55,-41.27,Math.toRadians(178));
     Pose2d sampleNumberThree = new Pose2d(-17.6,-46,Math.toRadians(-140));*/
 
-    final boolean onlyPaths = false;
+    Pose2d sample1 = new Pose2d(-27.08,-23.39,Math.toRadians(-123.3));
+    Pose2d sample2 = new Pose2d(-15.3,-50,Math.toRadians(-176.3));
 
-    Pose2d sample1 = new Pose2d(-28,-22.87,Math.toRadians(-122.1));
-    Pose2d lineUpSample1 = new Pose2d(-21.9,-48.2,Math.toRadians(156.6));
-
-    Pose2d sample2 = new Pose2d(-15.3,-50,Math.toRadians(-179));
-
-    Pose2d sample3 = new Pose2d(-16.5,-51,Math.toRadians(-159.5));
+    Pose2d sample3 = new Pose2d(-16.5,-51,Math.toRadians(-155.6));
 
     Pose2d park = new Pose2d(-54.2,-14.6, Math.toRadians(-90));
-    Pose2d submersible = new Pose2d(-54.2,-27, Math.toRadians(90));
-    Pose2d pickUpSub = new Pose2d(-54.2,-16, Math.toRadians(90));
-
+    Pose2d submersible = new Pose2d(-54.2,-29, Math.toRadians(-90));
     Pose2d lineUpSample = new Pose2d(-13.5,-43.3,Math.toRadians(135));
 
     Pose2d finalSample = new Pose2d(-8.8,-50,Math.toRadians(135));
-
-
-    Pose2d interSample =  new Pose2d(-20,-40,Math.toRadians(135));
     Vector2d specimen = new Vector2d(-30.65,-0.45);
-
-
-    Pose2d pickyUppySample = new Pose2d(-8.8,-50, Math.toRadians(135));
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -88,7 +74,6 @@ public class OnePlusFour extends LinearOpMode {
 
 
         runningTime.reset();
-        timeSinceAttempt.reset();
         TelemetryPacket packet = new TelemetryPacket();
         packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
         packet.fieldOverlay().setStroke("#3F51B5");
@@ -131,26 +116,19 @@ public class OnePlusFour extends LinearOpMode {
                         retractDeposit(orca)
                 ),
                 print("reached pos@"+runningTime),
-                /*TODO: Parallel intake and transfer while moving*/
+                intakeSampleGround(orca),
                 new ParallelAction(
                         orca.actionBuilder(sample1)
-                                .setTangent(Math.toRadians(Math.toDegrees(sample1.heading.toDouble()+90)))
-                                .splineToSplineHeading(lineUpSample1,Math.toRadians(-90))
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
                                 .build(),
-                        new SequentialAction(
-                                intakeSampleGround(orca),retractIntake(orca)
-                        )
+                        retractIntake(orca)
                 ),
-                //TODO: extend intake while depositing
-                new ParallelAction(
-                        //setSample(orca),
-                        depositSample(orca),
-                        orca.actionBuilder(lineUpSample1)
-                                .strafeToLinearHeading(finalSample.component1(),finalSample.heading.toDouble())
-                                .build(),
-                        primeIntake(orca,1.4)
-                ),
-                //depositSample(orca),
+
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
                 //sample 2
                 new ParallelAction(
                         orca.actionBuilder(finalSample)
@@ -168,16 +146,11 @@ public class OnePlusFour extends LinearOpMode {
                         retractIntake(orca)
                 ),
 
-                //TODO: extend intake while depositing
-                new ParallelAction(
-                        //setSample(orca),
-                        depositSample(orca),
-                        orca.actionBuilder(lineUpSample)
-                                .strafeToLinearHeading(finalSample.component1(),finalSample.heading.toDouble())
-                                .build(),
-                        primeIntake(orca,1.4)
-                ),
-                //depositSample(orca),
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
 
                 //sample 3
                 new ParallelAction(
@@ -195,51 +168,25 @@ public class OnePlusFour extends LinearOpMode {
                                 .build(),
                         retractIntake(orca)
                 ),
-                //TODO: extend intake while depositing
-                new ParallelAction(
-                        //setSample(orca),
-                        depositSample(orca),
-                        orca.actionBuilder(lineUpSample)
-                                .strafeToLinearHeading(finalSample.component1(),finalSample.heading.toDouble())
-                                .build(),
-                        primeIntake(orca,1)
-                ),
-                //depositSample(orca),
 
-                //sample 4
-                new ParallelAction(
-
-                        orca.actionBuilder(finalSample)
-                                .splineToSplineHeading(submersible,Math.toRadians(120))
-                                .strafeToConstantHeading(pickUpSub.component1())
-                                .build(),
-                        retractDeposit(orca)
-                ),
-                intakeSampleSubmersible(orca),
-
-                new ParallelAction(
-                        orca.actionBuilder(pickUpSub)
-                                .setTangent(Math.toRadians(-90))
-                                .splineToSplineHeading(interSample,Math.toRadians(0))
-                                .build(),
-                                retractIntake(orca)
-                ),
-                new ParallelAction(
-                        orca.actionBuilder(interSample)
-                                .setTangent(Math.toRadians(-90))
-                                .strafeToConstantHeading(finalSample.component1())
-                                .build(),
-                        depositSample(orca)
-                        ),
-                wait(250),
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
                 new ParallelAction(
                         orca.actionBuilder(finalSample)
-                                .splineToSplineHeading(park,Math.toRadians(90))
+                                .strafeToLinearHeading(submersible.component1(),submersible.heading.toDouble())
                                 .build(),
                         parkSlides(orca)
                 ),
+                new ParallelAction(
+                orca.actionBuilder(submersible)
+                        .strafeTo(park.component1())
+                        .build(),
+                        parkSlides(orca)
+                ),
                 touchBar(orca)
-
         ));
                 /*
                 new ParallelAction(
@@ -338,11 +285,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action orcaRefresh(OrcaV1 bot, double slidesPower, boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean pid ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             //TODO: Use this anytime the mechanisms are moving while the robot is moving in a parallel action
             bot.deposit().refresh();
@@ -351,11 +293,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action setSample(OrcaV1 bot ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         //TODO: YOU CAN USE THESE(setSample or setSpecimen) TO GET READY TO SCORE
         //Basically it will raise the slides to the right height.
         //Lets say your transfer is done, and your are moving to the bucket,
@@ -364,7 +301,7 @@ public class OnePlusFour extends LinearOpMode {
         //the depositSample and depositSpecimen Actions will reach the target and deposit imediately
         return telemetryPacket -> {
             if(bot.intake().getIntakeCommand().equals("transfer")){
-                return true;
+               return true;
             }
             bot.deposit().setSample();
             bot.deposit().refresh();
@@ -375,11 +312,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action setSpecimen(OrcaV1 bot ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             bot.deposit().setSpecimen();
             bot.deposit().refresh();
@@ -395,11 +327,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action parkSlides(OrcaV1 bot ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             bot.deposit().refresh();
             bot.deposit().setPark();
@@ -412,11 +339,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action touchBar(OrcaV1 bot ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             bot.deposit().refresh();
             bot.deposit().park();
@@ -427,11 +349,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action retractDeposit(OrcaV1 bot ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             if(!bot.deposit().getDepositCommand().equals("retract")){
                 bot.deposit().retract();
@@ -450,11 +367,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action setDepositTarget(OrcaV1 bot, double pos ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             //TODO: I dont think you will need to use this for now.
             bot.deposit().setTarget(pos);
@@ -463,25 +375,16 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action depositSample(OrcaV1 bot) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             bot.deposit().refresh();
             if(bot.deposit().getDepositCommand().equals("retract")){
                 bot.deposit().setSample();
             }
             bot.deposit().refresh();
-            if(bot.deposit().getCurrentSlidePosition()>2.4){
-                bot.deposit().depositSample();
-                bot.deposit().refresh();
-            }
             if(bot.deposit().slidesReachedTarget()){
                 bot.deposit().depositSample();
                 bot.deposit().refresh();
-                sleep(150);
+                sleep(600);
             }
             else{
                 //telemetry.addData("current pos: ",bot.deposit().getCurrentSlidePosition());
@@ -494,11 +397,6 @@ public class OnePlusFour extends LinearOpMode {
         };
     }
     public Action depositSpecimen(OrcaV1 bot ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             bot.deposit().refresh();
             if(bot.deposit().getDepositCommand().equals("retract")){
@@ -522,37 +420,20 @@ public class OnePlusFour extends LinearOpMode {
             return false;
         };
     }
-    public Action primeIntake(OrcaV1 bot, double pos ) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
-        return telemetryPacket -> {
-            bot.intake().startIntaking();
-            bot.intake().setTarget(pos);
-            bot.intake().refresh(0,false,false,false,false,true);
 
-            return !bot.intake().slidesReachedTarget();
-        };
-    }
     public Action intakeSampleGround(OrcaV1 bot) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             if(!bot.intake().getIntakeCommand().equals("intake")){
                 //TODO: When we implement PID, we can change this
                 //bot.intake().setTarget(pos);
                 bot.intake().startIntaking();
+                bot.intake().angledIntake();
                 System.out.println("intaking@"+runningTime);
             }
-            bot.intake().angledIntake();
+
             bot.intake().refresh(0.75,false,true,false,false,false);
             if(!bot.intake().slidesReachedTarget()&&bot.intake().getCurrentSample().equals("none")){
-                return true;
+               return true;
             }
             //bot.intake().retract();
             //bot.intake().refresh(0,false,false,false,true,false);
@@ -562,56 +443,7 @@ public class OnePlusFour extends LinearOpMode {
             return false;
         };
     }
-    public Action intakeSampleSubmersible(OrcaV1 bot) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
-        return telemetryPacket -> {
-            if(!bot.intake().getIntakeCommand().equals("intake")){
-                //TODO: When we implement PID, we can change this
-                //bot.intake().setTarget(pos);
-                bot.intake().startIntaking();
-                System.out.println("intaking@"+runningTime);
-            }
-            if(timeSinceAttempt.milliseconds()<1250&&timeSinceAttempt.milliseconds()>1050){
-                bot.intake().refresh(0.75,false,false,false,false,false);
-            }
-            else if (timeSinceAttempt.milliseconds()>1250){
-                timeSinceAttempt.reset();
-                bot.intake().refresh(0,true,false,false,false,false);
-            }
-            else{
-                bot.intake().refresh(0,true,false,false,false,false);
-            }
-
-            if((!bot.intake().slidesReachedTarget()&&bot.intake().getCurrentSample().equals("none"))){
-                return true;
-            }
-            //bot.intake().retract();
-            //bot.intake().refresh(0,false,false,false,true,false);
-            //TODO: REMEMBER YOU NEED TO KEEP REFRESHING THE BOT AFTER THIS ACTION FOR THE TRANSFER TO WORK PROPERLY.
-            //This means if you pick up the sample, you next movement should be a parallel action combined with the movement
-            //and the orcaRefresh Action with all booleans set to false aside from retract, and slides power set to 0
-            if(!orca.intake().getCurrentColorReading().equals(orca.intake().getColorToEject())){
-                for(int k = 0; k<32&&!orca.intake().getCurrentColorReading().equals("none") ; k++){
-                    bot.intake().refresh(0,true,false,false,false,false);
-                    sleep(25);
-                }
-                if(orca.intake().getCurrentColorReading().equals("none")){
-                    return true;
-                }
-            }
-            return orca.intake().getCurrentColorReading().equals(orca.intake().getColorToEject());
-        };
-    }
     public Action retractIntake(OrcaV1 bot) {
-        if(onlyPaths){
-            return telemetryPacket -> {
-                return false;
-            };
-        }
         return telemetryPacket -> {
             bot.intake().refresh(0,false,false,false,true,false);
             //System.out.println(bot.intake().getIntakeCommand() + runningTime);
