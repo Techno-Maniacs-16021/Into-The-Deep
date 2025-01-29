@@ -8,4 +8,13 @@ public class IntakeV2 {
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
     }
+    tilt = hardwareMap.get(ServoImplEx.class,"tilt");
+    rotation = hardwareMap.get(DcMotorEx.class,"rotation");
+    gate = hardwareMap.get(ServoImplEx.class,"gate");
+
+    intake = hardwareMap.get(DcMotorEx.class,"intake");
+    slides = hardwareMap.get(DcMotorEx.class,"hSlides");
+
+    currentRotation = hardwareMap.get(AnalogInput.class, "currentRotation");
+    currentTilt = hardwareMap.get(AnalogInput.class, "currentTilt");
 }
