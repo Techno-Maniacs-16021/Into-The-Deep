@@ -42,7 +42,9 @@ public class Paths {
                 createPath( //pickup 1
                         new BezierLine(
                                 specDrop,
-                                pickup1)
+                                pickup1),
+                        Math.toRadians(270),
+                        Math.toRadians(44.5)
                 ),
                 createPath( //pickup 2
                         new BezierLine(
