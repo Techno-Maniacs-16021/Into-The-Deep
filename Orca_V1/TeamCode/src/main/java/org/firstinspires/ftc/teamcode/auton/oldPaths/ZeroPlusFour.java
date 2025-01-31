@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auton;
+package org.firstinspires.ftc.teamcode.auton.oldPaths;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -21,12 +21,9 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 
 @Autonomous
 @Config
-public class FivePlusZero extends LinearOpMode {
+public class ZeroPlusFour extends LinearOpMode {
     OrcaV1 orca;
     ElapsedTime runningTime = new ElapsedTime();
-    ElapsedTime waitingTime = new ElapsedTime();
-    boolean waiting = false;
-
     double slidePower = 0.0;
     public static double x1;
     public static double x2;
@@ -35,39 +32,26 @@ public class FivePlusZero extends LinearOpMode {
     public static double h1 = 70;
     public static double h2;
 
-    Pose2d pickUp1 = new Pose2d(-22.1,27,Math.toRadians(134.5));
-    Pose2d pickUp2 = new Pose2d(-24,35.7,Math.toRadians(132.8));
 
-    Pose2d pickUp3 = new Pose2d(-38.6,35.3,Math.toRadians(90.4));
-
-    Pose2d dropOff1 = new Pose2d(-22.1,27,Math.toRadians(50.7));
-
-    Pose2d dropOff2 = new Pose2d(-24,35.7,Math.toRadians(55));
-    Pose2d dropOff3 = new Pose2d(-5.5,35.3,Math.toRadians(90.4));
-    int waitReady = 800;
-    int waitPickup = 200;
-
-    /* strafing stuff
-    Pose2d pickUp1 = new Pose2d(-49,41.7,Math.toRadians(180));
-    Vector2d pickUp2 = new Vector2d(-49,52);
-
-    Vector2d pickUp3 = new Vector2d(-49,58.5);
-
-    Vector2d dropOff1 = new Vector2d(-14,41.7);
-
-    Vector2d dropOff2 = new Vector2d(-14,52);
-    Vector2d dropOff3 = new Vector2d(-14,57.5);*/
-
-    Vector2d specimenDrop = new Vector2d(-30.65,4);
-    Vector2d collectSpecimen = new Vector2d(-1.7,35.3);
-
-
+    /*Pose2d sampleNumberOneStart = new Pose2d(-18.05,-28.29, Math.toRadians(-146.9));
+    Pose2d sampleNumberOneEnd = new Pose2d(-18.11,-40.59, Math.toRadians(-180));
+    Pose2d sampleNumberTwoStart = new Pose2d(-19.5,-28.6,Math.toRadians(-147.9));
+    Pose2d sampleNumberTwoEnd = new Pose2d(-21.55,-41.27,Math.toRadians(178));
+    Pose2d sampleNumberThree = new Pose2d(-17.6,-46,Math.toRadians(-140));*/
+    Vector2d sample1 = new Vector2d(-11.43,-9.55);
+    Pose2d sample2 = new Pose2d(-17.84,-48.99,Math.toRadians(160));
+    Pose2d sample3 = new Pose2d(-15.3,-50,Math.toRadians(-176.3));
+    Pose2d sample4 = new Pose2d(-16.5,-51,Math.toRadians(-155.6));
+    Pose2d park = new Pose2d(-54.2,-14.6, Math.toRadians(-90));
+    Pose2d submersible = new Pose2d(-54.2,-29, Math.toRadians(-90));
+    Pose2d lineUpSample = new Pose2d(-13.5,-43.3,Math.toRadians(135));
+    Pose2d finalSample = new Pose2d(-8.8,-50,Math.toRadians(135));
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         //orca = initRobot(0,0,0);
-        orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
+        orca = new OrcaV1(hardwareMap,new Pose2d(0,0,Math.toRadians(180)));
         //orcaRefresh(orca,0,false,false,false,false,false);
         while(opModeInInit()&&!opModeIsActive()&&!isStopRequested()){
             telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
@@ -79,184 +63,211 @@ public class FivePlusZero extends LinearOpMode {
             else if(gamepad1.triangle){
                 orca.intake().setColorToEject("blue");
             }
-            orca.specimenInit();
+            orca.sampleInit();
         }
         waitForStart();
 
 
 
         runningTime.reset();
-        waitingTime.reset();
         TelemetryPacket packet = new TelemetryPacket();
         packet.addLine("Voltage: "+orca.intake().getRotationVoltage());
         packet.fieldOverlay().setStroke("#3F51B5");
         Drawing.drawRobot(packet.fieldOverlay(), orca.pose);
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
         telemetry.update();
-
-        Actions.runBlocking(new SequentialAction(
+        /*Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
                         orca.actionBuilder(new Pose2d(0, 0, 0))
-                                .strafeTo(specimenDrop)
+                                .strafeTo(preSpecimen)
                                 .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(100),depositSpecimen(orca))
+                        intakeSampleGround(orca,2.5)//setSpecimen(orca)
                 ),
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(preSpecimen.x,preSpecimen.y,0))
+                                .strafeTo(finalSpecimen)
+                                .build(),
+                        retractIntake(orca,00)
+                ),
+                wait(300),
+                depositSample(orca)
+        ));*/
+        //Actions.runBlocking(new SequentialAction(
+        //        depositSample(orca),parkSlides(orca)
+        //));
+        //requestOpModeStop();
+        Actions.runBlocking(new SequentialAction(
+                new ParallelAction(
+                        orca.actionBuilder(new Pose2d(0, 0, Math.toRadians(180)))
+                                .strafeTo(sample1)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
+                                .build(),
+                        setSample(orca)
+                ),
+                orca.actionBuilder(lineUpSample)
+                        .strafeToLinearHeading(finalSample.component1(),finalSample.heading.toDouble())
+                        .build(),
+                depositSample(orca),
+                //sample 2
+                new ParallelAction(
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(sample2.component1(),sample2.heading.toDouble())
+                                .build(),
+                        retractDeposit(orca)
+                ),
+                print("reached pos@"+runningTime),
+                intakeSampleGround(orca),
+                new ParallelAction(
+                        orca.actionBuilder(sample2)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
+                                .build(),
+                        retractIntake(orca)
+                ),
+
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
+                //sample 3
+                new ParallelAction(
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(sample3.component1(),sample3.heading.toDouble())
+                                .build(),
+                        retractDeposit(orca)
+                ),
+                print("reached pos@"+runningTime),
+                intakeSampleGround(orca),
+
+                new ParallelAction(
+                        orca.actionBuilder(sample3)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
+                                .build(),
+                        retractIntake(orca)
+                ),
+
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
+
+                //sample 4
+                new ParallelAction(
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(sample4.component1(),sample4.heading.toDouble())
+                                .build(),
+                        retractDeposit(orca)
+                ),
+                print("reached pos@"+runningTime),
+                intakeSampleGround(orca),
+
+                new ParallelAction(
+                        orca.actionBuilder(sample4)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
+                                .build(),
+                        retractIntake(orca)
+                ),
+
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
+                depositSample(orca),
+                new ParallelAction(
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(submersible.component1(),submersible.heading.toDouble())
+                                .build(),
+                        parkSlides(orca)
+                ),
+                new ParallelAction(
+                        orca.actionBuilder(submersible)
+                                .strafeTo(park.component1())
+                                .build(),
+                        parkSlides(orca)
+                ),
+                touchBar(orca)
+        ));
                 /*
                 new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x,specimenDrop.y,Math.toRadians(0)))
-                            .setTangent(Math.toRadians(30))
-                            .splineToSplineHeading(pickUp1,Math.toRadians(-45))
-                            .build(),
-                        retractDeposit(orca)
+                        orca.actionBuilder(sampleNumberOneStart)
+                                .strafeToLinearHeading(sampleNumberOneEnd.component1(),sampleNumberOneEnd.heading.toDouble())
+                                .build(),
+                        intakeSampleGround(orca),
+
+                new ParallelAction(
+                        orca.actionBuilder(sampleNumberOneEnd)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
+                                .build(),
+                        retractIntake(orca)
                 ),
-                orca.actionBuilder(pickUp1)
-                        .strafeTo(dropOff1)
-                        .strafeTo(pickUp1.component1())
-                        .strafeTo(pickUp2)
-                        .strafeTo(dropOff2)
-                        .strafeTo(pickUp2)
-                        .strafeTo(pickUp3)
-                        .strafeTo(dropOff3)
+
+                setSample(orca),
+
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
                         .build(),
 
-                 */
+                depositSample(orca),
 
-                // USING INTAKES AND OUTTAKES - 17s
+
+
                 new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x,specimenDrop.y,Math.toRadians(0)))
-                                .strafeToLinearHeading(pickUp1.component1(),pickUp1.heading)
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(sampleNumberTwoStart.component1(),sampleNumberTwoStart.heading.toDouble())
                                 .build(),
-                        intakeSampleGround(orca,0.5),
                         retractDeposit(orca)
                 ),
                 new ParallelAction(
-                        orca.actionBuilder(pickUp1)
-                                .turn(dropOff1.heading.toDouble()-pickUp1.heading.toDouble())
+                        orca.actionBuilder(sampleNumberTwoStart)
+                                .strafeTo(sampleNumberTwoEnd.component1())
                                 .build(),
-                        new SequentialAction(smartWait(900), outtakeSampleGround(orca))
+                        intakeSampleGround(orca)
                 ),
                 new ParallelAction(
-                        orca.actionBuilder(dropOff1)
-                                .strafeToLinearHeading(pickUp2.component1(),pickUp2.heading)
+                        orca.actionBuilder(sampleNumberTwoEnd)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
                                 .build(),
-                        setIntake(orca,0.5)
+                        retractIntake(orca)
                 ),
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
 
-                intakeSampleGround(orca,1),
-                new ParallelAction(
-                        orca.actionBuilder(pickUp2)
-                                .turn(dropOff2.heading.toDouble()-pickUp2.heading.toDouble())
-                                .build(),
-                        new SequentialAction(smartWait(900),outtakeSampleGround(orca))
-                ),
-                new ParallelAction(
-                        orca.actionBuilder(dropOff2)
-                                .strafeToLinearHeading(pickUp3.component1(),pickUp3.heading)
-                                .build(),
-                        setIntake(orca,1)
-                ),
-                intakeSampleGround(orca,1),
+                depositSample(orca),
+
+               // new
+
 
                 new ParallelAction(
-                        orca.actionBuilder(pickUp3)
-                                .strafeTo(dropOff3.component1())
-                                .turn(Math.toRadians(180)-dropOff3.heading.toDouble())
-                                .strafeTo(collectSpecimen)
+                        orca.actionBuilder(finalSample)
+                                .strafeToLinearHeading(sampleNumberThree.component1(),sampleNumberThree.heading.toDouble())
                                 .build(),
-                        new SequentialAction(
-                                setIntake(orca, 0.5),
-                                smartWait(250),
-                                outtakeSampleGround(orca),
-                                retractIntake(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady+400),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                        )
+                        retractDeposit(orca)
                 ),
-
-                // specimen scoring
-
-                /*new ParallelAction(
-                        orca.actionBuilder(dropOff3)
-                                .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
-                                .build(),
-                        new SequentialAction(
-                                retractIntake(orca),
-                                readyPickUpSpecimen(orca)
-                        )
-                ),*/
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-12),Math.toRadians(0))
-                                .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(600),depositSpecimen(orca))
-                ),
-
-                //SPECIMEN 3
+                intakeSampleGround(orca),
 
                 new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-12, Math.toRadians(0)))
-                                .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
+                        orca.actionBuilder(sampleNumberThree)
+                                .strafeToLinearHeading(lineUpSample.component1(),lineUpSample.heading.toDouble())
                                 .build(),
-                        new SequentialAction(
-                                retractDeposit(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                                )
+                        retractIntake(orca)
                 ),
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-9),Math.toRadians(0))
-                                .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(700),depositSpecimen(orca))
-                ),
+                setSample(orca),
+                orca.actionBuilder(lineUpSample)
+                        .strafeTo(finalSample.component1())
+                        .build(),
 
-                //SPECIMEN 4
+                depositSample(orca),
 
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-9, Math.toRadians(0)))
-                                .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
-                                .build(),
-                        new SequentialAction(
-                                retractDeposit(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                                )
-                ),
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-6),Math.toRadians(0))
-                                .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(800),depositSpecimen(orca))
-                ),
+                orca.actionBuilder(finalSample)
+                        .strafeTo(lineUpSample.component1())
+                        .build(),
 
-                //SPECIMEN 5
+                retractDeposit(orca)
+                )*/
 
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(specimenDrop.x, specimenDrop.y-6, Math.toRadians(0)))
-                                .strafeToLinearHeading(collectSpecimen,Math.toRadians(180))
-                                .build(),
-                        new SequentialAction(
-                                retractDeposit(orca),
-                                readyPickUpSpecimen(orca),
-                                smartWait(waitReady),
-                                pickUpSpecimen(orca),
-                                smartWait(waitPickup)
-                                )
-                ),
-                new ParallelAction(
-                        orca.actionBuilder(new Pose2d(collectSpecimen.x,collectSpecimen.y,Math.toRadians(180)))
-                                .strafeToLinearHeading(new Vector2d(specimenDrop.x, specimenDrop.y-3),Math.toRadians(0))
-                                .build(),
-                        new SequentialAction(setSpecimen(orca),smartWait(1000),depositSpecimen(orca))
-                )
-
-        ));
 
 
         requestOpModeStop();
@@ -327,7 +338,16 @@ public class FivePlusZero extends LinearOpMode {
             return !bot.deposit().slidesReachedTarget();
         };
     }
+    public Action touchBar(OrcaV1 bot ) {
+        return telemetryPacket -> {
+            bot.deposit().refresh();
+            bot.deposit().park();
+            bot.deposit().refresh();
 
+            sleep(500);
+            return false;
+        };
+    }
     public Action retractDeposit(OrcaV1 bot ) {
         return telemetryPacket -> {
             if(!bot.deposit().getDepositCommand().equals("retract")){
@@ -354,27 +374,54 @@ public class FivePlusZero extends LinearOpMode {
             return false;
         };
     }
+    public Action depositSample(OrcaV1 bot) {
+        return telemetryPacket -> {
+            bot.deposit().refresh();
+            if(bot.deposit().getDepositCommand().equals("retract")){
+                bot.deposit().setSample();
+            }
+            bot.deposit().refresh();
+            if(bot.deposit().slidesReachedTarget()){
+                bot.deposit().depositSample();
+                bot.deposit().refresh();
+                sleep(600);
+            }
+            else{
+                //telemetry.addData("current pos: ",bot.deposit().getCurrentSlidePosition());
+                //telemetry.addData("target pos: ", bot.deposit().getTarget());
+                //telemetry.update();
+                return true;
+            }
+            //bot.deposit().retract();
+            return false;
+        };
+    }
     public Action depositSpecimen(OrcaV1 bot ) {
         return telemetryPacket -> {
             bot.deposit().refresh();
-            if(bot.deposit().getCurrentSlidePosition()>1.3){
+            if(bot.deposit().getDepositCommand().equals("retract")){
+                bot.deposit().setSpecimen();
+            }
+            if(bot.deposit().slidesReachedTarget()){
                 bot.deposit().scoreSpecimen();
                 bot.deposit().refresh();
-                return true;
+                if(!bot.deposit().slidesReachedTarget()){
+                    return true;
+                }
             }
             else{
-                return false;
+                //telemetry.addData("current pos: ",bot.deposit().getCurrentSlidePosition());
+                //telemetry.addData("target pos: ", bot.deposit().getTarget());
+                //telemetry.update();
+                //System.out.println("current pos: " + bot.deposit().getCurrentSlidePosition());
+                //System.out.println("target pos: " + bot.deposit().getTarget());
+                return true;
             }
+            return false;
         };
     }
-    public Action setIntake(OrcaV1 bot, double pos ) {
-        return telemetryPacket -> {
-            bot.intake().setTarget(pos);
-            bot.intake().refresh(0,false,false,false,false,true);
-            return !bot.intake().slidesReachedTarget();
-        };
-    }
-    public Action intakeSampleGround(OrcaV1 bot, double intakeSlidePwr) {
+
+    public Action intakeSampleGround(OrcaV1 bot) {
         return telemetryPacket -> {
             if(!bot.intake().getIntakeCommand().equals("intake")){
                 //TODO: When we implement PID, we can change this
@@ -383,20 +430,9 @@ public class FivePlusZero extends LinearOpMode {
                 bot.intake().angledIntake();
                 System.out.println("intaking@"+runningTime);
             }
-            bot.intake().angledIntake();
 
-            bot.intake().refresh(intakeSlidePwr,false,true,false,false,false);
-            if(bot.intake().getCurrentColorReading().equals("blue")||bot.intake().getCurrentColorReading().equals("red")){
-                bot.intake().verticalIntake();
-                for(int k = 0; k < 8; k++){
-                    bot.intake().refresh(0,true,false,false,false,false);
-                }
-                for(int k = 0; k < 8; k++){
-                    bot.intake().refresh(0,false,false,false,false,false);
-                }
-                return !bot.intake().slidesReachedTarget()&&bot.intake().getCurrentSample().equals("none");
-            }
-            else{
+            bot.intake().refresh(0.75,false,true,false,false,false);
+            if(!bot.intake().slidesReachedTarget()&&bot.intake().getCurrentSample().equals("none")){
                 return true;
             }
             //bot.intake().retract();
@@ -404,40 +440,6 @@ public class FivePlusZero extends LinearOpMode {
             //TODO: REMEMBER YOU NEED TO KEEP REFRESHING THE BOT AFTER THIS ACTION FOR THE TRANSFER TO WORK PROPERLY.
             //This means if you pick up the sample, you next movement should be a parallel action combined with the movement
             //and the orcaRefresh Action with all booleans set to false aside from retract, and slides power set to 0
-        };
-    }
-    public Action readyPickUpSpecimen(OrcaV1 bot) {
-        return telemetryPacket -> {
-            bot.deposit().specimenIntake();
-            bot.deposit().refresh();
-            return false;
-        };
-    }
-    public Action pickUpSpecimen(OrcaV1 bot) {
-        return telemetryPacket -> {
-            bot.deposit().closeClaw();
-            bot.deposit().refresh();
-            return false;
-        };
-    }
-    public Action smartWait(double timeMS) {
-        return telemetryPacket -> {
-            if(!waiting){
-                waitingTime.reset();
-                waiting = true;
-            }
-            if(waitingTime.milliseconds()<timeMS){
-                return true;
-            }
-            waiting = false;
-            return false;
-        };
-    }
-    public Action outtakeSampleGround(OrcaV1 bot) {
-        return telemetryPacket -> {
-            for(int k = 0 ; k < 50; k++){
-                orca.intake().refresh(0,false,false,true,false,false);
-            }
             return false;
         };
     }

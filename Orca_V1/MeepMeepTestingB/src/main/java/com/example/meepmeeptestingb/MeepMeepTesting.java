@@ -10,114 +10,44 @@ public class MeepMeepTesting {
 
     public static void main(String[] args) {
 
-        Pose2d preSpecimen = new Pose2d(5.7,32,Math.toRadians(90));
-        Pose2d finalSpecimen = new Pose2d(5.7,30,Math.toRadians(90));
+        Pose2d pickUp1 = new Pose2d(34,-43.4,Math.toRadians(44.5));
+        Pose2d pickUp2 = new Pose2d(42.7,-41.5,Math.toRadians(42.8));
 
-        Pose2d goUpPlace = new Pose2d(52,52,Math.toRadians(-135));
-        Pose2d depositPlace = new Pose2d(56,56,Math.toRadians(-135));
+        Pose2d pickUp3 = new Pose2d(42.3,-26.9,Math.toRadians(0.4));
 
-        Pose2d pickupOneStart = new Pose2d(48,44, Math.toRadians(-90));
-        Pose2d pickupTwoStart = new Pose2d(56,44, Math.toRadians(-90));
-        Pose2d pickupThreeStart = new Pose2d(48,24, Math.toRadians(0));
+        Pose2d dropOff1 = new Pose2d(34,-43.4,Math.toRadians(-40.3));
 
-        Pose2d pickupOneEnd = new Pose2d(48,34, Math.toRadians(-90));
-        Pose2d pickupTwoEnd = new Pose2d(56,34, Math.toRadians(-90));
-        Pose2d pickupThreeEnd = new Pose2d(58,24, Math.toRadians(0));
+        Pose2d dropOff2 = new Pose2d(42.7,-41.5,Math.toRadians(-35));
+        Pose2d dropOff3 = new Pose2d(42.3,-60,Math.toRadians(0.4));
 
-        Pose2d parkingPlace = new Pose2d(20,-16,Math.toRadians(0));
+        Vector2d specimenDrop = new Vector2d(11,-34.85);
+        Vector2d collectSpecimen = new Vector2d(42.3,-63.8);
 
-        MeepMeep meepMeep = new MeepMeep(800);
+        MeepMeep meepMeep = new MeepMeep(750);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
+                .setDimensions(13,13)
                 .build();
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-27.9,-1.7,0))
-                        .setTangent(Math.toRadians(0))
-                        .splineToSplineHeading(new Pose2d(-14.4,-49.5,Math.toRadians(160)),Math.toRadians(-20))
-                        .strafeTo(new Vector2d(-7.3,-52.2))
-                        .strafeTo(new Vector2d(-14.4,-49.5))
-                        .build()
-        /*myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(6, 70, Math.toRadians(90)))
-                    // Does all the tingies for placing down your facy thingie
-                    .strafeTo(preSpecimen.component1())
-                        // Make arm go down and slides go up
-                    .strafeTo(finalSpecimen.component1())
-                    .strafeTo(finalSpecimen.component1()) // So memap can see it
-                        // Make the fancy thingie be placed
-
-                    // Goes to pick up your less fancy vanilla bricks
-                    .setTangent(Math.toRadians(90))
-                    .splineTo(pickupOneStart.component1(),Math.toRadians(-90))
-                    .strafeTo(pickupOneStart.component1()) // So memap can see it
-                        // Start intaking
-
-                    .strafeTo(pickupOneEnd.component1())
-                    .strafeTo(pickupOneEnd.component1())// So memap can see it
-                        // Hopefully done with intaking
-
-                    // Goes to drop off your less fancy bricks
-                    .strafeToLinearHeading(goUpPlace.component1(),Math.toRadians(-135))
-                    .strafeTo(goUpPlace.component1()) // So memap can see it
-                        // Slides up!
-                    .strafeTo(depositPlace.component1())
-                    .strafeTo(depositPlace.component1()) // So memap can see it
-                        // Dump!
-                    .strafeTo(goUpPlace.component1())
-                    .strafeTo(goUpPlace.component1()) // So memap can see it
-                        // Slides down
-
-
-                    // Goes to pick up your less fancy vanilla bricks again
-                    .setTangent(Math.toRadians(45+180))
-                    .splineTo(pickupTwoStart.component1(),Math.toRadians(-90))
-                    .strafeTo(pickupTwoStart.component1()) // So memap can see it
-                        // Start intaking
-                    .strafeTo(pickupTwoEnd.component1())
-                    .strafeTo(pickupTwoEnd.component1())// So memap can see it
-                        // Hopefully done with intaking
-
-
-                    // Goes to drop off your less fancy bricks again
-                    .strafeToLinearHeading(goUpPlace.component1(),Math.toRadians(-135))
-                    .strafeTo(goUpPlace.component1()) // So memap can see it
-                        // Slides up!
-                    .strafeTo(depositPlace.component1())
-                    .strafeTo(depositPlace.component1()) // So memap can see it
-                        // Dump!
-                    .strafeTo(goUpPlace.component1())
-                    .strafeTo(goUpPlace.component1()) // So memap can see it
-                        // Slides down
-
-
-                    // Goes to pick up your less fancy vanilla bricks but with a twise (get it? a twist?!)
-                    .setTangent(Math.toRadians(45+180))
-
-                    .splineTo(pickupThreeStart.component1(),Math.toRadians(0))
-                    .strafeTo(pickupThreeStart.component1()) // So memap can see it
-                        // Start intaking
-                    .strafeTo(pickupThreeEnd.component1())
-                    .strafeTo(pickupThreeEnd.component1())// So memap can see it
-                        // Hopefully done with intaking
-
-
-                    // Goes to drop off your less fancy bricks
-                    .setTangent(Math.toRadians(90))
-                    .splineToLinearHeading(goUpPlace,Math.toRadians(45))
-                    .strafeTo(goUpPlace.component1()) // So memap can see it
-                        // Slides up!
-                    .strafeTo(depositPlace.component1())
-                    .strafeTo(depositPlace.component1()) // So memap can see it
-                        // Dump!
-                    .strafeTo(goUpPlace.component1())
-                    .strafeTo(goUpPlace.component1()) // So memap can see it
-                        // Slides down
-
-
-                // Goes to part the big pretty robot
-                    .setTangent(Math.toRadians(45+180))
-                    .splineToLinearHeading(parkingPlace,Math.toRadians(180))
-                    .build()*/
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(11, -65.5, Math.toRadians(-90)))
+                .strafeTo(specimenDrop)
+                .strafeToLinearHeading(pickUp1.component1(),pickUp1.heading)
+                .turn(dropOff1.heading.toDouble()-pickUp1.heading.toDouble())
+                .strafeToLinearHeading(pickUp2.component1(),pickUp2.heading)
+                .turn(dropOff2.heading.toDouble()-pickUp2.heading.toDouble())
+                .strafeToLinearHeading(pickUp3.component1(),pickUp3.heading)
+                .strafeTo(dropOff3.component1())
+                .turn(Math.toRadians(90)-dropOff3.heading.toDouble())
+                .strafeTo(collectSpecimen)
+                .strafeToLinearHeading(new Vector2d(specimenDrop.x+12, specimenDrop.y),Math.toRadians(-90))
+                .strafeToLinearHeading(collectSpecimen,Math.toRadians(90))
+                .strafeToLinearHeading(new Vector2d(specimenDrop.x+9, specimenDrop.y),Math.toRadians(-90))
+                .strafeToLinearHeading(collectSpecimen,Math.toRadians(90))
+                .strafeToLinearHeading(new Vector2d(specimenDrop.x+6, specimenDrop.y),Math.toRadians(-90))
+                .strafeToLinearHeading(collectSpecimen,Math.toRadians(90))
+                .strafeToLinearHeading(new Vector2d(specimenDrop.x+3, specimenDrop.y),Math.toRadians(-90))
+                .build()
         );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_OFFICIAL)
