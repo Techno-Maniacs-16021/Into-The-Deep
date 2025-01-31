@@ -23,13 +23,13 @@ public class ElectronicsTesting extends OpMode {
 
     @Override
     public void init() {
-        intake = hardwareMap.get(ServoImplEx.class,"int");
+        //intake = hardwareMap.get(ServoImplEx.class,"int");
         //lDiff = hardwareMap.get(ServoImplEx.class,"ld");
         //rDiff = hardwareMap.get(ServoImplEx.class,"rd");
-        intRotation = hardwareMap.get(ServoImplEx.class,"introt");
+        //intRotation = hardwareMap.get(ServoImplEx.class,"introt");
         //depLinkage = hardwareMap.get(ServoImplEx.class,"deplink");
         //depRotation = hardwareMap.get(ServoImplEx.class,"deprot");
-        //gate = hardwareMap.get(ServoImplEx.class,"gate"); //no analog
+        gate = hardwareMap.get(ServoImplEx.class,"gate"); //no analog
         //claw = hardwareMap.get(ServoImplEx.class,"claw");
 
         leftBack = hardwareMap.get(DcMotorEx.class,"lb");
@@ -65,8 +65,8 @@ public class ElectronicsTesting extends OpMode {
         //depLinkage.setPwmRange(new PwmControl.PwmRange(510,2490));
         //depRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
         //claw.setPwmRange(new PwmControl.PwmRange(510,2490));
-        intRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
-        intake.setPwmRange(new PwmControl.PwmRange(510,2490));
+        //intRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
+        gate.setPwmRange(new PwmControl.PwmRange(510,2490));
 
 
     }
@@ -86,8 +86,8 @@ public class ElectronicsTesting extends OpMode {
         rightFront.setPower(gamepad1.right_trigger);
         rightBack.setPower(gamepad2.right_trigger);
         leftBack.setPower(gamepad2.left_trigger);
-        intRotation.setPosition(0.5);
-        intake.setPosition(1);
+        //intRotation.setPosition(0.5);
+        gate.setPosition(1);
         //intRotation.setPosition(Range.clip(gamepad1.right_stick_y+0.5,0,1));
         //intake.setPosition(Range.clip(gamepad1.left_stick_y+0.5,0,1));
         //claw.setPosition(Range.clip(gamepad1.right_stick_x+0.5,0,1));

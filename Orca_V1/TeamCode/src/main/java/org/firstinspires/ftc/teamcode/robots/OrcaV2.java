@@ -16,7 +16,7 @@ public class OrcaV2 extends Follower {
     //IntakeV1 INTAKE;
     //DepositV1 DEPOSIT;
     private final IntakeV2 intake;
-    //private final DepositV2 deposit;
+    private final DepositV2 deposit;
     private DcMotorEx leftFront;
     private DcMotorEx leftRear;
     private DcMotorEx rightFront;
@@ -29,14 +29,15 @@ public class OrcaV2 extends Follower {
         super(hardwareMap);
         this.hardwareMap = hardwareMap;
         intake = new IntakeV2(hardwareMap);
-       // deposit = new DepositV2(hardwareMap);
+        deposit = new DepositV2(hardwareMap);
     }
     public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         drive(gamepad1LeftStickX,gamepad1LeftStickY,gamepad1RightStickX);
         refresh();
     }
     public void refresh(){
-        
+        deposit.setSenor(intake.clawSenor());
+        deposit.setIsIntakeTransferred(intake.isTransferred());
     }
 
     public void drive(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
@@ -60,8 +61,8 @@ public class OrcaV2 extends Follower {
     }
 
 
-    //public DepositV2 deposit(){
-        //return deposit;
-    //}
+    public DepositV2 deposit(){
+        return deposit;
+    }
 
 }

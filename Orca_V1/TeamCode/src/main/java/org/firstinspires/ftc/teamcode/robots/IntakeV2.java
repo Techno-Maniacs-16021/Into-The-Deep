@@ -47,7 +47,7 @@ public class IntakeV2 {
 
     int globalTime = 0;
     boolean recentlyEjected = false;
-    boolean color3;
+    boolean color3,isTransferred;
     String intakeCommand = "standby", intakeMode = "angled";
     String colorToEject = "red";
     String sampleColor = "none";
@@ -79,8 +79,8 @@ public class IntakeV2 {
         intake = hardwareMap.get(DcMotorEx.class,"intake");
         slides = hardwareMap.get(DcMotorEx.class,"hSlides");
 
-        currentRotation = hardwareMap.get(AnalogInput.class, "currentRotation");
-        currentTilt = hardwareMap.get(AnalogInput.class, "currentTilt");
+        currentRotation = hardwareMap.get(AnalogInput.class, "currentIntakeRotation");
+        currentTilt = hardwareMap.get(AnalogInput.class, "currentIntakeTilt");
 
         tilt.setPwmRange(new PwmControl.PwmRange(510,2490));
         rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
@@ -342,8 +342,6 @@ public class IntakeV2 {
         }
         else if(intakeCommand.equals("transfer")){
             if(color3){
-                rotationPosition = TRANSFER_ROTATION;
-                tiltPosition = TRANSFER_TILT;
                 transferTimer.reset();
                 intakeCommand = "transferred";
             }
@@ -351,13 +349,17 @@ public class IntakeV2 {
             intakePower = 1;
         }
         else if(intakeCommand.equals("transferred")){
-            if(transferTimer.milliseconds()>400){
+            if(transferTimer.milliseconds()>1000){
                 gatePosition = 0;
                 intakePower = 0;
+                isTransferred = false;
                 intakeCommand = "standby";
             }
-            else{
+            else if(transferTimer.milliseconds()>400){
+                rotationPosition = TRANSFER_ROTATION;
+                tiltPosition = TRANSFER_TILT;
                 intakePower = 0.5;
+                isTransferred = true;
             }
         }
         else if(intakeCommand.equals("init")){
@@ -444,6 +446,9 @@ public class IntakeV2 {
     }
     public boolean clawSenor(){
         return color3;
+    }
+    public boolean isTransferred(){
+        return isTransferred;
     }
 
 

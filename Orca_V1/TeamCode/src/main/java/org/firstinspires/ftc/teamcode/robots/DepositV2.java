@@ -4,6 +4,7 @@ import static java.lang.Thread.sleep;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -17,17 +18,26 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import java.util.ArrayList;
 
 public class DepositV2{
-    ServoImplEx clawRotation, specimenClaw, depositLinkage, leftDifferential, rightDifferential;
+    ServoImplEx rotation, claw, linkage, leftDifferential, rightDifferential;
     DcMotorEx leftSlides,rightSlides;
+    AnalogInput currentRotation, currentLinkage, currentLeftDifferential, currentRightDifferential;
+
+    final double
+            INTERMEDIATE_ROTATION = 0, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 0, RETRACT_RIGHT_DIFF = 0,
+            SPECIMEN_ROTATION = 0,SPECIMEN_LINKAGE = 0, SPECIMEN_LEFT_DIFF = 0, SPECIMEN_RIGHT_DIFF = 0,
+            SPECIMEN_DEPOSIT_ROTATION = 0,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0,
+            SAMPLE_DEPOSIT_ROTATION = 0, TRANSFER_LINKAGE = 0, TRANSFER_LEFT_DIFF = 0, TRANSFER_RIGHT_DIFF = 0,
+            STANDBY_ROTATION = 0,STANDBY_LINKAGE = 0, STANDBY_LEFT_DIFF = 0, STANDBY_RIGHT_DIFF = 0;
     final double COUNTS_PER_REV_MOTOR = 384.5;
     double target,currentPos;
     final double ALLOWED_ERROR = 0.011;
-    double SAMPLE_DEPOSIT = 3.8, SPECIMEN_DEPOSIT_PRIME = 2.1, SPECIMEN_DEPOSIT = 0.8, PARK = 1.3;
-    double clawRotationPosition = 1, clawPosition = 0.9, depositPosition = 0;
+    double SAMPLE_DEPOSIT = 3.8;
+    double rotationPosition = 1, clawPosition = 0.9, linkagePosition = 0, leftDiffPosition = 0, rightDiffPosition = 0;
     PIDController slidesPID;
     ArrayList<Double> positionLog = new ArrayList<>();
     int posLogLength = 24;
-
+    boolean colorSenor = false;
+    boolean isIntakeTransferred;
 
     double p = 1.4,i = 0,d = 0,f = 0.2;
     //TODO: Set to false
@@ -39,25 +49,31 @@ public class DepositV2{
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 
         //TODO: Set Configurations
-        clawRotation = hardwareMap.get(ServoImplEx.class,"depositRotation");
-        depositLinkage = hardwareMap.get(ServoImplEx.class,"linkage");
-        specimenClaw = hardwareMap.get(ServoImplEx.class,"claw");
+        rotation = hardwareMap.get(ServoImplEx.class,"depositRotation");
+        linkage = hardwareMap.get(ServoImplEx.class,"linkage");
+        claw = hardwareMap.get(ServoImplEx.class,"claw");
         leftDifferential = hardwareMap.get(ServoImplEx.class,"lDiff");
         rightDifferential = hardwareMap.get(ServoImplEx.class,"rDiff");
 
         leftSlides = hardwareMap.get(DcMotorEx.class,"vLSlides");
         rightSlides = hardwareMap.get(DcMotorEx.class,"vRSlides");
 
-        clawRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
-        depositLinkage.setPwmRange(new PwmControl.PwmRange(510,2490)); // Servo was spasing out  so we set to 510 and 2490 to make it start working. We spent too long on this peice of poopf
-        specimenClaw.setPwmRange(new PwmControl.PwmRange(510,2490));
+        currentRotation = hardwareMap.get(AnalogInput.class, "currentDepositRotation");
+        currentLinkage = hardwareMap.get(AnalogInput.class, "currentDepositLinkage");
+        currentLeftDifferential = hardwareMap.get(AnalogInput.class, "currentDepositLeftDifferential");
+        currentRightDifferential = hardwareMap.get(AnalogInput.class, "currentDepositRightDifferential");
+
+
+        rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
+        linkage.setPwmRange(new PwmControl.PwmRange(510,2490)); // Servo was spasing out  so we set to 510 and 2490 to make it start working. We spent too long on this peice of poopf
+        claw.setPwmRange(new PwmControl.PwmRange(510,2490));
         leftDifferential.setPwmRange(new PwmControl.PwmRange(510,2490));
         rightDifferential.setPwmRange(new PwmControl.PwmRange(510,2490));
 
-        depositLinkage.setDirection(Servo.Direction.REVERSE);
+        linkage.setDirection(Servo.Direction.REVERSE);
         rightSlides.setDirection(DcMotorSimple.Direction.REVERSE);
-        clawRotation.setDirection(Servo.Direction.REVERSE);
-        specimenClaw.setDirection(Servo.Direction.REVERSE);
+        rotation.setDirection(Servo.Direction.REVERSE);
+        claw.setDirection(Servo.Direction.REVERSE);
 
         leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -75,20 +91,37 @@ public class DepositV2{
     public void refresh(){
         leftSlides.setPower(slidePower);
         rightSlides.setPower(slidePower);
+
         currentPos = (leftSlides.getCurrentPosition()+rightSlides.getCurrentPosition())/(2*COUNTS_PER_REV_MOTOR);
         positionLog.add(currentPos);
         positionLog.remove(0);
+
         controlLoop();
-        PIDLoop();
-        clawRotation.setPosition(clawRotationPosition);
-        specimenClaw.setPosition(clawPosition);
-        depositLinkage.setPosition(depositPosition);
+        slidesLoop();
+
+        rotation.setPosition(rotationPosition);
+        claw.setPosition(clawPosition);
+        linkage.setPosition(linkagePosition);
+        rightDifferential.setPosition(rightDiffPosition);
+        leftDifferential.setPosition(leftDiffPosition);
 
     }
-    public void PIDLoop(){
-        if(target!=0&&!depositCommand.equals("park")){
+    public void slidesLoop(){
+        if(target != 0){
             slidesPID.setPID(p,i,d);
             slidePower = slidesPID.calculate(currentPos,target)+f;
+        }
+        else{
+            if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 7&&currentPos>0.1){
+                slidePower = -1;
+            }
+            else{
+                slidePower = -0.2;
+                leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
         }
     }
     public void PIDTuning (double p, double i, double d, double f, double target) {
@@ -101,92 +134,85 @@ public class DepositV2{
         }
     }
     public void controlLoop(){
-        if(target==0){
-            if((leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 < 7&&currentPos>0.1){
-                slidePower = -1;
+
+        if(depositCommand.equals("transfer")){
+            clawPosition = 1;
+            if(isIntakeTransferred){
+                rotationPosition = INTERMEDIATE_ROTATION;
             }
-            else{
-                slidePower = -0.2;
-                leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            if(currentRotation.getVoltage()>0){
+                linkagePosition = TRANSFER_LINKAGE;
+                leftDiffPosition = TRANSFER_LEFT_DIFF;
+                rightDiffPosition = TRANSFER_RIGHT_DIFF;
+                rotationPosition = SAMPLE_DEPOSIT_ROTATION;
             }
         }
-        else if(depositCommand.equals("park")){
-            slidePower = -0.3;
+        else if(depositCommand.equals("specimen")){
+            if(currentRotation.getVoltage()>0){
+                linkagePosition = SPECIMEN_LINKAGE;
+                leftDiffPosition = SPECIMEN_LEFT_DIFF;
+                rightDiffPosition = SPECIMEN_RIGHT_DIFF;
+            }
+            if(currentLeftDifferential.getVoltage()>0&&currentRightDifferential.getVoltage()>0){
+                rotationPosition = SPECIMEN_ROTATION;
+            }
         }
-        if(target == SPECIMEN_DEPOSIT && currentPos<1.3 ){
-            clawPosition = 0.2;
-            System.out.println("auto let go on deposit claw position");
+        else if(depositCommand.equals("depositSpecimen")){
+            linkagePosition = SPECIMEN_DEPOSIT_LINKAGE;
+            leftDiffPosition = SPECIMEN_DEPOSIT_LEFT_DIFF;
+            rightDiffPosition = SPECIMEN_DEPOSIT_RIGHT_DIFF;
+            rotationPosition = SPECIMEN_DEPOSIT_ROTATION;
+        }
+        else if(depositCommand.equals("retract")){
+            rotationPosition = INTERMEDIATE_ROTATION;
+            clawPosition = 0;
+            if(currentRotation.getVoltage()>0) {
+                linkagePosition = RETRACT_LINKAGE;
+                if(currentLinkage.getVoltage()>0){
+                    leftDiffPosition = RETRACT_LEFT_DIFF;
+                    rightDiffPosition = RETRACT_RIGHT_DIFF;
+                    if(currentLeftDifferential.getVoltage()>0&&currentRightDifferential.getVoltage()>0){
+                        depositCommand = "standby";
+                    }
+                }
+            }
+        }
+        else if(depositCommand.equals("standby")){
+            if((colorSenor&&depositCommand.equals("standby"))){
+                depositCommand = "transfer";
+            }
+            rotationPosition = STANDBY_ROTATION;
+            clawPosition = 0;
+            linkagePosition = STANDBY_LINKAGE;
+            leftDiffPosition = STANDBY_LEFT_DIFF;
+            rightDiffPosition = STANDBY_RIGHT_DIFF;
         }
 
 
     }
 
 
-
-    public void setSample(){
-        depositCommand = "sample";
-        target = SAMPLE_DEPOSIT;
-        //depositPosition = 0.65;
-    }
     public void specimenIntake(){
-        depositCommand = "specimen";
-        clawPosition = 0;
-        clawRotationPosition = 1;
-        System.out.println("getting ready to pick up claw postion");
-    }
-    public void closeClaw(){
-        clawPosition = 0.9;
-        System.out.println("pick up specimen claw position");
-    }
-    public void scoreSpecimen(){
-        target = SPECIMEN_DEPOSIT;
-    }
-    public void setSpecimen(){
-        target = SPECIMEN_DEPOSIT_PRIME;
+        rotationPosition = INTERMEDIATE_ROTATION;
         depositCommand = "specimen";
     }
-    public void setPark(){
-        target = PARK;
-        depositCommand = "prePark";
-        clawRotationPosition = 1;
-        clawPosition = 0.7;
-        depositPosition = 0;
-        System.out.println("park claw position");
-    }
-    public void park(){
-        depositCommand = "park";
-    }
-    public double getCurrentSlidePosition(){
-        return currentPos;
-    }
-    public double getTarget(){return target;}
-    public void retract(){
-        depositPosition = 0;
-        clawPosition = 0.2 ;
-        clawRotationPosition = 0;
-        depositCommand = "retract";
-        target = 0;
-        System.out.println("retracting claw position");
-    }
-    public void specimenInit(){
+    public void grabSpecimen(){
         clawPosition = 1;
-        clawRotationPosition = 1;
     }
-    public void sampleInit(){
+    public void depositSpecimen(){
+        depositCommand = "depositSpecimen";
+    }
+    public void retract(){
+        target = 0;
+        depositCommand = "retract";
+    }
+    public void setSample(){
+        target = SAMPLE_DEPOSIT;
+        depositCommand = "depositSample";
+    }
+    public void releaseSample(){
         clawPosition = 0;
-        clawRotationPosition = 0;
-        slidePower = -1;
     }
-    public void depositSample(){
-        depositPosition = 1;
-    }
-    public void resetBucket(){
-        depositPosition = 0;
-    }
-
 
     public String getDepositCommand(){
         return depositCommand;
@@ -198,6 +224,12 @@ public class DepositV2{
     }
     public void setTarget(double target){
         this.target = target;
+    }
+    public void setSenor(boolean bool){
+        colorSenor = bool;
+    }
+    public void setIsIntakeTransferred(boolean bool){
+        isIntakeTransferred = bool;
     }
 
 }
