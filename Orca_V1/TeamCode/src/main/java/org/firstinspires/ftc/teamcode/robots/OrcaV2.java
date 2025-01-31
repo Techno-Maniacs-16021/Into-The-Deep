@@ -11,6 +11,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import dev.frozenmilk.mercurial.commands.Lambda;
 
 public class OrcaV2 extends Follower {
     //IntakeV1 INTAKE;
@@ -57,6 +62,50 @@ public class OrcaV2 extends Follower {
     }
     public IntakeV2 intake(){
         return intake;
+    }
+
+
+    //auton pathing stuff
+    public void deltaHeading(double degreesLeft) { // if you want to turn right, use negative degrees
+        Pose temp = new Pose(this.getPose().getX(), this.getPose().getY(), this.getPose().getHeading() + Math.toRadians(degreesLeft));
+        this.holdPoint(temp);
+    }
+
+    public void finalHeading(double degrees) { // if you want to turn right, use negative degrees
+        Pose temp = new Pose(this.getPose().getX(), this.getPose().getY(), Math.toRadians(degrees));
+        this.holdPoint(temp);
+    }
+
+    public Lambda turnTo(double degrees) {
+        return new Lambda("follow-path")
+                .addRequirements(this)
+                .setInterruptible(true)
+                .setInit(() -> this.finalHeading(degrees))
+                .setExecute(() -> {
+                    this.update();
+                    //this.telemetryDebug(telemetry);
+
+                })
+                .setFinish(() -> !this.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) this.breakFollowing();
+                });
+    }
+
+    public Lambda follow(Path path) {
+        return new Lambda("follow-path")
+                .addRequirements(this)
+                .setInterruptible(true)
+                .setInit(() -> this.followPath(path, true))
+                .setExecute(() -> {
+                    this.update();
+                    //this.telemetryDebug(telemetry);
+
+                })
+                .setFinish(() -> !this.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) this.breakFollowing();
+                });
     }
 
 

@@ -49,12 +49,16 @@ public class Paths {
                 createPath( //pickup 2
                         new BezierLine(
                                 pickup1,
-                                pickup2)
+                                pickup2),
+                        Math.toRadians(-40.3),
+                        Math.toRadians(42.8)
                 ),
                 createPath( //pickup 3
                         new BezierLine(
                                 pickup2,
-                                pickup3)
+                                pickup3),
+                        Math.toRadians(-35),
+                        Math.toRadians(0.4)
                 ),
                 createPath( //dropoff 3
                         new BezierLine(

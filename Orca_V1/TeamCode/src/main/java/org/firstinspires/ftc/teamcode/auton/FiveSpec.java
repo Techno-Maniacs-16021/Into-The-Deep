@@ -35,42 +35,43 @@ public class FiveSpec extends OpMode {
     public void start() {
         new Sequential(
                 new Parallel ( //SPECIMEN DROP
-                        //orca.followPath(Paths.pathList.get(0)),
+                        orca.follow(Paths.pathList.get(0)),
                         new Sequential(
                                 //set specimen + smart wait + deposit specimen
                         )
                 ),
                 new Parallel( //PICKUP 1
-                        //orca.followPath(Paths.pathList.get(1))
+                        orca.follow(Paths.pathList.get(1))
                         //intake ground
                         //retract deposit
                 ),
                 new Parallel( //DROPOFF 1
-                        //turn robot
+                        orca.turnTo(Math.toRadians(-40.3)),
                         new Sequential(
                                 //smart wait + outtake ground
                         )
                 ),
                 new Parallel( //PICKUP 2
-                        //orca.followPath(Paths.pathList.get(2)),
+                        orca.follow(Paths.pathList.get(2))
                         //set intake
+
                 ),
                 //intake ground
                 new Parallel( //DROPOFF 2
-                        //turn robot
+                        orca.turnTo(Math.toRadians(-35)),
                         new Sequential(
                                 //smart wait + outtake ground
                         )
                 ),
                 new Parallel( //PICKUP 3
-                        //orca.followPath(Paths.pathList.get(3)),
+                        orca.follow(Paths.pathList.get(3))
                         //set intake
                 ),
                 //intake ground
                 new Parallel( //DROP OFF 3 + COLLECT SPECIMEN
-                        //orca.followPath(Paths.pathList.get(4)),
-                        //turn robot
-                        //orca.followPath(Paths.pathList.get(5)),
+                        orca.follow(Paths.pathList.get(4)),
+                        orca.turnTo(Math.toRadians(90)),
+                        orca.follow(Paths.pathList.get(5)),
                         new Sequential(
                                 //set intake
                                 //smart wait
@@ -83,7 +84,7 @@ public class FiveSpec extends OpMode {
                         )
                 ),
                 new Parallel( //SPECIMEN DROP
-                        //orca.followPath(Paths.pathList.get(6)),
+                        orca.follow(Paths.pathList.get(6)),
                         new Sequential(
                                 //set specimen
                                 //smart wait
@@ -91,7 +92,7 @@ public class FiveSpec extends OpMode {
                         )
                 ),
                 new Parallel( //COLLECT SPECIMEN
-                        //orca.followPath(Paths.pathList.get(7)),
+                        orca.follow(Paths.pathList.get(7)),
                         new Sequential(
                                 //retract deposit
                                 //ready pickup spec
