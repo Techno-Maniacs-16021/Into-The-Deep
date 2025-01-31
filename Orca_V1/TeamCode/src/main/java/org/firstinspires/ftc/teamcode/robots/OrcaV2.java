@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
 public class OrcaV2 extends Follower {
     //IntakeV1 INTAKE;
     //DepositV1 DEPOSIT;
-    //private final IntakeV1 intake;
-    //private final DepositV1 deposit;
+    private final IntakeV2 intake;
+    //private final DepositV2 deposit;
     private DcMotorEx leftFront;
     private DcMotorEx leftRear;
     private DcMotorEx rightFront;
@@ -28,8 +28,8 @@ public class OrcaV2 extends Follower {
     public OrcaV2(HardwareMap hardwareMap, Pose2d pose ) {
         super(hardwareMap);
         this.hardwareMap = hardwareMap;
-        //intake = new IntakeV1(hardwareMap);
-        //deposit = new DepositV1(hardwareMap);
+        intake = new IntakeV2(hardwareMap);
+       // deposit = new DepositV2(hardwareMap);
     }
     public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         drive(gamepad1LeftStickX,gamepad1LeftStickY,gamepad1RightStickX);
@@ -55,13 +55,13 @@ public class OrcaV2 extends Follower {
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    /*public IntakeV1 intake(){
+    public IntakeV2 intake(){
         return intake;
     }
-     */
-    /*
-    public DepositV1 deposit(){
-        return deposit;
-    }
-     */
+
+
+    //public DepositV2 deposit(){
+        //return deposit;
+    //}
+
 }
