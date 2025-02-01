@@ -29,7 +29,7 @@ public class ElectronicsTesting extends OpMode {
         //intRotation = hardwareMap.get(ServoImplEx.class,"introt");
         //depLinkage = hardwareMap.get(ServoImplEx.class,"deplink");
         //depRotation = hardwareMap.get(ServoImplEx.class,"deprot");
-        gate = hardwareMap.get(ServoImplEx.class,"gate"); //no analog
+        //gate = hardwareMap.get(ServoImplEx.class,"gate"); //no analog
         //claw = hardwareMap.get(ServoImplEx.class,"claw");
 
         leftBack = hardwareMap.get(DcMotorEx.class,"lb");
@@ -37,7 +37,7 @@ public class ElectronicsTesting extends OpMode {
         rightBack = hardwareMap.get(DcMotorEx.class,"rb");
         rightFront = hardwareMap.get(DcMotorEx.class,"rf");
 
-        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
+        //leftBack.setDirection(DcMotorEx.Direction.REVERSE);
 
         colorPin0 = hardwareMap.digitalChannel.get("crf0");
         colorPin1 = hardwareMap.digitalChannel.get("crf1");
@@ -51,22 +51,12 @@ public class ElectronicsTesting extends OpMode {
 // set the clock speed on this I2C bus to 400kHz:
 
 
-        c0 = hardwareMap.get(AnalogInput.class, "c0");
-        c1 = hardwareMap.get(AnalogInput.class, "c1");
-        c2 = hardwareMap.get(AnalogInput.class, "c2");
-        c3 = hardwareMap.get(AnalogInput.class, "c3");
-        e0 = hardwareMap.get(AnalogInput.class, "e0");
-        e1 = hardwareMap.get(AnalogInput.class, "e1");
-        e2 = hardwareMap.get(AnalogInput.class, "e2");
-        e3 = hardwareMap.get(AnalogInput.class, "e3");
-
-
 
         //depLinkage.setPwmRange(new PwmControl.PwmRange(510,2490));
         //depRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
         //claw.setPwmRange(new PwmControl.PwmRange(510,2490));
         //intRotation.setPwmRange(new PwmControl.PwmRange(510,2490));
-        gate.setPwmRange(new PwmControl.PwmRange(510,2490));
+        //gate.setPwmRange(new PwmControl.PwmRange(510,2490));
 
 
     }
@@ -87,14 +77,14 @@ public class ElectronicsTesting extends OpMode {
         rightBack.setPower(gamepad2.right_trigger);
         leftBack.setPower(gamepad2.left_trigger);
         //intRotation.setPosition(0.5);
-        gate.setPosition(1);
+        //gate.setPosition(1);
         //intRotation.setPosition(Range.clip(gamepad1.right_stick_y+0.5,0,1));
         //intake.setPosition(Range.clip(gamepad1.left_stick_y+0.5,0,1));
         //claw.setPosition(Range.clip(gamepad1.right_stick_x+0.5,0,1));
         //intRotation.setPosition(Range.clip(gamepad1.left_stick_x+0.5,0,1));
 
 
-        telemetry.addData("c0: ",c0.getVoltage());
+        /*telemetry.addData("c0: ",c0.getVoltage());
         telemetry.addData("c1: ",c1.getVoltage());
         //telemetry.addData("c2: ",c2.getVoltage());
         telemetry.addData("c3: ",c3.getVoltage());
@@ -108,7 +98,7 @@ public class ElectronicsTesting extends OpMode {
         telemetry.addData("crf3:", colorPin3.getState());
         telemetry.addData("crf4:", colorPin4.getState());
         telemetry.addData("crf5:", colorPin5.getState());
-        telemetry.update();
+        telemetry.update();*/
     }
     @Override
     public void stop() {

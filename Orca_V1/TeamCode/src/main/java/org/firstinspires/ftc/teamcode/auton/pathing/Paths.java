@@ -1,15 +1,11 @@
 package org.firstinspires.ftc.teamcode.auton.pathing;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
-
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierPoint;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
-import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.BezierCurve;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.BezierLine;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.Point;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.Path;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.localization.Pose;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.follower.Follower;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,75 +15,66 @@ public class Paths {
 
     public static ArrayList<Path> pathList = new ArrayList<>();
 
-    public static Point start = new Point(11,-65.5,Point.CARTESIAN);
+    public static Pose start = new Pose(-65.5,-11,Math.toRadians(0));
 
-    public static Point pickup1 = new Point(43,-43.4,Point.CARTESIAN);
-    public static Point pickup2 = new Point(42.7,-41.5,Point.CARTESIAN);
-    public static Point pickup3 = new Point(42.3,-26.9,Point.CARTESIAN);
+    public static Pose pickup1 = new Pose(-43.4,-34,Math.toRadians(-45.5));
+    public static Pose pickup2 = new Pose(-41.5,-42.7,Math.toRadians(-47.2));
+    public static Pose pickup3 = new Pose(-26.9,-42.3,Math.toRadians(-89.6));
 
-    //public static Point dropoff1 = new Point(34,-43.4,Point.CARTESIAN);
-    //public static Point dropoff2 = new Point(42.7,-41.5,Point.CARTESIAN);
-    public static Point dropoff3 = new Point(42.3,-60,Point.CARTESIAN);
+    public static Pose dropoff1 = new Pose(-43.4,-34,Math.toRadians(-130.3));
+    public static Pose dropoff2 = new Pose(-41.5,-42.7,Math.toRadians(-125));
+    public static Pose dropoff3 = new Pose(-60,-42.3,Math.toRadians(-89.6));
 
-    public static Point specDrop = new Point(11,-34.85,Point.CARTESIAN);
-    public static Point specCollect = new Point(42.3,-63.8,Point.CARTESIAN);
+    public static Pose specDrop = new Pose(-34.85,-11,Math.toRadians(0));
+    public static Pose specCollect = new Pose(-63.8,-42.3,Math.toRadians(0));
 
     public static void init() {
         Collections.addAll(pathList,
                 createPath( //specimen drop
                         new BezierLine(
-                                start,
-                                specDrop)
+                                new Point(start),
+                                new Point(specDrop))
                 ),
                 createPath( //pickup 1
                         new BezierLine(
-                                specDrop,
-                                pickup1),
-                        Math.toRadians(270),
-                        Math.toRadians(44.5)
+                                new Point(specDrop),
+                                new Point(pickup1)),
+                        specDrop.getHeading(),
+                        pickup1.getHeading()
                 ),
                 createPath( //pickup 2
                         new BezierLine(
-                                pickup1,
-                                pickup2),
-                        Math.toRadians(-40.3),
-                        Math.toRadians(42.8)
+                                new Point(pickup1),
+                                new Point(pickup2)),
+                        dropoff1.getHeading(),
+                        pickup2.getHeading()
                 ),
                 createPath( //pickup 3
                         new BezierLine(
-                                pickup2,
-                                pickup3),
-                        Math.toRadians(-35),
-                        Math.toRadians(0.4)
+                                new Point(pickup2),
+                                new Point(pickup3)),
+                        dropoff2.getHeading(),
+                        pickup3.getHeading()
                 ),
                 createPath( //dropoff 3
                         new BezierLine(
-                                pickup3,
-                                dropoff3)
+                                new Point(pickup3),
+                                new Point(dropoff3))
                 ),
                 createPath( //specimen collect
                         new BezierLine(
-                                dropoff3,
-                                specCollect)
+                                new Point(dropoff3),
+                                new Point(specCollect))
                 ),
                 createPath( //specimen cycle (drop)
                         new BezierLine(
-                                specCollect,
-                                specDrop)
+                                new Point(specCollect),
+                                new Point(specDrop))
                 ),
                 createPath( //specimen cycle (collect)
                         new BezierLine(
-                                specDrop,
-                                specCollect)
-                ),
-                createPath( //example curve
-                        new BezierCurve(
-                                new Point(40.000, 67.000, Point.CARTESIAN),
-                                new Point(31.500, 66.000, Point.CARTESIAN),
-                                new Point(11.000, 12.000, Point.CARTESIAN),
-                                new Point(68.000, 49.500, Point.CARTESIAN),
-                                new Point(58.500, 23.000, Point.CARTESIAN)
-                        )
+                                new Point(specCollect),
+                                new Point(specDrop))
                 )
         );
 

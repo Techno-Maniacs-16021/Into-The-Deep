@@ -10,18 +10,34 @@ public class MeepMeepTesting {
 
     public static void main(String[] args) {
 
-        Pose2d pickUp1 = new Pose2d(34,-43.4,Math.toRadians(44.5));
-        Pose2d pickUp2 = new Pose2d(42.7,-41.5,Math.toRadians(42.8));
+        Pose2d start = new Pose2d(-65.5,-11,Math.toRadians(0));
 
-        Pose2d pickUp3 = new Pose2d(42.3,-26.9,Math.toRadians(0.4));
+        Pose2d pickUp1 = new Pose2d(-43.4,-34,Math.toRadians(-45.5));
+        Pose2d pickUp2 = new Pose2d(-41.5,-42.7,Math.toRadians(-47.2));
+        Pose2d pickUp3 = new Pose2d(-26.9,-42.3,Math.toRadians(-89.6));
 
-        Pose2d dropOff1 = new Pose2d(34,-43.4,Math.toRadians(-40.3));
+        Pose2d dropOff1 = new Pose2d(-43.4,-34,Math.toRadians(-130.3));
+        Pose2d dropOff2 = new Pose2d(-41.5,-42.7,Math.toRadians(-125));
+        Pose2d dropOff3 = new Pose2d(-60,-42.3,Math.toRadians(-89.6));
 
-        Pose2d dropOff2 = new Pose2d(42.7,-41.5,Math.toRadians(-35));
-        Pose2d dropOff3 = new Pose2d(42.3,-60,Math.toRadians(0.4));
+        Vector2d specimenDrop = new Vector2d(-34.85,-11);
+        Vector2d collectSpecimen = new Vector2d(-63.8,-42.3);
 
-        Vector2d specimenDrop = new Vector2d(11,-34.85);
-        Vector2d collectSpecimen = new Vector2d(42.3,-63.8);
+
+        //transformations
+        start = new Pose2d(-start.component1().y, start.component1().x,start.heading.toDouble()+Math.toRadians(90));
+
+        pickUp1 = new Pose2d(-pickUp1.component1().y, pickUp1.component1().x,pickUp1.heading.toDouble()+Math.toRadians(90));
+        pickUp2 = new Pose2d(-pickUp2.component1().y, pickUp2.component1().x,pickUp2.heading.toDouble()+Math.toRadians(90));
+        pickUp3 = new Pose2d(-pickUp3.component1().y, pickUp3.component1().x,pickUp3.heading.toDouble()+Math.toRadians(90));
+
+        dropOff1 = new Pose2d(-dropOff1.component1().y, dropOff1.component1().x,dropOff1.heading.toDouble()+Math.toRadians(90));
+        dropOff2 = new Pose2d(-dropOff2.component1().y, dropOff2.component1().x,dropOff2.heading.toDouble()+Math.toRadians(90));
+        dropOff3 = new Pose2d(-dropOff3.component1().y, dropOff3.component1().x,dropOff3.heading.toDouble()+Math.toRadians(90));
+
+        specimenDrop = new Vector2d(-specimenDrop.y, specimenDrop.x);
+        collectSpecimen = new Vector2d(-collectSpecimen.y, collectSpecimen.x);
+
 
         MeepMeep meepMeep = new MeepMeep(750);
 
@@ -30,7 +46,7 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .setDimensions(13,13)
                 .build();
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(11, -65.5, Math.toRadians(-90)))
+        myBot.runAction(myBot.getDrive().actionBuilder(start)
                 .strafeTo(specimenDrop)
                 .strafeToLinearHeading(pickUp1.component1(),pickUp1.heading)
                 .turn(dropOff1.heading.toDouble()-pickUp1.heading.toDouble())
@@ -40,13 +56,8 @@ public class MeepMeepTesting {
                 .strafeTo(dropOff3.component1())
                 .turn(Math.toRadians(90)-dropOff3.heading.toDouble())
                 .strafeTo(collectSpecimen)
-                .strafeToLinearHeading(new Vector2d(specimenDrop.x+12, specimenDrop.y),Math.toRadians(-90))
-                .strafeToLinearHeading(collectSpecimen,Math.toRadians(90))
-                .strafeToLinearHeading(new Vector2d(specimenDrop.x+9, specimenDrop.y),Math.toRadians(-90))
-                .strafeToLinearHeading(collectSpecimen,Math.toRadians(90))
-                .strafeToLinearHeading(new Vector2d(specimenDrop.x+6, specimenDrop.y),Math.toRadians(-90))
-                .strafeToLinearHeading(collectSpecimen,Math.toRadians(90))
-                .strafeToLinearHeading(new Vector2d(specimenDrop.x+3, specimenDrop.y),Math.toRadians(-90))
+                .strafeTo(specimenDrop)
+                .strafeTo(collectSpecimen)
                 .build()
         );
 

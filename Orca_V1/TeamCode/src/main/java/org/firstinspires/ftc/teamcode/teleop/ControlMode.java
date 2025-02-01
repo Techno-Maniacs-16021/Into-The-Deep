@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robots.OrcaV1;
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
-
+/*
 @TeleOp(name = "TeleOp")
 @Config
 public class ControlMode extends OpMode{
@@ -40,11 +40,11 @@ public class ControlMode extends OpMode{
         else if(gamepad1.triangle){
             orca.intake().setColorToEject("blue");
         }
-        /*orca.deposit().PIDTuning(p,i,d,f,target);
+        orca.deposit().PIDTuning(p,i,d,f,target);
         orca.deposit().refresh(true);
         telemetry.addData("Current Pos: ", orca.deposit().getCurrentPosition());
         telemetry.addData("Target Pos: ", target);
-        telemetry.update();*/
+        telemetry.update();
         TelemetryPacket packet = new TelemetryPacket();
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
@@ -93,4 +93,4 @@ public class ControlMode extends OpMode{
     public void stop() {
 
     }
-}
+}*/

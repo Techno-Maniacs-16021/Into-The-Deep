@@ -1,27 +1,21 @@
 package org.firstinspires.ftc.teamcode.robots;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.leftFrontMotorName;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.leftRearMotorName;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.rightFrontMotorName;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.rightRearMotorName;
-
-import com.acmerobotics.roadrunner.Pose2d;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.localization.Pose;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.Path;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.PathChain;
+
 
 import dev.frozenmilk.mercurial.commands.Lambda;
 
 public class OrcaV2 extends Follower {
     //IntakeV1 INTAKE;
     //DepositV1 DEPOSIT;
-    private final IntakeV2 intake;
-    private final DepositV2 deposit;
+    //private final IntakeV2 intake;
+    //private final DepositV2 deposit;
     private DcMotorEx leftFront;
     private DcMotorEx leftRear;
     private DcMotorEx rightFront;
@@ -30,13 +24,14 @@ public class OrcaV2 extends Follower {
 
     private String state = "Standby";
 
-    public OrcaV2(HardwareMap hardwareMap, Pose2d pose ) {
+    public OrcaV2(HardwareMap hardwareMap, Pose startPose) {
         super(hardwareMap);
         this.hardwareMap = hardwareMap;
-        intake = new IntakeV2(hardwareMap);
-        deposit = new DepositV2(hardwareMap);
+        this.setStartingPose(startPose);
+        //intake = new IntakeV2(hardwareMap);
+        //deposit = new DepositV2(hardwareMap);
     }
-    public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
+    /*public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         drive(gamepad1LeftStickX,gamepad1LeftStickY,gamepad1RightStickX);
         refresh();
     }
@@ -68,7 +63,9 @@ public class OrcaV2 extends Follower {
 
     public DepositV2 deposit(){
         return deposit;
-    }
+    }*/
+
+
     //auton pathing stuff
     public void deltaHeading(double degreesLeft) { // if you want to turn right, use negative degrees
         Pose temp = new Pose(this.getPose().getX(), this.getPose().getY(), this.getPose().getHeading() + Math.toRadians(degreesLeft));
@@ -101,6 +98,70 @@ public class OrcaV2 extends Follower {
                 .addRequirements(this)
                 .setInterruptible(true)
                 .setInit(() -> this.followPath(path, true))
+                .setExecute(() -> {
+                    this.update();
+                    //this.telemetryDebug(telemetry);
+
+                })
+                .setFinish(() -> !this.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) this.breakFollowing();
+                });
+    }
+
+    public Lambda traverse(Path[] list, int num) {
+        PathChain chain;
+        switch (num) {
+            case 2:
+                chain = this.pathBuilder()
+                        .addPath(list[0])
+                        .addPath(list[1])
+                        .build();
+                break;
+            case 3:
+                chain = this.pathBuilder()
+                        .addPath(list[0])
+                        .addPath(list[1])
+                        .addPath(list[2])
+                        .build();
+                break;
+            case 4:
+                chain = this.pathBuilder()
+                        .addPath(list[0])
+                        .addPath(list[1])
+                        .addPath(list[2])
+                        .addPath(list[3])
+                        .build();
+                break;
+            case 5:
+                chain = this.pathBuilder()
+                        .addPath(list[0])
+                        .addPath(list[1])
+                        .addPath(list[2])
+                        .addPath(list[3])
+                        .addPath(list[4])
+                        .build();
+                break;
+            case 6:
+                chain = this.pathBuilder()
+                        .addPath(list[0])
+                        .addPath(list[1])
+                        .addPath(list[2])
+                        .addPath(list[3])
+                        .addPath(list[4])
+                        .addPath(list[5])
+                        .build();
+                break;
+            default:
+                chain = this.pathBuilder()
+                        .addPath(list[0])
+                        .build();
+                break;
+        }
+        return new Lambda("follow-path")
+                .addRequirements(this)
+                .setInterruptible(true)
+                .setInit(() -> this.followPath(chain, true))
                 .setExecute(() -> {
                     this.update();
                     //this.telemetryDebug(telemetry);
