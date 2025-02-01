@@ -22,7 +22,6 @@ import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-import org.firstinspires.ftc.teamcode.roadrunner.tuning.localization.Drawing;
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
@@ -69,11 +68,6 @@ public class FiveSpec extends OpMode {
 
         telemetry.addData("Position", orca.getPose().toString());
         telemetry.update();
-
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.fieldOverlay().setStroke("#3F51B5");
-        Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(orca.getPose().getX(),orca.getPose().getY(),orca.getPose().getHeading()));
-        FtcDashboard.getInstance().sendTelemetryPacket(packet);
     }
 
     @Override

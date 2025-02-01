@@ -5,27 +5,22 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.PwmControl;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.robots.OrcaV1;
-
+import org.firstinspires.ftc.teamcode.robots.OrcaV2;
+/*
 @TeleOp
 @Config
 public class PIDTuning extends OpMode {
 
     public static double p,i,d,f,target;
-    OrcaV1 orca;
+    OrcaV2 orca;
     @Override
     public void init() {
         p = 0; i = 0; d = 0; f = 0; target = 0;
-        orca = new OrcaV1(hardwareMap,new Pose2d(0,0,0));
+        orca = new OrcaV2(hardwareMap,new Pose(0,0,0));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         orca.intake().startIntaking();
     }
@@ -53,4 +48,4 @@ public class PIDTuning extends OpMode {
 
     }
 
-}
+}*/
