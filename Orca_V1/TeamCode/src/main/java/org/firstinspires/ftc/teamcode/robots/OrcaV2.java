@@ -3,10 +3,20 @@ package org.firstinspires.ftc.teamcode.robots;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.pedroPathingOld.follower.Follower;
-import org.firstinspires.ftc.teamcode.pedroPathingOld.localization.Pose;
-import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.Path;
-import org.firstinspires.ftc.teamcode.pedroPathingOld.pathGeneration.PathChain;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
+import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.Path;
+import com.pedropathing.pathgen.PathChain;
+import com.pedropathing.pathgen.Point;
+import com.pedropathing.util.Constants;
+import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
+import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 
 import dev.frozenmilk.mercurial.commands.Lambda;
