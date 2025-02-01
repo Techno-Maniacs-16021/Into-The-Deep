@@ -1,5 +1,11 @@
 package org.firstinspires.ftc.teamcode.robots;
 
+import static com.pedropathing.follower.FollowerConstants.leftFrontMotorName;
+import static com.pedropathing.follower.FollowerConstants.leftRearMotorName;
+import static com.pedropathing.follower.FollowerConstants.rightFrontMotorName;
+import static com.pedropathing.follower.FollowerConstants.rightRearMotorName;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -21,11 +27,11 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 import dev.frozenmilk.mercurial.commands.Lambda;
 
-public class OrcaV2 extends Follower {
+public class OrcaV2 {
     //IntakeV1 INTAKE;
     //DepositV1 DEPOSIT;
-    //private final IntakeV2 intake;
-    //private final DepositV2 deposit;
+    private final IntakeV2 intake;
+    private final DepositV2 deposit;
     private DcMotorEx leftFront;
     private DcMotorEx leftRear;
     private DcMotorEx rightFront;
@@ -33,29 +39,29 @@ public class OrcaV2 extends Follower {
     HardwareMap hardwareMap;
 
     private String state = "Standby";
+    Follower follower;
 
     public OrcaV2(HardwareMap hardwareMap, Pose startPose) {
-        super(hardwareMap);
+
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
+
         this.hardwareMap = hardwareMap;
-        this.setStartingPose(startPose);
-        //intake = new IntakeV2(hardwareMap);
-        //deposit = new DepositV2(hardwareMap);
+        intake = new IntakeV2(hardwareMap);
+        deposit = new DepositV2(hardwareMap);
     }
-    /*public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
-        drive(gamepad1LeftStickX,gamepad1LeftStickY,gamepad1RightStickX);
+    public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
+        follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
         refresh();
     }
     public void refresh(){
         deposit.setSenor(intake.clawSenor());
         deposit.setIsIntakeTransferred(intake.isTransferred());
-    }
-
-    public void drive(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
-        this.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
-        this.update();
+        follower.update();
     }
     public void teleopInit (){
-        this.startTeleopDrive();
+        follower.startTeleopDrive();
         leftFront = hardwareMap.get(DcMotorEx.class, leftFrontMotorName);
         leftRear = hardwareMap.get(DcMotorEx.class, leftRearMotorName);
         rightRear = hardwareMap.get(DcMotorEx.class, rightRearMotorName);
@@ -73,53 +79,55 @@ public class OrcaV2 extends Follower {
 
     public DepositV2 deposit(){
         return deposit;
-    }*/
+    }
 
 
     //auton pathing stuff
     public void deltaHeading(double degreesLeft) { // if you want to turn right, use negative degrees
-        Pose temp = new Pose(this.getPose().getX(), this.getPose().getY(), this.getPose().getHeading() + Math.toRadians(degreesLeft));
-        this.holdPoint(temp);
+        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading() + Math.toRadians(degreesLeft));
+        follower.holdPoint(temp);
     }
 
     public void finalHeading(double degrees) { // if you want to turn right, use negative degrees
-        Pose temp = new Pose(this.getPose().getX(), this.getPose().getY(), Math.toRadians(degrees));
-        this.holdPoint(temp);
+        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(degrees));
+        follower.holdPoint(temp);
     }
 
     public Lambda turnTo(double degrees) {
         return new Lambda("follow-path")
-                .addRequirements(this)
+                .addRequirements(follower)
                 .setInterruptible(true)
                 .setInit(() -> this.finalHeading(degrees))
                 .setExecute(() -> {
-                    this.update();
+                    follower.update();
                     //this.telemetryDebug(telemetry);
 
                 })
-                .setFinish(() -> !this.isBusy())
+                .setFinish(() -> !follower.isBusy())
                 .setEnd((interrupted) -> {
-                    if (interrupted) this.breakFollowing();
+                    if (interrupted) follower.breakFollowing();
                 });
     }
 
     public Lambda follow(Path path) {
         return new Lambda("follow-path")
-                .addRequirements(this)
+                .addRequirements(follower)
                 .setInterruptible(true)
-                .setInit(() -> this.followPath(path, true))
+                .setInit(() -> follower.followPath(path, true))
                 .setExecute(() -> {
-                    this.update();
+                    follower.update();
                     //this.telemetryDebug(telemetry);
 
                 })
-                .setFinish(() -> !this.isBusy())
+                .setFinish(() -> !follower.isBusy())
                 .setEnd((interrupted) -> {
-                    if (interrupted) this.breakFollowing();
+                    if (interrupted) follower.breakFollowing();
                 });
     }
 
-
+    public Follower getFollower() {
+        return follower;
+    }
     //public DepositV2 deposit(){
         //return deposit;
     //}

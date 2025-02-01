@@ -27,12 +27,13 @@ public class IntakeV2 {
     PIDController slidesPID;
 
 
-    final double
-            ANGLED_ROTATION = 0.1, ANGLED_TILT = 0.15,
-            VERTICAL_ROTATION = .11, VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0,
+    public double
+            ANGLED_ROTATION = 0.05, ANGLED_TILT = 0.15,
+            VERTICAL_ROTATION = 0.1, VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0,
             EJECT_TILT = 0.5,
-            TRANSFER_ROTATION = 1, TRANSFER_TILT = 0.95,
-            STANDBY_ROTATION = 0.7, STANDBY_TILT = 0.6;
+            SPECIMEN_ROTATION = 0.4, SPECIMEN_TILT = 0.6,
+    TRANSFER_ROTATION = 0.65, TRANSFER_TILT = 0.6,
+            STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.6;
     double rotationPosition = STANDBY_ROTATION, tiltPosition = STANDBY_TILT, gatePosition = 0;
 
     final double COUNTS_PER_REV_MOTOR = 145.1*(2/1);
@@ -84,7 +85,7 @@ public class IntakeV2 {
 
         tilt.setPwmRange(new PwmControl.PwmRange(510,2490));
         rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
-        gate.setPwmRange(new PwmControl.PwmRange(510,2490));
+        //gate.setPwmRange(new PwmControl.PwmRange(510,2490));
 
         tilt.setDirection(ServoImplEx.Direction.REVERSE);
         gate.setDirection(ServoImplEx.Direction.REVERSE);
@@ -219,12 +220,12 @@ public class IntakeV2 {
     }
 
     public void slideControlLoop(double slidesPower, boolean retract, boolean PID){
-        if(intakeCommand.equals("init")){
+        if(intakeCommand.equals("init")||intakeCommand.equals("specimen")){
             if ((slides.getCurrent(CurrentUnit.AMPS) < 7||currentPos>0.25) && this.slidesPower != -0.25) {
                 this.slidesPower = -1;
             }
             else {
-                if (Math.abs(currentPos) < 0.01) {
+                if (Math.abs(currentPos) < 0.05) {
                     slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     slides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
@@ -245,7 +246,7 @@ public class IntakeV2 {
 
                 this.slidesPower = -0.25;
 
-                if ((!sampleColor.equals("none") && !sampleColor.equals(colorToEject) && retract)||sampleColor.equals("yellow")) {
+                if (!sampleColor.equals("none") && !sampleColor.equals(colorToEject)) {
                     intakeCommand = "transfer";
                     //TODO: remove when servo is fixed
                     //intakePower = REVERSE_INTAKE_POWER_TILT;
@@ -355,12 +356,18 @@ public class IntakeV2 {
                 isTransferred = false;
                 intakeCommand = "standby";
             }
-            else if(transferTimer.milliseconds()>400){
+            else if(transferTimer.milliseconds()>300){
                 rotationPosition = TRANSFER_ROTATION;
                 tiltPosition = TRANSFER_TILT;
                 intakePower = 0.5;
                 isTransferred = true;
             }
+        }
+        else if(intakeCommand.equals("specimen")){
+            intakePower = 0;
+            tiltPosition = SPECIMEN_TILT;
+            rotationPosition = SPECIMEN_ROTATION;
+
         }
         else if(intakeCommand.equals("init")){
             intakePower = 0;
@@ -385,13 +392,18 @@ public class IntakeV2 {
         intakeCommand = "intake";
         intakeMode = "vertical";
     }
+    public void specimen(){
+        intakeCommand = "specimen";
+    }
     public void angledIntake(){
         intakeCommand = "intake";
         intakeMode = "angled";
     }
+
     public void verticalIntake(){
         intakeMode = "vertical";
     }
+
     public void setColorToEject(String color){
         colorToEject = color;
     }
@@ -449,6 +461,9 @@ public class IntakeV2 {
     }
     public boolean isTransferred(){
         return isTransferred;
+    }
+    public void setIntakeCommand(String command){
+        intakeCommand = command;
     }
 
 

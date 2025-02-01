@@ -22,16 +22,19 @@ public class DepositV2{
     DcMotorEx leftSlides,rightSlides;
     AnalogInput currentRotation, currentLinkage, currentLeftDifferential, currentRightDifferential;
 
-    final double
-            INTERMEDIATE_ROTATION = 0, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 0, RETRACT_RIGHT_DIFF = 0,
-            SPECIMEN_ROTATION = 0,SPECIMEN_LINKAGE = 0, SPECIMEN_LEFT_DIFF = 0, SPECIMEN_RIGHT_DIFF = 0,
-            SPECIMEN_DEPOSIT_ROTATION = 0,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0,
-            SAMPLE_DEPOSIT_ROTATION = 0, TRANSFER_LINKAGE = 0, TRANSFER_LEFT_DIFF = 0, TRANSFER_RIGHT_DIFF = 0,
-            STANDBY_ROTATION = 0,STANDBY_LINKAGE = 0, STANDBY_LEFT_DIFF = 0, STANDBY_RIGHT_DIFF = 0;
+    public double
+            INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0.15, RETRACT_LEFT_DIFF = 0.85, RETRACT_RIGHT_DIFF = 0.15,
+            SPECIMEN_ROTATION = 0.0,SPECIMEN_LINKAGE = 1, SPECIMEN_LEFT_DIFF = 0, SPECIMEN_RIGHT_DIFF = 0.3,
+            SPECIMEN_DEPOSIT_ROTATION = 1,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.3,SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.6, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.0,
+            SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.7, TRANSFER_RIGHT_DIFF = 0,
+            STANDBY_ROTATION = .145,STANDBY_LINKAGE = 0.15, STANDBY_LEFT_DIFF = 0.85, STANDBY_RIGHT_DIFF = 0.15;
+
+
     final double COUNTS_PER_REV_MOTOR = 384.5;
+    final double ALLOWED_SERVO_ERROR = 0.15;
     double target,currentPos;
     final double ALLOWED_ERROR = 0.011;
-    double SAMPLE_DEPOSIT = 3.8;
+    double SAMPLE_DEPOSIT = 2.3, SPECIMEN_PRIME = 0.7, SPECIMEN = 1.2;
     double rotationPosition = 1, clawPosition = 0.9, linkagePosition = 0, leftDiffPosition = 0, rightDiffPosition = 0;
     PIDController slidesPID;
     ArrayList<Double> positionLog = new ArrayList<>();
@@ -39,18 +42,18 @@ public class DepositV2{
     boolean colorSenor = false;
     boolean isIntakeTransferred;
 
-    double p = 1.4,i = 0,d = 0,f = 0.2;
+    double p = 10,i = 0,d = 0,f = 0.2;
     //TODO: Set to false
     boolean pidTuning = false;
     double slidePower;
-    String depositCommand = "retract";
+    String depositCommand = "standby";
     public  DepositV2(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 
         //TODO: Set Configurations
         rotation = hardwareMap.get(ServoImplEx.class,"depositRotation");
-        linkage = hardwareMap.get(ServoImplEx.class,"linkage");
+        linkage = hardwareMap.get(ServoImplEx.class,"depositLinkage");
         claw = hardwareMap.get(ServoImplEx.class,"claw");
         leftDifferential = hardwareMap.get(ServoImplEx.class,"lDiff");
         rightDifferential = hardwareMap.get(ServoImplEx.class,"rDiff");
@@ -70,10 +73,11 @@ public class DepositV2{
         leftDifferential.setPwmRange(new PwmControl.PwmRange(510,2490));
         rightDifferential.setPwmRange(new PwmControl.PwmRange(510,2490));
 
-        linkage.setDirection(Servo.Direction.REVERSE);
-        rightSlides.setDirection(DcMotorSimple.Direction.REVERSE);
-        rotation.setDirection(Servo.Direction.REVERSE);
+        //linkage.setDirection(Servo.Direction.REVERSE);
+        leftSlides.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rotation.setDirection(Servo.Direction.REVERSE);
         claw.setDirection(Servo.Direction.REVERSE);
+
 
         leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -81,7 +85,7 @@ public class DepositV2{
         rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //TODO: reset vars
-        p = 1.75; i = 0; d = 0; f = 0.2;
+        p = 8; i = 0; d = 0; f = 0.2;
         slidesPID = new PIDController(p,i,d);
 
         for(int k = 0; k < posLogLength; k++){
@@ -116,13 +120,26 @@ public class DepositV2{
                 slidePower = -1;
             }
             else{
-                slidePower = -0.2;
-                leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                slidePower = -0.5;
+                if(currentPos>ALLOWED_ERROR*10&&currentPos<0.2){
+                    leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
             }
         }
+    }
+    public double getCurrentSlidePosition(){
+        return currentPos;
+    }
+    public boolean slidesReachedTarget(){
+        double avgRateChange1 = Math.abs(positionLog.get(posLogLength-1)-positionLog.get(0))/posLogLength;
+        return (avgRateChange1 < ALLOWED_ERROR)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15;
+        //(leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 > 7;
+    }
+    public void setTarget(double target){
+        this.target = target;
     }
     public void PIDTuning (double p, double i, double d, double f, double target) {
         if(pidTuning) {
@@ -135,54 +152,73 @@ public class DepositV2{
     }
     public void controlLoop(){
 
-        if(depositCommand.equals("transfer")){
-            clawPosition = 1;
+        if(depositCommand.equals("transfer")||depositCommand.equals("depositSample")){
+            if(!colorSenor&&depositCommand.equals("transfer")){
+                depositCommand = "standby";
+            }
             if(isIntakeTransferred){
                 rotationPosition = INTERMEDIATE_ROTATION;
             }
-            if(currentRotation.getVoltage()>0){
+            if(currentRotation.getVoltage()<(2+ALLOWED_SERVO_ERROR)){
                 linkagePosition = TRANSFER_LINKAGE;
                 leftDiffPosition = TRANSFER_LEFT_DIFF;
                 rightDiffPosition = TRANSFER_RIGHT_DIFF;
                 rotationPosition = SAMPLE_DEPOSIT_ROTATION;
+                depositCommand = "depositSample";
             }
         }
         else if(depositCommand.equals("specimen")){
-            if(currentRotation.getVoltage()>0){
+            if(currentRotation.getVoltage()<(2+ALLOWED_SERVO_ERROR)){
                 linkagePosition = SPECIMEN_LINKAGE;
                 leftDiffPosition = SPECIMEN_LEFT_DIFF;
                 rightDiffPosition = SPECIMEN_RIGHT_DIFF;
             }
-            if(currentLeftDifferential.getVoltage()>0&&currentRightDifferential.getVoltage()>0){
+            if((Math.abs(0.18-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(2.28-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){
                 rotationPosition = SPECIMEN_ROTATION;
             }
         }
-        else if(depositCommand.equals("depositSpecimen")){
+        else if(depositCommand.equals("depositSpecimen")||depositCommand.equals("depositSpecimenClip")){
             linkagePosition = SPECIMEN_DEPOSIT_LINKAGE;
-            leftDiffPosition = SPECIMEN_DEPOSIT_LEFT_DIFF;
-            rightDiffPosition = SPECIMEN_DEPOSIT_RIGHT_DIFF;
+            if(depositCommand.equals("depositSpecimen")){
+                leftDiffPosition = SPECIMEN_DEPOSIT_LEFT_DIFF;
+                rightDiffPosition = SPECIMEN_DEPOSIT_RIGHT_DIFF;
+            }
+            else{
+                leftDiffPosition = SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF;
+                rightDiffPosition = SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF;
+            }
+
             rotationPosition = SPECIMEN_DEPOSIT_ROTATION;
         }
         else if(depositCommand.equals("retract")){
             rotationPosition = INTERMEDIATE_ROTATION;
             clawPosition = 0;
-            if(currentRotation.getVoltage()>0) {
+            if(Math.abs(2.07-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR) {
                 linkagePosition = RETRACT_LINKAGE;
-                if(currentLinkage.getVoltage()>0){
+                if(Math.abs(2.03-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR){
                     leftDiffPosition = RETRACT_LEFT_DIFF;
                     rightDiffPosition = RETRACT_RIGHT_DIFF;
-                    if(currentLeftDifferential.getVoltage()>0&&currentRightDifferential.getVoltage()>0){
+                    if((Math.abs(2.71-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(2.73-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){
                         depositCommand = "standby";
                     }
                 }
             }
         }
+        else if(depositCommand.equals("testing")){
+            linkagePosition = SPECIMEN_DEPOSIT_LINKAGE;
+            leftDiffPosition = SPECIMEN_DEPOSIT_LEFT_DIFF;
+            rightDiffPosition = SPECIMEN_DEPOSIT_RIGHT_DIFF;
+            rotationPosition = SPECIMEN_DEPOSIT_ROTATION;
+        }
         else if(depositCommand.equals("standby")){
-            if((colorSenor&&depositCommand.equals("standby"))){
+            if((colorSenor)){
                 depositCommand = "transfer";
+                clawPosition = 1;
+            }
+            else{
+                clawPosition = 0;
             }
             rotationPosition = STANDBY_ROTATION;
-            clawPosition = 0;
             linkagePosition = STANDBY_LINKAGE;
             leftDiffPosition = STANDBY_LEFT_DIFF;
             rightDiffPosition = STANDBY_RIGHT_DIFF;
@@ -196,11 +232,15 @@ public class DepositV2{
         rotationPosition = INTERMEDIATE_ROTATION;
         depositCommand = "specimen";
     }
-    public void grabSpecimen(){
+    public void closeClaw(){
         clawPosition = 1;
     }
     public void depositSpecimen(){
         depositCommand = "depositSpecimen";
+        target = SPECIMEN_PRIME;
+    }
+    public void clipSpecimen(){
+        target = SPECIMEN;
     }
     public void retract(){
         target = 0;
@@ -210,26 +250,33 @@ public class DepositV2{
         target = SAMPLE_DEPOSIT;
         depositCommand = "depositSample";
     }
-    public void releaseSample(){
+    public void releaseClaw(){
         clawPosition = 0;
     }
 
     public String getDepositCommand(){
         return depositCommand;
     }
-    public boolean slidesReachedTarget(){
-        double avgRateChange1 = Math.abs(positionLog.get(posLogLength-1)-positionLog.get(0))/posLogLength;
-        return (avgRateChange1 < ALLOWED_ERROR)&&Math.abs(target-currentPos)<ALLOWED_ERROR*15;
-        //(leftSlides.getCurrent(CurrentUnit.AMPS)+rightSlides.getCurrent(CurrentUnit.AMPS))/2 > 7;
-    }
-    public void setTarget(double target){
-        this.target = target;
-    }
     public void setSenor(boolean bool){
         colorSenor = bool;
     }
     public void setIsIntakeTransferred(boolean bool){
         isIntakeTransferred = bool;
+    }
+    public AnalogInput currentRotation(){
+        return currentRotation;
+    }
+    public AnalogInput getCurrentLinkage(){
+        return currentLinkage;
+    }
+    public AnalogInput getCurrentLeftDifferential(){
+        return currentLeftDifferential;
+    }
+    public AnalogInput getCurrentRightDifferential(){
+        return currentRightDifferential;
+    }
+    public void setDepositCommand(String command){
+        depositCommand = command;
     }
 
 }

@@ -52,8 +52,8 @@ public class FiveSpec extends OpMode {
 
     @Override
     public void loop() {
-        orca.update();
-        telemetry.addData("Position", orca.getPose().toString());
+        orca.refresh();
+        telemetry.addData("Position", orca.getFollower().getPose().toString());
         telemetry.update();
     }
 

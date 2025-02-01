@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.robots;
 
 
-import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.AnalogInput;
