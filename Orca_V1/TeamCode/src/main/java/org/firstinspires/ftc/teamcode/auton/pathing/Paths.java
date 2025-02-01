@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
+import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
+
 public class Paths {
 
     public static ArrayList<Path> pathList = new ArrayList<>();
@@ -81,7 +84,7 @@ public class Paths {
                 ),
                 createPath( //specimen cycle (collect)
                         new BezierLine(
-                                new Point(specCollect),
+                                new Point(specDrop),
                                 new Point(specDrop))
                 )
         );

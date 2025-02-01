@@ -28,6 +28,7 @@ import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
+import dev.frozenmilk.mercurial.commands.groups.Parallel;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
 
 @Mercurial.Attach
@@ -43,6 +44,7 @@ public class FiveSpec extends OpMode {
     public void init() {
         Constants.setConstants(FConstants.class, LConstants.class);
         orca = new OrcaV2(hardwareMap, new Pose(-65.5,-11,Math.toRadians(0)));
+        //orca = new OrcaV2(hardwareMap, new Pose(0,0,Math.toRadians(0)));
         Paths.init();
         pathTimer = new Timer();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -51,29 +53,14 @@ public class FiveSpec extends OpMode {
     @Override
     public void loop() {
         orca.update();
-
-        new Sequential(
-                orca.follow(Paths.pathList.get(0))
-                /*orca.follow(Paths.pathList.get(1)),
-                orca.turnTo(Math.toRadians(-40.3)),
-                orca.follow(Paths.pathList.get(2)),
-                orca.turnTo(Math.toRadians(-35)),
-                orca.follow(Paths.pathList.get(3)),
-                orca.follow(Paths.pathList.get(4)),
-                orca.turnTo(Math.toRadians(90)),
-                orca.follow(Paths.pathList.get(5)),
-                orca.follow(Paths.pathList.get(6)),
-                orca.follow(Paths.pathList.get(7))*/
-        ).schedule();
-
         telemetry.addData("Position", orca.getPose().toString());
         telemetry.update();
     }
 
     @Override
     public void start() {
-        /*new Sequential(
-                new Parallel ( //SPECIMEN DROP
+        new Sequential(
+                new Parallel( //SPECIMEN DROP
                         orca.follow(Paths.pathList.get(0)),
                         new Sequential(
                                 //set specimen + smart wait + deposit specimen
@@ -140,6 +127,6 @@ public class FiveSpec extends OpMode {
                                 //smart wait
                         )
                 )
-        ).schedule();*/
+        ).schedule();
     }
 }
