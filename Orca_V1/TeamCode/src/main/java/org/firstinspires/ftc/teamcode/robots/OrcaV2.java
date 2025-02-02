@@ -26,6 +26,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 
 import dev.frozenmilk.mercurial.commands.Lambda;
+import dev.frozenmilk.mercurial.commands.groups.Sequential;
+import dev.frozenmilk.mercurial.commands.groups.Parallel;
 
 public class OrcaV2 {
     //IntakeV1 INTAKE;
@@ -83,23 +85,19 @@ public class OrcaV2 {
 
 
     //auton pathing stuff
-    public void deltaHeading(double degreesLeft) { // if you want to turn right, use negative degrees
-        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading() + Math.toRadians(degreesLeft));
+
+    public void finalHeading(double radians) { // if you want to turn right, use negative degrees
+        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), radians);
         follower.holdPoint(temp);
     }
 
-    public void finalHeading(double degrees) { // if you want to turn right, use negative degrees
-        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(degrees));
-        follower.holdPoint(temp);
-    }
-
-    public Lambda turnTo(double degrees) {
-        return new Lambda("follow-path")
+    public Lambda turnTo(double radians) {
+        return new Lambda("turn")
                 .addRequirements(follower)
                 .setInterruptible(true)
-                .setInit(() -> this.finalHeading(degrees))
                 .setExecute(() -> {
                     follower.update();
+                    this.finalHeading(radians);
                     //this.telemetryDebug(telemetry);
 
                 })
@@ -128,8 +126,66 @@ public class OrcaV2 {
     public Follower getFollower() {
         return follower;
     }
-    //public DepositV2 deposit(){
-        //return deposit;
-    //}
+
+    //auton actions
+    public Lambda dropSpecimen() {
+        return new Lambda("dep-specDrop")
+                .setExecute(deposit::depositSpecimen)
+                .setFinish(() -> true);
+    }
+
+    public Lambda angledIntake() {
+        return new Lambda("int-angle")
+                .setExecute(intake::angledIntake)
+                .setFinish(() -> true);
+    }
+
+    public Lambda retractDeposit() {
+        return new Lambda("dep-retract")
+                .setExecute(deposit::retract)
+                .setFinish(() -> true);
+    }
+
+    public Lambda retractIntake() {
+        return new Lambda("int-retract")
+                .setExecute(intake::retract)
+                .setFinish(() -> true);
+    }
+
+    public Lambda startIntaking() {
+        return new Lambda("int-start")
+                .setExecute(intake::startIntaking)
+                .setFinish(() -> true);
+    }
+
+    public Lambda intakeSpecimen() {
+        return new Lambda("dep-intake")
+                .setExecute(deposit::specimenIntake)
+                .setFinish(() -> true);
+    }
+
+    public Lambda intakeSpecMode() {
+        return new Lambda("int-specMode")
+                .setExecute(intake::specimen)
+                .setFinish(() -> true);
+    }
+
+    public Lambda refreshIntake(double power, boolean vertical, boolean angled, boolean reversed, boolean retract, boolean pid) {
+        return new Lambda("int-refresh")
+                .setExecute(() -> intake.refresh(power,vertical,angled,reversed,retract,pid))
+                .setFinish(() -> true);
+    }
+
+    public Lambda refreshDeposit() {
+        return new Lambda("int-refresh")
+                .setExecute(deposit::refresh)
+                .setFinish(() -> true);
+    }
+
+    public Lambda clipSpecimen() {
+        return new Lambda("dep-clip")
+                .setExecute(deposit::clipSpecimen)
+                .setFinish(() -> true);
+    }
 
 }

@@ -120,13 +120,13 @@ public class DepositV2{
                 slidePower = -1;
             }
             else{
-                slidePower = -0.5;
+                /*slidePower = -0.5;
                 if(currentPos>ALLOWED_ERROR*10&&currentPos<0.2){
                     leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                }
+                }*/
             }
         }
     }

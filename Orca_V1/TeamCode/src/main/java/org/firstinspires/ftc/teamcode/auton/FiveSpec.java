@@ -44,10 +44,10 @@ public class FiveSpec extends OpMode {
     public void init() {
         Constants.setConstants(FConstants.class, LConstants.class);
         orca = new OrcaV2(hardwareMap, new Pose(-65.5,-11,Math.toRadians(0)));
-        //orca = new OrcaV2(hardwareMap, new Pose(0,0,Math.toRadians(0)));
         Paths.init();
         pathTimer = new Timer();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
     }
 
     @Override
@@ -61,20 +61,20 @@ public class FiveSpec extends OpMode {
     public void start() {
         new Sequential(
                 new Parallel( //SPECIMEN DROP
-                        orca.follow(Paths.pathList.get(0)),
-                        new Sequential(
-                                //set specimen + smart wait + deposit specimen
-                        )
+                        orca.follow(Paths.pathList.get(0))
+                        //deposit spec - deposit
                 ),
+                //clip spec
                 new Parallel( //PICKUP 1
                         orca.follow(Paths.pathList.get(1))
-                        //intake ground
                         //retract deposit
+                        //extend intake
+                        //start intaking
                 ),
                 new Parallel( //DROPOFF 1
-                        orca.turnTo(Math.toRadians(-40.3)),
+                        orca.turnTo(Paths.dropoff1.getHeading()),
                         new Sequential(
-                                //smart wait + outtake ground
+                                //outtake from intake
                         )
                 ),
                 new Parallel( //PICKUP 2
@@ -84,47 +84,42 @@ public class FiveSpec extends OpMode {
                 ),
                 //intake ground
                 new Parallel( //DROPOFF 2
-                        orca.turnTo(Math.toRadians(-35)),
+                        orca.turnTo(Paths.dropoff2.getHeading()),
                         new Sequential(
                                 //smart wait + outtake ground
                         )
                 ),
                 new Parallel( //PICKUP 3
                         orca.follow(Paths.pathList.get(3))
-                        //set intake
                 ),
                 //intake ground
                 new Parallel( //DROP OFF 3 + COLLECT SPECIMEN
                         orca.follow(Paths.pathList.get(4)),
-                        orca.turnTo(Math.toRadians(90)),
+                        orca.turnTo(Paths.dropoff3.getHeading()),
                         orca.follow(Paths.pathList.get(5)),
                         new Sequential(
-                                //set intake
-                                //smart wait
                                 //outtake ground
-                                //retract intake
-                                //ready pickup spec
-                                //smart wait
-                                //pickup spec
-                                //smart wait
+                                orca.retractIntake(),
+                                new Parallel(
+                                        orca.intakeSpecimen(),
+                                        orca.intakeSpecMode()
+                                )
                         )
                 ),
                 new Parallel( //SPECIMEN DROP
                         orca.follow(Paths.pathList.get(6)),
                         new Sequential(
-                                //set specimen
-                                //smart wait
-                                //deposit specimen
+                                orca.dropSpecimen()
                         )
                 ),
                 new Parallel( //COLLECT SPECIMEN
                         orca.follow(Paths.pathList.get(7)),
                         new Sequential(
-                                //retract deposit
-                                //ready pickup spec
-                                //smart wait
-                                //pickup spec
-                                //smart wait
+                                orca.retractDeposit(),
+                                new Parallel(
+                                        orca.intakeSpecimen(),
+                                        orca.intakeSpecMode()
+                                )
                         )
                 )
         ).schedule();

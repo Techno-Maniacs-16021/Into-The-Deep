@@ -377,10 +377,6 @@ public class IntakeV2 {
         }
     }
 
-    public void makeArmGoDowny(){
-
-    }
-
     public void retract(){
         intakeCommand = "retract";
     }
