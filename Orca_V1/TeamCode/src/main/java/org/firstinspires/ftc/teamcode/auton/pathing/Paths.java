@@ -26,66 +26,83 @@ public class Paths {
 
     public static ArrayList<Path> pathList = new ArrayList<>();
 
-    public static Pose start = new Pose(-65.5,-11,Math.toRadians(0));
+    public static Pose start = new Pose(63.5,11,Math.toRadians(0));
 
-    public static Pose pickup1 = new Pose(-43.4,-34,Math.toRadians(-45.5));
-    public static Pose pickup2 = new Pose(-41.5,-42.7,Math.toRadians(-47.2));
-    public static Pose pickup3 = new Pose(-26.9,-42.3,Math.toRadians(-89.6));
+    public static Point curve1 = new Point(48,48);
+    public static Point curve2 = new Point(15,35);
 
-    public static Pose dropoff1 = new Pose(-43.4,-34,Math.toRadians(-130.3));
-    public static Pose dropoff2 = new Pose(-41.5,-42.7,Math.toRadians(-125));
-    public static Pose dropoff3 = new Pose(-60,-42.3,Math.toRadians(-89.6));
+    public static Pose pickup1 = new Pose(17.5,43.5,Math.toRadians(0));
+    public static Pose pickup2 = new Pose(17.5,55.5,Math.toRadians(0));
+    public static Pose pickup3 = new Pose(17.5,63.5,Math.toRadians(0));
 
-    public static Pose specDrop = new Pose(-34.85,-11,Math.toRadians(0));
-    public static Pose specCollect = new Pose(-63.8,-42.3,Math.toRadians(0));
+    public static Pose dropoff1 = new Pose(60,43.5,Math.toRadians(0));
+    public static Pose dropoff2 = new Pose(60,55.5,Math.toRadians(0));
+    public static Pose dropoff3 = new Pose(60,63.5,Math.toRadians(0));
+
+    public static Pose pause = new Pose(45,42.3,Math.toRadians(0));
+
+    public static Pose specDrop = new Pose(38,11,Math.toRadians(0));
+    public static Pose specCollect = new Pose(60,42.3,Math.toRadians(180));
 
     public static void init() {
         Collections.addAll(pathList,
-                createPath( //specimen drop
+                createPath(//specimen drop
                         new BezierLine(
                                 new Point(start),
                                 new Point(specDrop))
                 ),
                 createPath( //pickup 1
-                        new BezierLine(
+                        new BezierCurve(
                                 new Point(specDrop),
-                                new Point(pickup1)),
-                        specDrop.getHeading(),
-                        pickup1.getHeading()
+                                curve1,
+                                curve2,
+                                new Point(pickup1))
                 ),
-                createPath( //pickup 2
+                createPath( //dropoff 1
                         new BezierLine(
                                 new Point(pickup1),
-                                new Point(pickup2)),
-                        dropoff1.getHeading(),
-                        pickup2.getHeading()
+                                new Point(dropoff1))
+                ),
+                createPath( //pickup 2
+                        new BezierCurve(
+                                new Point(dropoff1),
+                                new Point(pickup1),
+                                new Point(pickup2))
+                ),
+                createPath( //dropoff 2
+                        new BezierLine(
+                                new Point(pickup2),
+                                new Point(dropoff2))
                 ),
                 createPath( //pickup 3
                         new BezierLine(
-                                new Point(pickup2),
-                                new Point(pickup3)),
-                        dropoff2.getHeading(),
-                        pickup3.getHeading()
-                ),
-                createPath( //dropoff 3
+                                new Point(dropoff2),
+                                new Point(pause))
+                        ),
+                createPath(
                         new BezierLine(
-                                new Point(pickup3),
-                                new Point(dropoff3))
-                ),
-                createPath( //specimen collect
-                        new BezierLine(
-                                new Point(dropoff3),
+                                new Point(pause),
                                 new Point(specCollect))
+                ),
+                createPath( //spec collect
+                        new BezierLine(
+                              new Point(specDrop),
+                              new Point(dropoff3))
                 ),
                 createPath( //specimen cycle (drop)
                         new BezierLine(
                                 new Point(specCollect),
-                                new Point(specDrop))
+                                new Point(specDrop)),
+                        specCollect.getHeading(),
+                        specDrop.getHeading()
                 ),
                 createPath( //specimen cycle (collect)
                         new BezierLine(
                                 new Point(specDrop),
-                                new Point(specDrop))
+                                new Point(pause)
+                        ),
+                                specDrop.getHeading(),
+                                pause.getHeading()
                 )
         );
 

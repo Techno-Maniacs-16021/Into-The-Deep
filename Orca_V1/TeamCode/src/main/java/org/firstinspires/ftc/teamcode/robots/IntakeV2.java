@@ -48,7 +48,7 @@ public class IntakeV2 {
 
     int globalTime = 0;
     boolean recentlyEjected = false;
-    boolean color3,isTransferred;
+    boolean color3,isTransferred,isTransferring;
     String intakeCommand = "standby", intakeMode = "angled";
     String colorToEject = "red";
     String sampleColor = "none";
@@ -80,8 +80,8 @@ public class IntakeV2 {
         intake = hardwareMap.get(DcMotorEx.class,"intake");
         slides = hardwareMap.get(DcMotorEx.class,"hSlides");
 
-        currentRotation = hardwareMap.get(AnalogInput.class, "currentIntakeRotation");
-        currentTilt = hardwareMap.get(AnalogInput.class, "currentIntakeTilt");
+        currentRotation = hardwareMap.get(AnalogInput.class, "cir");
+        currentTilt = hardwareMap.get(AnalogInput.class, "cit");
 
         tilt.setPwmRange(new PwmControl.PwmRange(510,2490));
         rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
@@ -189,17 +189,15 @@ public class IntakeV2 {
         );
     }
     public void updateSampleDetails(){
+        boolean red,blue;
+        //System.out.println(colorPin0.getState()+" "+colorPin2.getState()+" "+ colorPin1.getState()+" "+colorPin3.getState()+" "+ colorPin4.getState()+" "+colorPin5.getState());
+        blue =colorPin0.getState()||colorPin2.getState();
+        red =colorPin1.getState()||colorPin3.getState();
         colorSensorInputs.add(
-                colorPin0.getState() && colorPin1.getState() ? "yellow"
-                        : !colorPin0.getState() && colorPin1.getState() ? "red"
-                        : colorPin0.getState() && !colorPin1.getState() ? "blue"
+                blue && red ? "yellow"
+                        : !blue && red ? "red"
+                        : blue && !red ? "blue"
                         : "none");
-        colorSensorInputs.add(
-                colorPin2.getState() && colorPin3.getState() ? "yellow"
-                        : !colorPin2.getState() && colorPin3.getState() ? "red"
-                        : colorPin2.getState() && !colorPin3.getState() ? "blue"
-                        : "none");
-        colorSensorInputs.remove(0);
         colorSensorInputs.remove(0);
     }
     public String getCurrentSample(){
@@ -342,21 +340,24 @@ public class IntakeV2 {
             intakePower = STATIC_INTAKE_POWER;
         }
         else if(intakeCommand.equals("transfer")){
-            if(color3){
+            if(color3||sampleColor.equals("none")){
                 transferTimer.reset();
                 intakeCommand = "transferred";
+                isTransferring = true;
             }
             gatePosition = 1;
             intakePower = 1;
         }
         else if(intakeCommand.equals("transferred")){
+            isTransferring = true;
             if(transferTimer.milliseconds()>1000){
                 gatePosition = 0;
                 intakePower = 0;
                 isTransferred = false;
+                isTransferring = false;
                 intakeCommand = "standby";
             }
-            else if(transferTimer.milliseconds()>300){
+            else if(transferTimer.milliseconds()>500){
                 rotationPosition = TRANSFER_ROTATION;
                 tiltPosition = TRANSFER_TILT;
                 intakePower = 0.5;
@@ -457,6 +458,9 @@ public class IntakeV2 {
     }
     public boolean isTransferred(){
         return isTransferred;
+    }
+    public boolean isTransferring(){
+        return isTransferring;
     }
     public void setIntakeCommand(String command){
         intakeCommand = command;

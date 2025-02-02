@@ -55,11 +55,13 @@ public class OrcaV2 {
     }
     public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
+        deposit.setDepositCommand("specimen");
         refresh();
     }
     public void refresh(){
-        deposit.setSenor(intake.clawSenor());
+        deposit.setSenor(intake.isTransferring());
         deposit.setIsIntakeTransferred(intake.isTransferred());
+        deposit.setIsIntakeTransferring(intake.isTransferring());
         follower.update();
     }
     public void teleopInit (){
@@ -74,6 +76,13 @@ public class OrcaV2 {
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
+    public void autoInit (){
+        deposit.setDepositCommand(" ");
+        deposit.autoINIT();
+        deposit.refresh();
+        intake.setIntakeCommand("standby");
+        intake.refresh(0,false,false,false,false,false);
+    }
     public IntakeV2 intake(){
         return intake;
     }
@@ -86,18 +95,18 @@ public class OrcaV2 {
 
     //auton pathing stuff
 
-    public void finalHeading(double radians) { // if you want to turn right, use negative degrees
+    public void turnTo(double radians) { // if you want to turn right, use negative degrees
         Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), radians);
         follower.holdPoint(temp);
     }
 
-    public Lambda turnTo(double radians) {
+    public Lambda turn(double radians) {
         return new Lambda("turn")
                 .addRequirements(follower)
                 .setInterruptible(true)
                 .setExecute(() -> {
                     follower.update();
-                    this.finalHeading(radians);
+                    this.turnTo(radians);
                     //this.telemetryDebug(telemetry);
 
                 })
@@ -125,67 +134,6 @@ public class OrcaV2 {
 
     public Follower getFollower() {
         return follower;
-    }
-
-    //auton actions
-    public Lambda dropSpecimen() {
-        return new Lambda("dep-specDrop")
-                .setExecute(deposit::depositSpecimen)
-                .setFinish(() -> true);
-    }
-
-    public Lambda angledIntake() {
-        return new Lambda("int-angle")
-                .setExecute(intake::angledIntake)
-                .setFinish(() -> true);
-    }
-
-    public Lambda retractDeposit() {
-        return new Lambda("dep-retract")
-                .setExecute(deposit::retract)
-                .setFinish(() -> true);
-    }
-
-    public Lambda retractIntake() {
-        return new Lambda("int-retract")
-                .setExecute(intake::retract)
-                .setFinish(() -> true);
-    }
-
-    public Lambda startIntaking() {
-        return new Lambda("int-start")
-                .setExecute(intake::startIntaking)
-                .setFinish(() -> true);
-    }
-
-    public Lambda intakeSpecimen() {
-        return new Lambda("dep-intake")
-                .setExecute(deposit::specimenIntake)
-                .setFinish(() -> true);
-    }
-
-    public Lambda intakeSpecMode() {
-        return new Lambda("int-specMode")
-                .setExecute(intake::specimen)
-                .setFinish(() -> true);
-    }
-
-    public Lambda refreshIntake(double power, boolean vertical, boolean angled, boolean reversed, boolean retract, boolean pid) {
-        return new Lambda("int-refresh")
-                .setExecute(() -> intake.refresh(power,vertical,angled,reversed,retract,pid))
-                .setFinish(() -> true);
-    }
-
-    public Lambda refreshDeposit() {
-        return new Lambda("int-refresh")
-                .setExecute(deposit::refresh)
-                .setFinish(() -> true);
-    }
-
-    public Lambda clipSpecimen() {
-        return new Lambda("dep-clip")
-                .setExecute(deposit::clipSpecimen)
-                .setFinish(() -> true);
     }
 
 }

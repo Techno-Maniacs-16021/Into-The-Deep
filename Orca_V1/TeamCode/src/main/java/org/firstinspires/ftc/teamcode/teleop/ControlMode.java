@@ -57,7 +57,8 @@ public class ControlMode extends OpMode {
         else if(gamepad1.triangle){
             orca.intake().setColorToEject("blue");
         }
-        orca.deposit().PIDTuning(p,i,d,f,target);
+        //orca.deposit().PIDTuning(p,i,d,f,target);
+        orca.intake().refresh(0,false,false,false,false,false);
         orca.deposit().refresh();
         telemetry.addData("Current Pos: ", orca.deposit().getCurrentSlidePosition());
         telemetry.addData("Target Pos: ", target);
@@ -115,8 +116,8 @@ public class ControlMode extends OpMode {
                 orca.deposit().depositSpecimen();
             }
             else if(gamepad1.left_bumper){
-                orca.deposit().retract();
-                currentAction = "intake";
+                orca.deposit().specimenRetract();
+                //currentAction = "intake";
             }
             else if(gamepad1.cross){
                 orca.deposit().closeClaw();
