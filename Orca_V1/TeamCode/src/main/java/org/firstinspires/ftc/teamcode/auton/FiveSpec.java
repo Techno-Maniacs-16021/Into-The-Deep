@@ -82,8 +82,8 @@ public class FiveSpec extends OpMode {
     public void auton() {
         switch(step) {
             case 0: //Deposit spec
-                orca.getFollower().followPath(Paths.pathList.get(0), true);
-                nextStep(1000);
+                orca.getFollower().followPath(Paths.pathList.get(0), true);//0
+                nextStep(1000);//1000
                 break;
             case 1000:
                 orca.deposit().depositSpecimen();
@@ -185,7 +185,7 @@ public class FiveSpec extends OpMode {
                         nextStep(-1);
                     }
                     else {
-                        nextStep(11);
+                        nextStep(11);//used to be 11
                     }
                 }
                 break;
@@ -208,12 +208,12 @@ public class FiveSpec extends OpMode {
                 break;
             case 11:
                 if (!orca.getFollower().isBusy()) {
-                    if(wait.milliseconds()>500){
+                    if(wait.milliseconds()>750){
                         orca.deposit().closeClaw();
                         orca.deposit().refresh();
                     }
 
-                    if(wait.milliseconds()>1000){
+                    if(wait.milliseconds()>1500){
                         nextStep(8);
                     }
                 }
