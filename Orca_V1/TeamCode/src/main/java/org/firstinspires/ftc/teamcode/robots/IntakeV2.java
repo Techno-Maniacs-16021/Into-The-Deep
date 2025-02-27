@@ -354,14 +354,14 @@ public class IntakeV2 {
         }
         else if(intakeCommand.equals("transferred")){
             isTransferring = true;
-            if(transferTimer.milliseconds()>1000){
+            if(transferTimer.milliseconds()>1600){
                 gatePosition = 0;
                 intakePower = 0;
                 isTransferred = false;
                 isTransferring = false;
                 intakeCommand = "standby";
             }
-            else if(transferTimer.milliseconds()>500){
+            else if(transferTimer.milliseconds()>800){
                 rotationPosition = TRANSFER_ROTATION;
                 tiltPosition = TRANSFER_TILT;
                 intakePower = 0.5;

@@ -48,6 +48,7 @@ public class DepositV2{
     boolean pidTuning = false;
     double slidePower;
     String depositCommand = "standby";
+    boolean reset = false;
     public  DepositV2(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -113,7 +114,10 @@ public class DepositV2{
 
     }
     public void slidesLoop(){
-        if(target != 0){
+        if(reset){
+            slidePower = -1;
+        }
+        else if(target != 0){
             slidesPID.setPID(p,i,d);
             slidePower = slidesPID.calculate(currentPos,target)+f;
         }
@@ -289,6 +293,12 @@ public class DepositV2{
         rightDiffPosition = SPECIMEN_RIGHT_DIFF;
         clawPosition = 1;
 
+    }
+    public void reset(){
+        reset = true;
+    }
+    public void noReset(){
+        reset = false;
     }
 
 }

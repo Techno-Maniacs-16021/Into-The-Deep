@@ -177,6 +177,14 @@ public class ControlMode extends OpMode {
             intakeSquare = false;
             slidePower = 0;
         }
+
+        if(gamepad1.dpad_down){
+            orca.deposit().reset();
+        }
+        else {
+            orca.deposit().noReset();
+        }
+
         intakeTriangle = gamepad1.triangle;
 
         orca.intake().refresh(slidePower,intakeCross,intakeCircle,intakeTriangle,intakeSquare,false);

@@ -55,7 +55,6 @@ public class OrcaV2 {
     }
     public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
-        //deposit.setDepositCommand("specimen");
         refresh();
     }
     public void refresh(){
@@ -66,6 +65,7 @@ public class OrcaV2 {
     }
     public void teleopInit (){
         follower.startTeleopDrive();
+        deposit.setDepositCommand("specimen");
         leftFront = hardwareMap.get(DcMotorEx.class, leftFrontMotorName);
         leftRear = hardwareMap.get(DcMotorEx.class, leftRearMotorName);
         rightRear = hardwareMap.get(DcMotorEx.class, rightRearMotorName);
