@@ -42,15 +42,17 @@ repositories {
 dependencies {
     implementation 'org.ftclib.ftclib:core:2.1.1' // core
     implementation project(':FtcRobotController')
+    annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
     //implementation "com.acmerobotics.roadrunner:ftc:0.1.14"
     implementation "com.acmerobotics.roadrunner:core:1.0.0"
     implementation "com.acmerobotics.roadrunner:actions:1.0.0"
-    implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.16'
 
     implementation "dev.frozenmilk.mercurial:Mercurial:1.0.2"
     implementation "dev.frozenmilk.dairy:Util:1.0.2"
     implementation "dev.frozenmilk.dairy:Core:2.0.0"
     implementation "dev.frozenmilk.dairy:Pasteurized:1.0.0"
+    implementation "dev.frozenmilk:Sinister:1.0.0"
     implementation "dev.frozenmilk.sinister:Sloth:0.0.1"
     implementation "dev.frozenmilk.sinister.sloth:DashFix:0.0.0"
 

@@ -46,57 +46,57 @@ public class Paths {
 
     public static void init() {
         Collections.addAll(pathList,
-                createPath(//specimen drop
+                createPath(//specimen drop - 0
                         new BezierLine(
                                 new Point(start),
                                 new Point(specDrop))
                 ),
-                createPath( //pickup 1
+                createPath( //pickup 1 - 1
                         new BezierCurve(
                                 new Point(specDrop),
                                 curve1,
                                 curve2,
                                 new Point(pickup1))
                 ),
-                createPath( //dropoff 1
+                createPath( //dropoff 1 - 2
                         new BezierLine(
                                 new Point(pickup1),
                                 new Point(dropoff1))
                 ),
-                createPath( //pickup 2
+                createPath( //pickup 2 - 3
                         new BezierCurve(
                                 new Point(dropoff1),
                                 new Point(pickup1),
                                 new Point(pickup2))
                 ),
-                createPath( //dropoff 2
+                createPath( //dropoff 2 - 4
                         new BezierLine(
                                 new Point(pickup2),
                                 new Point(dropoff2))
                 ),
-                createPath( //pickup 3
+                createPath( //pickup 3 - 5
                         new BezierLine(
                                 new Point(dropoff2),
                                 new Point(pause))
                         ),
-                createPath(
+                createPath(           // 6
                         new BezierLine(
                                 new Point(pause),
                                 new Point(specCollect))
                 ),
-                createPath( //spec collect
+                createPath( //spec collect  - 7
                         new BezierLine(
                               new Point(specDrop),
                               new Point(dropoff3))
                 ),
-                createPath( //specimen cycle (drop)
+                createPath( //specimen cycle (drop)  - 8
                         new BezierLine(
                                 new Point(specCollect),
                                 new Point(specDrop)),
                         specCollect.getHeading(),
                         specDrop.getHeading()
                 ),
-                createPath( //specimen cycle (collect)
+                createPath( //specimen cycle (collect)  - 9
                         new BezierLine(
                                 new Point(specDrop),
                                 new Point(pause)

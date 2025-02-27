@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.robots;
 
-import static java.lang.Thread.sleep;
-
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -17,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import java.util.ArrayList;
 
-public class DepositV2{
+public class DepositV3 {
     ServoImplEx rotation, claw, linkage, leftDifferential, rightDifferential;
     DcMotorEx leftSlides,rightSlides;
     AnalogInput currentRotation, currentLinkage, currentLeftDifferential, currentRightDifferential;
@@ -48,7 +46,7 @@ public class DepositV2{
     boolean pidTuning = false;
     double slidePower;
     String depositCommand = "standby";
-    public  DepositV2(HardwareMap hardwareMap){
+    public DepositV3(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
 

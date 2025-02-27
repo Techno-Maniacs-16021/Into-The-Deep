@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 
+import dev.frozenmilk.dairy.core.FeatureRegistrar;
+
 @TeleOp(name = "TeleOp")
 @Config
 
@@ -74,6 +76,7 @@ public class ControlMode extends OpMode {
     }
     @Override
     public void loop() {
+
         telemetry.addData("Sample in intake: ", orca.intake().getCurrentSample());
         telemetry.addData("(Deposit) Current Pos: ", orca.deposit().getCurrentSlidePosition());
         telemetry.addData("(Deposit) Target Pos: ", target);

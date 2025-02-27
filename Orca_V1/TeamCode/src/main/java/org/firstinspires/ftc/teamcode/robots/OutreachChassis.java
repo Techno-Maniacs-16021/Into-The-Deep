@@ -29,39 +29,24 @@ import dev.frozenmilk.mercurial.commands.Lambda;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
 import dev.frozenmilk.mercurial.commands.groups.Parallel;
 
-public class OrcaV2 {
+public class OutreachChassis {
     //IntakeV1 INTAKE;
     //DepositV1 DEPOSIT;
-    private final IntakeV2 intake;
-    private final DepositV2 deposit;
     private DcMotorEx leftFront;
     private DcMotorEx leftRear;
     private DcMotorEx rightFront;
     private DcMotorEx rightRear;
     HardwareMap hardwareMap;
 
-    private String state = "Standby";
     Follower follower;
 
-    public OrcaV2(HardwareMap hardwareMap, Pose startPose) {
-
+    public OutreachChassis(HardwareMap hardwareMap) {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
-        follower.setStartingPose(startPose);
-
         this.hardwareMap = hardwareMap;
-        intake = new IntakeV2(hardwareMap);
-        deposit = new DepositV2(hardwareMap);
     }
-    public void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
+    public void refresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
-        //deposit.setDepositCommand("specimen");
-        refresh();
-    }
-    public void refresh(){
-        deposit.setSenor(intake.isTransferring());
-        deposit.setIsIntakeTransferred(intake.isTransferred());
-        deposit.setIsIntakeTransferring(intake.isTransferring());
         follower.update();
     }
     public void teleopInit (){
@@ -76,21 +61,8 @@ public class OrcaV2 {
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    public void autoInit (){
-        deposit.setDepositCommand(" ");
-        deposit.autoINIT();
-        deposit.refresh();
-        intake.setIntakeCommand("standby");
-        intake.refresh(0,false,false,false,false,false);
-    }
-    public IntakeV2 intake(){
-        return intake;
-    }
 
 
-    public DepositV2 deposit(){
-        return deposit;
-    }
 
 
     //auton pathing stuff

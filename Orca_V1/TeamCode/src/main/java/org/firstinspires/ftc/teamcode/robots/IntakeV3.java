@@ -16,10 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import java.util.ArrayList;
 
-import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier;
-import dev.frozenmilk.dairy.pasteurized.Pasteurized;
-
-public class IntakeV2 {
+public class IntakeV3 {
     DigitalChannel colorPin0,colorPin1,colorPin2,colorPin3,colorPin4,colorPin5;
     //servos
     ServoImplEx tilt, rotation, gate;
@@ -63,7 +60,7 @@ public class IntakeV2 {
     ArrayList<Double> positionLog = new ArrayList<>();
 
     ElapsedTime transferTimer = new ElapsedTime();
-    public IntakeV2(HardwareMap hardwareMap) {
+    public IntakeV3(HardwareMap hardwareMap) {
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
