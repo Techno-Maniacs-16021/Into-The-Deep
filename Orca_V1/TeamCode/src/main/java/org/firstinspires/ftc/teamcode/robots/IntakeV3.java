@@ -16,6 +16,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import java.util.ArrayList;
 
+import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier;
+import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
+import dev.frozenmilk.dairy.pasteurized.Pasteurized;
+
 public class IntakeV3 {
     DigitalChannel colorPin0,colorPin1,colorPin2,colorPin3,colorPin4,colorPin5;
     //servos
@@ -32,20 +36,22 @@ public class IntakeV3 {
             VERTICAL_ROTATION = 0.175 , VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0,
             EJECT_TILT = 0.5,
             SPECIMEN_ROTATION = 0.4, SPECIMEN_TILT = 0.6,
-    TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.6,
-            STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.6;
+            TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.6,
+            STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.6,
+            INTAKE_DEPLOY_OFFSET = 1;
+
     double rotationPosition = STANDBY_ROTATION, tiltPosition = STANDBY_TILT, gatePosition = 0;
 
     final double COUNTS_PER_REV_MOTOR = 145.1*(2/1);
-    final double STATIC_INTAKE_POWER = 0.4;
+    final double STATIC_INTAKE_POWER = 0;
     final double INTAKE_EJECT_SLIDES_OFFSET = 3;
     //TODO: set false
     final boolean pidTuning = false;
     boolean isPIDActive = false;
+    boolean isIntakeMotorActive = false;
     double target,currentPos;
     double ALLOWED_ERROR = 0.0125;
     double p = 0.0,i = 0,d = 0,f=0;
-
     int globalTime = 0;
     boolean recentlyEjected = false;
     boolean color3,isTransferred,isTransferring;
@@ -60,6 +66,10 @@ public class IntakeV3 {
     ArrayList<Double> positionLog = new ArrayList<>();
 
     ElapsedTime transferTimer = new ElapsedTime();
+
+    boolean intakeButton = Pasteurized.gamepad1().a().state()||Pasteurized.gamepad1().b().state();
+    boolean reverseIntakeButton = Pasteurized.gamepad1().y().state();
+    double intakeSlidesTrigger = Pasteurized.gamepad1().rightTrigger().state()-Pasteurized.gamepad1().leftTrigger().state();
     public IntakeV3(HardwareMap hardwareMap) {
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
@@ -114,8 +124,7 @@ public class IntakeV3 {
         transferTimer.reset();
     }
 
-    public void refresh (double slidesPower,boolean verticalIntake, boolean angledIntake, boolean reverseIntake, boolean retract, boolean PID){
-        isPIDActive = PID;
+    public void refresh (){
 
         tilt.setPosition(tiltPosition);
         rotation.setPosition(rotationPosition);
@@ -156,10 +165,9 @@ public class IntakeV3 {
             gate.setPosition(gatePosition);
         }
 
-        slideControlLoop(slidesPower,retract, PID);
-        intakeModuleControlLoop(verticalIntake,angledIntake,reverseIntake);
+        slideControlLoop();
+        intakeModuleControlLoop();
 
-        updateSampleDetails();
         sampleColor = readSampleDetails();
 
         color3 = colorPin4.getState()||colorPin5.getState();
@@ -167,6 +175,7 @@ public class IntakeV3 {
     }
 
     public String readSampleDetails() {
+        /*
         double blue = 0, red = 0, yellow = 0, none = 0;
         for(int k = 0; k<nSensorSamples;k++){
             String color = colorSensorInputs.get(k);
@@ -180,16 +189,19 @@ public class IntakeV3 {
                 none+=(k+1.0)/(nSensorSamples);
             //System.out.print(color+" ");
         }
-        System.out.println();
+         */
+        //System.out.println();
+        boolean red,blue;
+        blue =colorPin2.getState();
+        red =colorPin3.getState();
         return (
-                blue>red && blue>yellow &&  blue>none ? "blue"
-                        : red>blue && red>yellow && red>none ? "red"
-                        : none>red && none>blue && none>yellow ? "none"
-                        //: (intakeCommand.equals("transfer")&&none>(0.75*nSensorSamples)) ? "none"
-                        : "yellow"
+                blue && red ? "yellow"
+                        : !blue && red ? "red"
+                        : blue && !red ? "blue"
+                        : "none"
         );
     }
-    public void updateSampleDetails(){
+    /*public void updateSampleDetails(){
         boolean red,blue;
         //System.out.println(colorPin0.getState()+" "+colorPin2.getState()+" "+ colorPin1.getState()+" "+colorPin3.getState()+" "+ colorPin4.getState()+" "+colorPin5.getState());
         blue =colorPin2.getState();
@@ -200,10 +212,7 @@ public class IntakeV3 {
                         : blue && !red ? "blue"
                         : "none");
         colorSensorInputs.remove(0);
-    }
-    public String getCurrentSample(){
-        return sampleColor;
-    }
+    }*/
     public double colorEject(){
         //maybe use position instead
         if(currentPos<INTAKE_EJECT_SLIDES_OFFSET&&sampleColor.equals(colorToEject)){
@@ -218,7 +227,7 @@ public class IntakeV3 {
         return 0.0;
     }
 
-    public void slideControlLoop(double slidesPower, boolean retract, boolean PID){
+    public void slideControlLoop(){
         if(intakeCommand.equals("init")||intakeCommand.equals("specimen")){
             if ((slides.getCurrent(CurrentUnit.AMPS) < 7||currentPos>0.25) && this.slidesPower != -0.25) {
                 this.slidesPower = -1;
@@ -258,15 +267,15 @@ public class IntakeV3 {
         else if (intakeCommand.equals("transfer")) {
             this.slidesPower = -0.25;
         }
-        else if(PID){
+        else if(isPIDActive){
             slidesPID.setPID(p, i, d);
             this.slidesPower = slidesPID.calculate(currentPos, target)+f;
         }
         else {
-            this.slidesPower = slidesPower;
+            this.slidesPower = intakeSlidesTrigger;
         }
     }
-    public void intakeModuleControlLoop(boolean verticalIntake, boolean angledIntake, boolean reverseIntake){
+    public void intakeModuleControlLoop(){
 
         if(intakeCommand.equals("intake")){
 //            if(sampleDetails().equals(colorToEject)){
@@ -284,20 +293,26 @@ public class IntakeV3 {
                     rotationPosition = VERTICAL_ROTATION_OFFSET;
                     tiltPosition = EJECT_TILT;
                 }
-                else if(verticalIntake){
+                else if(isIntakeMotorActive||intakeButton){
                     intakePower = 1;
-                    rotationPosition = VERTICAL_ROTATION;
-                    tiltPosition = VERTICAL_TILT;
+                    if(currentPos>INTAKE_DEPLOY_OFFSET) {
+                        rotationPosition = VERTICAL_ROTATION;
+                        tiltPosition = VERTICAL_TILT;
+                    }
                 }
-                else if(reverseIntake){
+                else if(reverseIntakeButton){
                     intakePower = -1;
-                    rotationPosition = VERTICAL_ROTATION_OFFSET;
-                    tiltPosition = EJECT_TILT;
+                    if(currentPos>INTAKE_DEPLOY_OFFSET) {
+                        rotationPosition = VERTICAL_ROTATION_OFFSET;
+                        tiltPosition = EJECT_TILT;
+                    }
                 }
                 else{
                     intakePower = STATIC_INTAKE_POWER;
-                    rotationPosition = VERTICAL_ROTATION_OFFSET;
-                    tiltPosition = VERTICAL_TILT;
+                    if(currentPos>INTAKE_DEPLOY_OFFSET){
+                        rotationPosition = VERTICAL_ROTATION_OFFSET;
+                        tiltPosition = VERTICAL_TILT;
+                    }
                 }
             }
             else{
@@ -305,10 +320,10 @@ public class IntakeV3 {
                 //intake flat on floor(45 degrees)
                 //rotation set to lower angle
                 //does not move up or down when intaking
-                if(angledIntake){
+                if(isIntakeMotorActive||intakeButton){
                     intakePower = 1;
                 }
-                else if(reverseIntake){
+                else if(reverseIntakeButton){
                     intakePower = -1;
                 }
                 else{
@@ -317,10 +332,12 @@ public class IntakeV3 {
                 if(colorEject()!=0&&currentPos<INTAKE_EJECT_SLIDES_OFFSET){
                     tiltPosition = EJECT_TILT;
                 }
-                else {
+                else if(currentPos>INTAKE_DEPLOY_OFFSET){
                     tiltPosition = ANGLED_TILT;
                 }
-                rotationPosition = ANGLED_ROTATION;
+                if(currentPos>INTAKE_DEPLOY_OFFSET) {
+                    rotationPosition = ANGLED_ROTATION;
+                }
             }
             //when button pressed, intake on. When button not pressed, intake off.
             //auto sample ejection
@@ -328,7 +345,7 @@ public class IntakeV3 {
         else if(intakeCommand.equals("retract")){
             rotationPosition = STANDBY_ROTATION;
             tiltPosition = STANDBY_TILT;
-            if(reverseIntake) {
+            if(reverseIntakeButton) {
                 intakePower = -1;
             }
             else {
@@ -388,17 +405,15 @@ public class IntakeV3 {
     }
     public void startIntaking(){
         intakeCommand = "intake";
-        intakeMode = "vertical";
     }
     public void specimen(){
         intakeCommand = "specimen";
     }
-    public void angledIntake(){
-        intakeCommand = "intake";
+    public void angledIntakeMode(){
         intakeMode = "angled";
     }
 
-    public void verticalIntake(){
+    public void verticalIntakeMode(){
         intakeMode = "vertical";
     }
 
@@ -441,6 +456,13 @@ public class IntakeV3 {
             this.target = target;
         }
     }
+    public void enablePID(){
+        isPIDActive = true;
+    }
+    public void disablePID(){
+        isPIDActive = false;
+    }
+
     public void setTarget(double target){
         this.target = target;
     }
@@ -465,6 +487,17 @@ public class IntakeV3 {
     }
     public void setIntakeCommand(String command){
         intakeCommand = command;
+    }
+
+    public boolean checkCommand(String targetCommand){
+        return targetCommand.equals(intakeCommand);
+    }
+
+    public void enableIntakeMotor(){
+        isIntakeMotorActive = true;
+    }
+    public void disableIntakeMotor(){
+        isIntakeMotorActive = false;
     }
 
 

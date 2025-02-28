@@ -8,12 +8,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class FConstants {
     static {
-        FollowerConstants.localizers = Localizers.THREE_WHEEL;
+        //tanish i changed this to pinpoint and motor names. Change if needed
+        FollowerConstants.localizers = Localizers.PINPOINT;
 
-        FollowerConstants.leftFrontMotorName = "leftFront";
-        FollowerConstants.leftRearMotorName = "leftRear";
-        FollowerConstants.rightFrontMotorName = "rightFront";
-        FollowerConstants.rightRearMotorName = "rightRear";
+        FollowerConstants.leftFrontMotorName = "lf";
+        FollowerConstants.leftRearMotorName = "lb";
+        FollowerConstants.rightFrontMotorName = "rf";
+        FollowerConstants.rightRearMotorName = "rb";
 
         FollowerConstants.leftFrontMotorDirection = DcMotorSimple.Direction.REVERSE;
         FollowerConstants.leftRearMotorDirection = DcMotorSimple.Direction.REVERSE;

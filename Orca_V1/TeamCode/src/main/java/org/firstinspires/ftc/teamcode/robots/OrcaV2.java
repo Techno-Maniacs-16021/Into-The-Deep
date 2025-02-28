@@ -65,7 +65,7 @@ public class OrcaV2 {
     }
     public void teleopInit (){
         follower.startTeleopDrive();
-        deposit.setDepositCommand("specimen");
+        //deposit.setDepositCommand("specimen");
         leftFront = hardwareMap.get(DcMotorEx.class, leftFrontMotorName);
         leftRear = hardwareMap.get(DcMotorEx.class, leftRearMotorName);
         rightRear = hardwareMap.get(DcMotorEx.class, rightRearMotorName);

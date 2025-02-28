@@ -166,15 +166,17 @@ public class ControlMode extends OpMode {
                 orca.intake().startIntaking();
                 //intake mode activate
             }
-            intakeCross = gamepad1.cross;
-            intakeCircle = gamepad1.circle;
-            intakeSquare = gamepad1.square;
-            slidePower = gamepad1.right_trigger-gamepad1.left_trigger;
+            //intakeCross = gamepad1.cross;
+            //intakeCircle = gamepad1.circle;
+            //intakeSquare = gamepad1.square;
+            //intakeTriangle = gamepad1.triangle;
+            //slidePower = gamepad1.right_trigger-gamepad1.left_trigger;
         }
         else {
             intakeCross = false;
             intakeCircle = false;
             intakeSquare = false;
+            intakeTriangle = false;
             slidePower = 0;
         }
 
@@ -185,7 +187,6 @@ public class ControlMode extends OpMode {
             orca.deposit().noReset();
         }
 
-        intakeTriangle = gamepad1.triangle;
 
         orca.intake().refresh(slidePower,intakeCross,intakeCircle,intakeTriangle,intakeSquare,false);
 

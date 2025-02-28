@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import java.util.ArrayList;
 
 import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier;
+import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 
 public class IntakeV2 {
@@ -63,6 +64,12 @@ public class IntakeV2 {
     ArrayList<Double> positionLog = new ArrayList<>();
 
     ElapsedTime transferTimer = new ElapsedTime();
+    EnhancedBooleanSupplier cross = Pasteurized.gamepad1().a();
+    EnhancedBooleanSupplier circle = Pasteurized.gamepad1().b();
+    EnhancedBooleanSupplier triangle = Pasteurized.gamepad1().y();
+    EnhancedDoubleSupplier rightTrigger = Pasteurized.gamepad1().rightTrigger();
+
+
     public IntakeV2(HardwareMap hardwareMap) {
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
@@ -159,7 +166,7 @@ public class IntakeV2 {
             gate.setPosition(gatePosition);
         }
 
-        slideControlLoop(slidesPower,retract, PID);
+        slideControlLoop(slidesPower, PID);
         intakeModuleControlLoop(verticalIntake,angledIntake,reverseIntake);
 
         updateSampleDetails();
@@ -221,7 +228,7 @@ public class IntakeV2 {
         return 0.0;
     }
 
-    public void slideControlLoop(double slidesPower, boolean retract, boolean PID){
+    public void slideControlLoop(double slidesPower, boolean PID){
         if(intakeCommand.equals("init")||intakeCommand.equals("specimen")){
             if ((slides.getCurrent(CurrentUnit.AMPS) < 7||currentPos>0.25) && this.slidesPower != -0.25) {
                 this.slidesPower = -1;
@@ -266,6 +273,9 @@ public class IntakeV2 {
             this.slidesPower = slidesPID.calculate(currentPos, target)+f;
         }
         else {
+            if(rightTrigger.state()!=0){
+                slidesPower = rightTrigger.state();
+            }
             this.slidesPower = slidesPower;
         }
     }
@@ -287,12 +297,12 @@ public class IntakeV2 {
                     rotationPosition = VERTICAL_ROTATION_OFFSET;
                     tiltPosition = EJECT_TILT;
                 }
-                else if(verticalIntake){
+                else if(cross.state()){
                     intakePower = 1;
                     rotationPosition = VERTICAL_ROTATION;
                     tiltPosition = VERTICAL_TILT;
                 }
-                else if(reverseIntake){
+                else if(triangle.state()){
                     intakePower = -1;
                     rotationPosition = VERTICAL_ROTATION_OFFSET;
                     tiltPosition = EJECT_TILT;
@@ -308,10 +318,10 @@ public class IntakeV2 {
                 //intake flat on floor(45 degrees)
                 //rotation set to lower angle
                 //does not move up or down when intaking
-                if(angledIntake){
+                if(circle.state()){
                     intakePower = 1;
                 }
-                else if(reverseIntake){
+                else if(triangle.state()){
                     intakePower = -1;
                 }
                 else{
@@ -331,7 +341,7 @@ public class IntakeV2 {
         else if(intakeCommand.equals("retract")){
             rotationPosition = STANDBY_ROTATION;
             tiltPosition = STANDBY_TILT;
-            if(reverseIntake) {
+            if(triangle.state()) {
                 intakePower = -1;
             }
             else {

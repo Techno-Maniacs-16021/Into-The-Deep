@@ -5,26 +5,18 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
-import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
-import com.pedropathing.util.Constants;
-import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
-
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-
-import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
-import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
+import java.util.Map;
 
 public class Paths {
 
     public static ArrayList<Path> pathList = new ArrayList<>();
+    public static Map<String, Path> pathMap = new HashMap<>();
 
     public static Pose start = new Pose(63.5,11,Math.toRadians(0));
 
@@ -43,6 +35,78 @@ public class Paths {
 
     public static Pose specDrop = new Pose(38,11,Math.toRadians(0));
     public static Pose specCollect = new Pose(56,42.3,Math.toRadians(180));
+
+    static {
+        pathMap.put("specimen_drop", createPath(
+                new BezierLine(
+                        new Point(start),
+                        new Point(specDrop))
+        ));
+
+        pathMap.put("pickup_1", createPath(
+                new BezierCurve(
+                        new Point(specDrop),
+                        curve1,
+                        curve2,
+                        new Point(pickup1))
+        ));
+
+        pathMap.put("dropoff_1", createPath(
+                new BezierLine(
+                        new Point(pickup1),
+                        new Point(dropoff1))
+        ));
+
+        pathMap.put("pickup_2", createPath(
+                new BezierCurve(
+                        new Point(dropoff1),
+                        new Point(pickup1),
+                        new Point(pickup2))
+        ));
+
+        pathMap.put("dropoff_2", createPath(
+                new BezierLine(
+                        new Point(pickup2),
+                        new Point(dropoff2))
+        ));
+
+        pathMap.put("pause_point", createPath(
+                new BezierLine(
+                        new Point(dropoff2),
+                        new Point(pause)),
+                dropoff2.getHeading(),
+                pause.getHeading()
+        ));
+
+        pathMap.put("specimen_collect", createPath(
+                new BezierLine(
+                        new Point(pause),
+                        new Point(specCollect)),
+                pause.getHeading()
+        ));
+
+        pathMap.put("junk_file", createPath(
+                new BezierLine(
+                        new Point(specCollect),
+                        new Point(pause))
+        ));
+
+        pathMap.put("specimen_cycle_drop", createPath(
+                new BezierLine(
+                        new Point(specCollect),
+                        new Point(specDrop)),
+                specCollect.getHeading(),
+                specDrop.getHeading()
+        ));
+
+        pathMap.put("specimen_cycle_collect", createPath(
+                new BezierLine(
+                        new Point(specDrop),
+                        new Point(pause)),
+                specDrop.getHeading(),
+                pause.getHeading()
+        ));
+    }
 
     public static void init() {
         Collections.addAll(pathList,

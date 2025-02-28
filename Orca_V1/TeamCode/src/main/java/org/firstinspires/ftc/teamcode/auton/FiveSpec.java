@@ -2,27 +2,15 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import static java.lang.Thread.sleep;
 
-import android.service.quickaccesswallet.SelectWalletCardRequest;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.BezierCurve;
-import com.pedropathing.pathgen.BezierLine;
-import com.pedropathing.pathgen.Path;
-import com.pedropathing.pathgen.PathChain;
-import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -31,11 +19,8 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
-import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
-import dev.frozenmilk.mercurial.commands.groups.Parallel;
-import dev.frozenmilk.mercurial.commands.groups.Sequential;
 
 @Mercurial.Attach
 @BulkRead.Attach
