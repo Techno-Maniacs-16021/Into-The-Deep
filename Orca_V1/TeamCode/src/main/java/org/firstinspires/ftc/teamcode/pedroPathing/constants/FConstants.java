@@ -8,10 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class FConstants {
     static {
-<<<<<<< Updated upstream
-        //tanish i changed this to pinpoint and motor names. Change if needed
-=======
->>>>>>> Stashed changes
+
         FollowerConstants.localizers = Localizers.PINPOINT;
 
         FollowerConstants.leftFrontMotorName = "lf";
