@@ -145,14 +145,16 @@ public class OrcaV3 implements Subsystem {
     }
 
     @NonNull
-    public static Lambda follow(Path path) {
+    public static Lambda follow(Path path, boolean holdEnd) {
         return new Lambda("follow-path")
-                .addRequirements(follower)
+                .addRequirements(INSTANCE)
                 .setInterruptible(true)
-                .setInit(() -> follower.followPath(path, true))
+                .setInit(() -> follower.followPath(path, holdEnd))
                 .setExecute(() -> {
                     follower.update();
-                    //this.telemetryDebug(telemetry);
+                    /*telemetry.addData("x", follower.getPose().getX());
+                    telemetry.addData("y", follower.getPose().getY());
+                    telemetry.addData("heading", follower.getPose().getHeading());*/
                 })
                 .setFinish(() -> !follower.isBusy())
                 .setEnd((interrupted) -> {

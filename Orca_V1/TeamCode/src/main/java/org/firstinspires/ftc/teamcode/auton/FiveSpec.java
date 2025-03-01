@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
+import dev.frozenmilk.mercurial.commands.groups.Sequential;
+import dev.frozenmilk.mercurial.commands.util.Wait;
 
 @Mercurial.Attach
 @BulkRead.Attach
@@ -61,6 +63,13 @@ public class FiveSpec extends OpMode {
     }
 
     public void auton() {
+        if (step.equals("first drop")) {
+            new Sequential(
+                    OrcaV3.follow(Paths.pathMap.get("firstDeposit-Spec"),true),
+                    new Wait(1.0)
+            );
+
+        }
 
     }
 }
