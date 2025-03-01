@@ -19,8 +19,10 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
+import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
+import dev.frozenmilk.mercurial.commands.groups.Parallel;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
 import dev.frozenmilk.mercurial.commands.util.Wait;
 
@@ -32,7 +34,6 @@ import dev.frozenmilk.mercurial.commands.util.Wait;
 public class FiveSpec extends OpMode {
 
     Timer pathTimer;
-    String step;
     ElapsedTime wait = new ElapsedTime();
 
 
@@ -43,7 +44,6 @@ public class FiveSpec extends OpMode {
         Paths.init();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         OrcaV3.autoInit(new Pose(63.5,11,Math.toRadians(0)));
-        step = "Init";
     }
 
     @Override
@@ -56,20 +56,56 @@ public class FiveSpec extends OpMode {
 
     @Override
     public void loop() {
-        OrcaV3.follower().update();
-        auton();
-        telemetry.addData("Auton Step: ", step);
-        telemetry.update();
-    }
+        new Sequential(
+                //STEP: drop first spec
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("firstDeposit-Spec"),true),
+                        OrcaV3.setSpecimen()
+                ),
+                //@Rick: release claw
 
-    public void auton() {
-        if (step.equals("first drop")) {
-            new Sequential(
-                    OrcaV3.follow(Paths.pathMap.get("firstDeposit-Spec"),true),
-                    new Wait(1.0)
-            );
+                //STEP: collect 3 specs & ready for intake
+                new Parallel(
+                        new Sequential(
+                                OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("drop1-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("pick2-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("drop2-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("pick3-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("drop3-Spec"), false),
+                                OrcaV3.follow(Paths.pathMap.get("firstAlign-Spec"), false),
+                                new Wait(0.5)
+                        )
+                        //@Rick: ready for spec intake
+                ),
 
-        }
+                //STEP: pickup spec
+                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), true),
+                new Wait(0.5),
+                //@Rick: close claw
+                new Wait(0.25),
 
+                //STEP: deposit spec
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("deposit-Spec"), true),
+                        OrcaV3.setSpecimen()
+                ),
+                //@Rick: release claw
+
+                //STEP: go to collection
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("align-Spec"), false)//,
+                        //@Rick: ready for spec intake
+                ),
+
+                //STEP: pickup spec
+                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), true),
+                new Wait(0.5),
+                //@Rick: close claw
+                new Wait(0.25)
+
+        );
+        //is .schedule() needed?
     }
 }

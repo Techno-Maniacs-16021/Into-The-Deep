@@ -185,7 +185,6 @@ public class OrcaV3 implements Subsystem {
     public void postUserInitLoopHook(@NonNull Wrapper opMode) {
         intake.refresh();
         deposit.refresh();
-        follower.update();
 
     }
     @Override
@@ -195,8 +194,6 @@ public class OrcaV3 implements Subsystem {
     public void postUserLoopHook(@NonNull Wrapper opMode) {
         intake.refresh();
         deposit.refresh();
-        follower.update();
-
     }
 
     // and stopping code can go in here
