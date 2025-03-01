@@ -2,14 +2,17 @@ package org.firstinspires.ftc.teamcode.robots;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -19,14 +22,14 @@ public class DepositV3 {
     ServoImplEx rotation, claw, linkage, leftDifferential, rightDifferential;
     DcMotorEx leftSlides,rightSlides;
     AnalogInput currentRotation, currentLinkage, currentLeftDifferential, currentRightDifferential;
-
+    DigitalChannel colorPin4,colorPin5;
     public double
-            INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0.15, RETRACT_LEFT_DIFF = 0.85, RETRACT_RIGHT_DIFF = 0.15,
+            INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 0.85, RETRACT_RIGHT_DIFF = 0.15,
             SPECIMEN_ROTATION = 0.0,SPECIMEN_LINKAGE = 1, SPECIMEN_LEFT_DIFF = 0, SPECIMEN_RIGHT_DIFF = 0.3,
             SPECIMEN_DEPOSIT_ROTATION = 0.9,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.85, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.15,
             //SPECIMEN_DEPOSIT_ROTATION = 1,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.3,SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.6, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.0,
             SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.7, TRANSFER_RIGHT_DIFF = 0,
-            STANDBY_ROTATION = .165,STANDBY_LINKAGE = 0.3, STANDBY_LEFT_DIFF = 0.85, STANDBY_RIGHT_DIFF = 0.15;
+            STANDBY_ROTATION = .17,STANDBY_LINKAGE = 0.15, STANDBY_LEFT_DIFF = 0.85, STANDBY_RIGHT_DIFF = 0.15;
 
 
     final double COUNTS_PER_REV_MOTOR = 384.5;
@@ -38,15 +41,14 @@ public class DepositV3 {
     PIDController slidesPID;
     ArrayList<Double> positionLog = new ArrayList<>();
     int posLogLength = 24;
-    boolean colorSenor = false;
     boolean isStateComplete = false;
-    boolean isIntakeTransferred,isIntakeTransferring;
 
     double p = 4,i = 0,d = 0,f = 0.2;
     //TODO: Set to false
     boolean pidTuning = false;
     double slidePower;
     String depositCommand = "standby";
+    ElapsedTime grabTimer = new ElapsedTime();
     public DepositV3(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -66,6 +68,8 @@ public class DepositV3 {
         currentLeftDifferential = hardwareMap.get(AnalogInput.class, "cld");
         currentRightDifferential = hardwareMap.get(AnalogInput.class, "crd");
 
+        colorPin4 = hardwareMap.digitalChannel.get("crf4");
+        colorPin5 = hardwareMap.digitalChannel.get("crf5");
 
         rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
         linkage.setPwmRange(new PwmControl.PwmRange(510,2490)); // Servo was spasing out  so we set to 510 and 2490 to make it start working. We spent too long on this peice of poopf
@@ -121,12 +125,12 @@ public class DepositV3 {
                 slidePower = -1;
             }
             else{
-                slidePower = -0.3;
+                slidePower = -0.4;
                 if(currentPos>ALLOWED_ERROR*10&&currentPos<0.2){
-                    leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    /*leftSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     rightSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     leftSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    rightSlides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);*/
                 }
             }
         }
@@ -154,11 +158,16 @@ public class DepositV3 {
     public void controlLoop(){
 
         if(depositCommand.equals("transfer")||depositCommand.equals("depositSample")){
-            if(!colorSenor&&depositCommand.equals("transfer")){
+            if(!(colorPin4.getState()||colorPin5.getState())&&depositCommand.equals("transfer")){
                 //depositCommand = "standby";
             }
-            if(isIntakeTransferred){
+
+            if(grabTimer.milliseconds()>100&&grabTimer.milliseconds()<600){
+                clawPosition = 1;
+            }
+            if(grabTimer.milliseconds()>500&&grabTimer.milliseconds()<600){
                 rotationPosition = INTERMEDIATE_ROTATION;
+                linkagePosition = RETRACT_LINKAGE;
             }
             if(currentRotation.getVoltage()<(2+ALLOWED_SERVO_ERROR)){
                 linkagePosition = TRANSFER_LINKAGE;
@@ -210,7 +219,7 @@ public class DepositV3 {
         }
         else if(depositCommand.equals("retract")){
             rotationPosition = INTERMEDIATE_ROTATION;
-            clawPosition = 0;
+            clawPosition = 0.3;
             isStateComplete = false;
             if(Math.abs(2.07-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR) {
                 linkagePosition = RETRACT_LINKAGE;
@@ -230,13 +239,13 @@ public class DepositV3 {
             rotationPosition = SPECIMEN_DEPOSIT_ROTATION;
         }
         else if(depositCommand.equals("standby")){
-            if(isIntakeTransferring){
-                clawPosition = 1;
+            if(colorPin4.getState()||colorPin5.getState()){
                 claw.setPosition(clawPosition);
                 depositCommand = "transfer";
+                grabTimer.reset();
             }
             else{
-                clawPosition = 0;
+                clawPosition = 0.3;
             }
             rotationPosition = STANDBY_ROTATION;
             linkagePosition = STANDBY_LINKAGE;
@@ -290,15 +299,6 @@ public class DepositV3 {
     public String getDepositCommand(){
         return depositCommand;
     }
-    public void setSenor(boolean bool){
-        colorSenor = bool;
-    }
-    public void setIsIntakeTransferred(boolean bool){
-        isIntakeTransferred = bool;
-    }
-    public void setIsIntakeTransferring(boolean bool){
-        isIntakeTransferring = bool;
-    }
     public AnalogInput currentRotation(){
         return currentRotation;
     }
@@ -324,6 +324,9 @@ public class DepositV3 {
         rightDiffPosition = SPECIMEN_RIGHT_DIFF;
         clawPosition = 1;
 
+    }
+    public String colorPins(){
+        return "4:" + colorPin4.getState() + " 5:" + colorPin5.getState();
     }
 
 }

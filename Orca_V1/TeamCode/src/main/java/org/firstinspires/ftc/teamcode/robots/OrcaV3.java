@@ -5,6 +5,8 @@ import static com.pedropathing.follower.FollowerConstants.leftRearMotorName;
 import static com.pedropathing.follower.FollowerConstants.rightFrontMotorName;
 import static com.pedropathing.follower.FollowerConstants.rightRearMotorName;
 
+import static org.threeten.bp.zone.ZoneRulesProvider.refresh;
+
 import androidx.annotation.NonNull;
 
 import com.pedropathing.follower.Follower;
@@ -54,17 +56,17 @@ public class OrcaV3 implements Subsystem {
     public void setDependency(@NonNull Dependency<?> dependency) {
         this.dependency = dependency;
     }
-    private DcMotorEx leftFront;
-    private DcMotorEx leftRear;
-    private DcMotorEx rightFront;
-    private DcMotorEx rightRear;
-    DepositV3 deposit;
-    IntakeV3 intake;
-    Follower follower;
+    private static DcMotorEx leftFront;
+    private static DcMotorEx leftRear;
+    private static DcMotorEx rightFront;
+    private static DcMotorEx rightRear;
+    static DepositV3 deposit;
+    static IntakeV3 intake;
+    static Follower follower;
 
 
     // init code might go in here
-    public void teleopInit (){
+    public static void teleopInit (){
         follower.startTeleopDrive();
         //deposit.setDepositCommand("specimen");
         leftFront = FeatureRegistrar.getActiveOpMode().hardwareMap.get(DcMotorEx.class, leftFrontMotorName);
@@ -77,26 +79,25 @@ public class OrcaV3 implements Subsystem {
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
+    public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
+        follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
+    }
     public void autoInit (){
         deposit.setDepositCommand(" ");
         deposit.autoINIT();
         intake.setIntakeCommand("standby");
     }
-    public IntakeV3 intake(){
+    public static IntakeV3 intake(){
         return intake;
     }
 
 
-    public DepositV3 deposit(){
+    public static DepositV3 deposit(){
         return deposit;
     }
 
     @NonNull
     public static Lambda setSpecimen() {
-        // we need to give commands names
-        // names help to give helpful error messages when something goes wrong in your command
-        // Mercurial will automatically rename your command to match the standard convention
-        // learn more about names and error messages in the names and messages overview
         return new Lambda("SetSpecimen")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
@@ -117,10 +118,6 @@ public class OrcaV3 implements Subsystem {
 
     @NonNull
     public static Lambda setSample() {
-        // we need to give commands names
-        // names help to give helpful error messages when something goes wrong in your command
-        // Mercurial will automatically rename your command to match the standard convention
-        // learn more about names and error messages in the names and messages overview
         return new Lambda("SetSample")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {

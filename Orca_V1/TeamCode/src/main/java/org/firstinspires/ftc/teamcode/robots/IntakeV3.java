@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robots;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -21,7 +22,7 @@ import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 
 public class IntakeV3 {
-    DigitalChannel colorPin0,colorPin1,colorPin2,colorPin3,colorPin4,colorPin5;
+    DigitalChannel colorPin0,colorPin1,colorPin2,colorPin3;
     //servos
     ServoImplEx tilt, rotation, gate;
     //motor
@@ -30,14 +31,15 @@ public class IntakeV3 {
     AnalogInput currentRotation, currentTilt;
     PIDController slidesPID;
 
+    RevBlinkinLedDriver lightBar;
 
     public double
-            ANGLED_ROTATION = 0.05, ANGLED_TILT = 0.15,
-            VERTICAL_ROTATION = 0.175 , VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0,
+            ANGLED_ROTATION = 0.2, ANGLED_TILT = 0.3,
+            VERTICAL_ROTATION = 0.2 , VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0.05,
             EJECT_TILT = 0.5,
-            SPECIMEN_ROTATION = 0.4, SPECIMEN_TILT = 0.6,
-            TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.6,
-            STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.6,
+            SPECIMEN_ROTATION = 0.4, SPECIMEN_TILT = 0.7,
+            TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.7,
+            STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.7,
             INTAKE_DEPLOY_OFFSET = 1;
 
     double rotationPosition = STANDBY_ROTATION, tiltPosition = STANDBY_TILT, gatePosition = 0;
@@ -54,7 +56,6 @@ public class IntakeV3 {
     double p = 0.0,i = 0,d = 0,f=0;
     int globalTime = 0;
     boolean recentlyEjected = false;
-    boolean color3,isTransferred,isTransferring;
     String intakeCommand = "standby", intakeMode = "angled";
     String colorToEject = "red";
     String sampleColor = "none";
@@ -80,8 +81,7 @@ public class IntakeV3 {
         colorPin1 = hardwareMap.digitalChannel.get("crf1");
         colorPin2 = hardwareMap.digitalChannel.get("crf2");
         colorPin3 = hardwareMap.digitalChannel.get("crf3");
-        colorPin4 = hardwareMap.digitalChannel.get("crf4");
-        colorPin5 = hardwareMap.digitalChannel.get("crf5");
+
 
 
         tilt = hardwareMap.get(ServoImplEx.class,"tilt");
@@ -93,6 +93,8 @@ public class IntakeV3 {
 
         currentRotation = hardwareMap.get(AnalogInput.class, "cintrot");
         currentTilt = hardwareMap.get(AnalogInput.class, "ctilt");
+
+        lightBar = hardwareMap.get(RevBlinkinLedDriver.class,"lightBar");
 
         tilt.setPwmRange(new PwmControl.PwmRange(510,2490));
         rotation.setPwmRange(new PwmControl.PwmRange(510,2490));
@@ -125,6 +127,22 @@ public class IntakeV3 {
     }
 
     public void refresh (){
+        if(sampleColor.equals("red")){
+            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+        }
+        else if(sampleColor.equals("blue")){
+            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        }
+        else if(sampleColor.equals("yellow")){
+            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+        }
+        else{
+            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+        }
+
+        intakeSlidesTrigger = Pasteurized.gamepad1().rightTrigger().state()-Pasteurized.gamepad1().leftTrigger().state();
+        intakeButton = Pasteurized.gamepad1().a().state()||Pasteurized.gamepad1().b().state();
+        reverseIntakeButton = Pasteurized.gamepad1().y().state();
 
         tilt.setPosition(tiltPosition);
         rotation.setPosition(rotationPosition);
@@ -169,9 +187,6 @@ public class IntakeV3 {
         intakeModuleControlLoop();
 
         sampleColor = readSampleDetails();
-
-        color3 = colorPin4.getState()||colorPin5.getState();
-
     }
 
     public String readSampleDetails() {
@@ -361,25 +376,20 @@ public class IntakeV3 {
             if(colorPin0.getState()||colorPin1.getState()){
                 transferTimer.reset();
                 intakeCommand = "transferred";
-                isTransferring = true;
             }
             gatePosition = 1;
             intakePower = 1;
         }
         else if(intakeCommand.equals("transferred")){
-            isTransferring = true;
             if(transferTimer.milliseconds()>1000){
                 gatePosition = 0;
                 intakePower = 0;
-                isTransferred = false;
-                isTransferring = false;
                 intakeCommand = "standby";
             }
             else if(transferTimer.milliseconds()>500){
                 rotationPosition = TRANSFER_ROTATION;
                 tiltPosition = TRANSFER_TILT;
                 intakePower = 0.5;
-                isTransferred = true;
             }
         }
         else if(intakeCommand.equals("specimen")){
@@ -476,15 +486,6 @@ public class IntakeV3 {
     public void init(){
         intakeCommand = "init";
     }
-    public boolean clawSenor(){
-        return color3;
-    }
-    public boolean isTransferred(){
-        return isTransferred;
-    }
-    public boolean isTransferring(){
-        return isTransferring;
-    }
     public void setIntakeCommand(String command){
         intakeCommand = command;
     }
@@ -498,6 +499,9 @@ public class IntakeV3 {
     }
     public void disableIntakeMotor(){
         isIntakeMotorActive = false;
+    }
+    public String colorPins(){
+        return "0:" + colorPin0.getState() + " 1:" + colorPin1.getState() + " 2:" + colorPin2.getState() + " 3:" + colorPin3.getState();
     }
 
 

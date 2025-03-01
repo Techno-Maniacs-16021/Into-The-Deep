@@ -11,14 +11,19 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
+import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
+import dev.frozenmilk.dairy.core.util.features.BulkRead;
+import dev.frozenmilk.mercurial.Mercurial;
 
 @TeleOp(name = "TeleOp")
 @Config
+@Mercurial.Attach
+@BulkRead.Attach
+@OrcaV3.Attach
 
 public class ControlMode extends OpMode {
-    OrcaV2 orca;
     ElapsedTime runningTime = new ElapsedTime();
     ElapsedTime buzzTime = new ElapsedTime();
     double slidePower = 0.0;
@@ -46,23 +51,21 @@ public class ControlMode extends OpMode {
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        orca = new OrcaV2(hardwareMap,new Pose(0,0,0));
-        orca.teleopInit();
+        OrcaV3.teleopInit();
+
     }
     @Override
     public void init_loop(){
         telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
-        telemetry.addData("currently selected alliance: ", orca.intake().getColorToEject().equals("red") ? "blue" : "red");
+        telemetry.addData("currently selected alliance: ", OrcaV3.intake().getColorToEject().equals("red") ? "blue" : "red");
         if(gamepad1.cross){
-            orca.intake().setColorToEject("red");
+            OrcaV3.intake().setColorToEject("red");
         }
         else if(gamepad1.triangle){
-            orca.intake().setColorToEject("blue");
+            OrcaV3.intake().setColorToEject("blue");
         }
         //orca.deposit().PIDTuning(p,i,d,f,target);
-        orca.intake().refresh(0,false,false,false,false,false);
-        orca.deposit().refresh();
-        telemetry.addData("Current Pos: ", orca.deposit().getCurrentSlidePosition());
+        telemetry.addData("Current Pos: ", OrcaV3.deposit().getCurrentSlidePosition());
         telemetry.addData("Target Pos: ", target);
         telemetry.update();
         TelemetryPacket packet = new TelemetryPacket();
@@ -77,20 +80,20 @@ public class ControlMode extends OpMode {
     @Override
     public void loop() {
 
-        telemetry.addData("Sample in intake: ", orca.intake().getCurrentSample());
-        telemetry.addData("(Deposit) Current Pos: ", orca.deposit().getCurrentSlidePosition());
+        telemetry.addData("(Deposit) Current Pos: ", OrcaV3.deposit().getCurrentSlidePosition());
         telemetry.addData("(Deposit) Target Pos: ", target);
-        telemetry.addData("(Intake) Current Pos: ", orca.intake().getCurrentSlidePosition());
-        telemetry.addData("(Intake) Target Pos: ", orca.intake().getTargetSlidePosition());
-        telemetry.addData("intake command: ", orca.intake().getIntakeCommand());
-        telemetry.addData("deposit command: ", orca.deposit().getDepositCommand());
-        telemetry.addData("current action: ", currentAction);
-        telemetry.addData("intake rotation position: ", orca.intake().currentRotation().getVoltage());
-        telemetry.addData("intake tilt position: ", orca.intake().currentTilt().getVoltage());
-        telemetry.addData("deposit rotation position: ", orca.deposit().currentRotation().getVoltage());
-        telemetry.addData("deposit linkage position: ", orca.deposit().getCurrentLinkage().getVoltage());
-        telemetry.addData("deposit left diff position: ", orca.deposit().getCurrentLeftDifferential().getVoltage());
-        telemetry.addData("deposit right diff position: ", orca.deposit().getCurrentRightDifferential().getVoltage());
+        telemetry.addData("(Intake) Current Pos: ", OrcaV3.intake().getCurrentSlidePosition());
+        telemetry.addData("(Intake) Target Pos: ", OrcaV3.intake().getTargetSlidePosition());
+        telemetry.addData("action: ", currentAction);
+        telemetry.addData("intake command: ", OrcaV3.intake().getIntakeCommand());
+        telemetry.addData("deposit command: ", OrcaV3.deposit().getDepositCommand());
+        telemetry.addData("intake rotation position: ", OrcaV3.intake().currentRotation().getVoltage());
+        telemetry.addData("intake tilt position: ", OrcaV3.intake().currentTilt().getVoltage());
+        telemetry.addData("deposit rotation position: ", OrcaV3.deposit().currentRotation().getVoltage());
+        telemetry.addData("deposit linkage position: ", OrcaV3.deposit().getCurrentLinkage().getVoltage());
+        telemetry.addData("deposit left diff position: ", OrcaV3.deposit().getCurrentLeftDifferential().getVoltage());
+        telemetry.addData("deposit right diff position: ", OrcaV3.deposit().getCurrentRightDifferential().getVoltage());
+        telemetry.addData("colors:", OrcaV3.intake().colorPins() + " " + OrcaV3.deposit().colorPins());
         telemetry.update();
 
 
@@ -101,69 +104,69 @@ public class ControlMode extends OpMode {
         }
         else if(gamepad1.share){
             currentAction = "specimen";
-            orca.deposit().specimenIntake();
-            orca.intake().specimen();
+            OrcaV3.deposit().specimenIntake();
+            OrcaV3.intake().specimen();
         }
         else if(gamepad1.touchpad){
-            orca.deposit().retract();
+            OrcaV3.deposit().retract();
             currentAction = "intake";
         }
 
-        if(orca.intake().getIntakeCommand().equals("transfer")){
+        if(OrcaV3.deposit().getDepositCommand().equals("depositSample")){
             currentAction = "sample";
         }
 
 
         if(currentAction.equals("specimen")){
             if(gamepad1.right_bumper){
-                orca.deposit().depositSpecimen();
+                OrcaV3.deposit().depositSpecimen();
             }
             else if(gamepad1.left_bumper){
-                orca.deposit().specimenRetract();
+                OrcaV3.deposit().specimenRetract();
                 //currentAction = "intake";
             }
             else if(gamepad1.cross){
-                orca.deposit().closeClaw();
+                OrcaV3.deposit().closeClaw();
             }
             else if(gamepad1.circle){
-                orca.deposit().releaseClaw();
+                OrcaV3.deposit().releaseClaw();
             }
             else if(gamepad1.square){
-                orca.deposit().clipSpecimen();
+                OrcaV3.deposit().clipSpecimen();
             }
         }
         else if(currentAction.equals("sample")){
-            if(gamepad1.right_bumper&&!orca.intake().getIntakeCommand().equals("transfer")){
-                orca.deposit().setSample();
+            if(gamepad1.right_bumper&&!OrcaV3.intake().getIntakeCommand().equals("transfer")){
+                OrcaV3.deposit().setSample();
             }
             else if(gamepad1.left_bumper){
-                orca.deposit().retract();
+                OrcaV3.deposit().retract();
                 currentAction = "intake";
             }
             else if(gamepad1.cross){
-                orca.deposit().releaseClaw();
+                OrcaV3.deposit().releaseClaw();
             }
         }
 
         if(currentAction.equals("intake")){
             if(gamepad1.circle){
-                orca.intake().angledIntake();
+                OrcaV3.intake().angledIntakeMode();
                 //45* intake
             }
             else if(gamepad1.cross){
-                orca.intake().verticalIntake();
+                OrcaV3.intake().verticalIntakeMode();
                 //top down intake
             }
             if(gamepad1.dpad_left){
-                orca.intake().transfer();
+                OrcaV3.intake().transfer();
             }
             if (gamepad1.square){
                 //retract
-                orca.intake().retract();
+                OrcaV3.intake().retract();
             }
 
             if(gamepad1.right_trigger>0){
-                orca.intake().startIntaking();
+                OrcaV3.intake().startIntaking();
                 //intake mode activate
             }
             //intakeCross = gamepad1.cross;
@@ -180,19 +183,7 @@ public class ControlMode extends OpMode {
             slidePower = 0;
         }
 
-        if(gamepad1.dpad_down){
-            orca.deposit().reset();
-        }
-        else {
-            orca.deposit().noReset();
-        }
-
-
-        orca.intake().refresh(slidePower,intakeCross,intakeCircle,intakeTriangle,intakeSquare,false);
-
-        orca.deposit().refresh();
-
-        orca.teleopRefresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
+        OrcaV3.teleopRefresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
 
         //TODO: remove readSampleDetails
 
