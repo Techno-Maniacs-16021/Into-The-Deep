@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auton;
+package org.firstinspires.ftc.teamcode.auton.old;
 
 import static java.lang.Thread.sleep;
 
@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-import org.firstinspires.ftc.teamcode.robots.OrcaV3;
+import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
@@ -24,12 +24,11 @@ import dev.frozenmilk.mercurial.Mercurial;
 
 @Mercurial.Attach
 @BulkRead.Attach
-@OrcaV3.Attach
 @Autonomous
 @Config
-public class FiveSpec extends OpMode {
+public class test extends OpMode {
 
-    OrcaV3 orca;
+    OrcaV2 orca;
     Timer pathTimer;
     int step;
     int cycles;
@@ -40,10 +39,10 @@ public class FiveSpec extends OpMode {
     public void init() {
         pathTimer = new Timer();
         Constants.setConstants(FConstants.class, LConstants.class);
-        orca = new OrcaV3(hardwareMap, new Pose(63.5,11,Math.toRadians(0)));
+        orca = new OrcaV2(hardwareMap, new Pose(63.5,11,Math.toRadians(0)));
         Paths.init();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        orca.autoInit(new Pose(63.5,11,Math.toRadians(0)));
+        orca.autoInit();
         step = 0;
         cycles = 0;
     }
@@ -68,8 +67,8 @@ public class FiveSpec extends OpMode {
     public void auton() {
         switch(step) {
             case 0: //Deposit spec
-                orca.getFollower().followPath(Paths.pathList.get(0), true);//0
-                nextStep(1000);//1000
+                orca.getFollower().followPath(Paths.pathList.get(0), true);
+                nextStep(1000);
                 break;
             case 1000:
                 orca.deposit().depositSpecimen();
@@ -90,7 +89,7 @@ public class FiveSpec extends OpMode {
                 if (orca.deposit().slidesReachedTarget()){
                     nextStep(2);
                 }
-
+                break;
             case 2: //dropoff 1
                 if (!orca.getFollower().isBusy()) {
                     orca.getFollower().followPath(Paths.pathList.get(2), true);
@@ -171,7 +170,7 @@ public class FiveSpec extends OpMode {
                         nextStep(-1);
                     }
                     else {
-                        nextStep(11);//used to be 11
+                        nextStep(11);
                     }
                 }
                 break;
@@ -194,12 +193,12 @@ public class FiveSpec extends OpMode {
                 break;
             case 11:
                 if (!orca.getFollower().isBusy()) {
-                    if(wait.milliseconds()>750){
+                    if(wait.milliseconds()>500){
                         orca.deposit().closeClaw();
                         orca.deposit().refresh();
                     }
 
-                    if(wait.milliseconds()>1500){
+                    if(wait.milliseconds()>1000){
                         nextStep(8);
                     }
                 }

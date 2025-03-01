@@ -82,10 +82,11 @@ public class OrcaV3 implements Subsystem {
     public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
     }
-    public void autoInit (){
+    public void autoInit (Pose startPose){
         deposit.setDepositCommand(" ");
         deposit.autoINIT();
         intake.setIntakeCommand("standby");
+        follower.setStartingPose(startPose);
     }
     public static IntakeV3 intake(){
         return intake;
@@ -147,7 +148,7 @@ public class OrcaV3 implements Subsystem {
 
         Constants.setConstants(FConstants .class, LConstants .class);
         follower = new Follower(FeatureRegistrar.getActiveOpMode().hardwareMap);
-        follower.setStartingPose(new Pose(0,0,0));
+        //follower.setStartingPose(startPose);
     }
     // or here
     @Override

@@ -14,168 +14,121 @@ import java.util.List;
 import java.util.Map;
 
 public class Paths {
-
-    public static ArrayList<Path> pathList = new ArrayList<>();
     public static Map<String, Path> pathMap = new HashMap<>();
 
-    public static Pose start = new Pose(63.5,11,Math.toRadians(0));
+    public static Pose start = new Pose(63.5,11,Math.toRadians(180));
 
     public static Point curve1 = new Point(48,48);
     public static Point curve2 = new Point(15,35);
 
-    public static Pose pickup1 = new Pose(17.5,43.5,Math.toRadians(0));
-    public static Pose pickup2 = new Pose(17.5,55.5,Math.toRadians(0));
-    public static Pose pickup3 = new Pose(17.5,63.5,Math.toRadians(0));
+    public static Pose pickup1 = new Pose(17.5,43.5,Math.toRadians(180));
+    public static Pose pickup2 = new Pose(17.5,55.5,Math.toRadians(180));
+    public static Pose pickup3 = new Pose(17.5,63.5,Math.toRadians(180));
 
-    public static Pose dropoff1 = new Pose(60,43.5,Math.toRadians(0));
-    public static Pose dropoff2 = new Pose(60,55.5,Math.toRadians(0));
-    public static Pose dropoff3 = new Pose(60,63.5,Math.toRadians(0));
+    public static Pose dropoff1 = new Pose(60,43.5,Math.toRadians(180));
+    public static Pose dropoff2 = new Pose(60,55.5,Math.toRadians(180));
+    public static Pose dropoff3 = new Pose(60,63.5,Math.toRadians(180));
 
     public static Pose pause = new Pose(45,42.3,Math.toRadians(180));
 
-    public static Pose specDrop = new Pose(38,11,Math.toRadians(0));
+    public static Pose specDrop = new Pose(38,11,Math.toRadians(180));
     public static Pose specCollect = new Pose(56,42.3,Math.toRadians(180));
 
-    static {
-        pathMap.put("specimen_drop", createPath(
+    public static void init() {
+        pathMap.put("firstDeposit", createPath(
                 new BezierLine(
                         new Point(start),
-                        new Point(specDrop))
+                        new Point(specDrop)),
+                //start.getHeading(), --> these are commented out so that it is constant and not linear
+                specDrop.getHeading()
         ));
 
-        pathMap.put("pickup_1", createPath(
+        pathMap.put("pick1", createPath(
                 new BezierCurve(
                         new Point(specDrop),
                         curve1,
                         curve2,
-                        new Point(pickup1))
+                        new Point(pickup1)),
+                //specDrop.getHeading(),
+                pickup1.getHeading()
         ));
 
-        pathMap.put("dropoff_1", createPath(
+        pathMap.put("drop1", createPath(
                 new BezierLine(
                         new Point(pickup1),
-                        new Point(dropoff1))
+                        new Point(dropoff1)),
+                //pickup1.getHeading(),
+                dropoff1.getHeading()
         ));
 
-        pathMap.put("pickup_2", createPath(
+        pathMap.put("pick2", createPath(
                 new BezierCurve(
                         new Point(dropoff1),
                         new Point(pickup1),
-                        new Point(pickup2))
+                        new Point(pickup2)),
+                //dropoff1.getHeading(),
+                pickup2.getHeading()
         ));
 
-        pathMap.put("dropoff_2", createPath(
+        pathMap.put("drop2", createPath(
                 new BezierLine(
                         new Point(pickup2),
-                        new Point(dropoff2))
+                        new Point(dropoff2)),
+                //pickup2.getHeading(),
+                dropoff2.getHeading()
         ));
 
-        pathMap.put("pause_point", createPath(
-                new BezierLine(
+        pathMap.put("pick3", createPath(
+                new BezierCurve(
                         new Point(dropoff2),
+                        new Point(pickup2),
+                        new Point(pickup3)),
+                //dropoff2.getHeading(),
+                pickup3.getHeading()
+        ));
+
+        pathMap.put("drop3", createPath(
+                new BezierLine(
+                        new Point(pickup3),
+                        new Point(dropoff3)),
+                //pickup3.getHeading(),
+                dropoff3.getHeading()
+        ));
+
+        pathMap.put("firstAlign", createPath(
+                new BezierLine(
+                        new Point(dropoff3),
                         new Point(pause)),
-                dropoff2.getHeading(),
+                //dropoff3.getHeading(),
                 pause.getHeading()
         ));
 
-        pathMap.put("specimen_collect", createPath(
+        pathMap.put("collectSpec", createPath(
                 new BezierLine(
                         new Point(pause),
                         new Point(specCollect)),
-                pause.getHeading()
+                //pause.getHeading(),
+                specCollect.getHeading()
         ));
 
-        pathMap.put("junk_file", createPath(
-                new BezierLine(
-                        new Point(specCollect),
-                        new Point(pause))
-        ));
-
-        pathMap.put("specimen_cycle_drop", createPath(
+        pathMap.put("depositSpec", createPath(
                 new BezierLine(
                         new Point(specCollect),
                         new Point(specDrop)),
-                specCollect.getHeading(),
+                //specCollect.getHeading(),
                 specDrop.getHeading()
         ));
 
-        pathMap.put("specimen_cycle_collect", createPath(
+        pathMap.put("alignSpec", createPath(
                 new BezierLine(
                         new Point(specDrop),
                         new Point(pause)),
-                specDrop.getHeading(),
+                //specDrop.getHeading(),
                 pause.getHeading()
         ));
     }
 
-    public static void init() {
-        Collections.addAll(pathList,
-                createPath(//specimen drop
-                        new BezierLine(
-                                new Point(start),
-                                new Point(specDrop))
-                ),
-                createPath( //pickup 1
-                        new BezierCurve(
-                                new Point(specDrop),
-                                curve1,
-                                curve2,
-                                new Point(pickup1))
-                ),
-                createPath( //dropoff 1
-                        new BezierLine(
-                                new Point(pickup1),
-                                new Point(dropoff1))
-                ),
-                createPath( //pickup 2
-                        new BezierCurve(
-                                new Point(dropoff1),
-                                new Point(pickup1),
-                                new Point(pickup2))
-                ),
-                createPath( //dropoff 2
-                        new BezierLine(
-                                new Point(pickup2),
-                                new Point(dropoff2))
-                ),
-                createPath( //5
-                        new BezierLine(
-                                new Point(dropoff2),
-                                new Point(pause)),
-                        dropoff2.getHeading(),
-                        pause.getHeading()
-                        ),
-                createPath(//6
-                        new BezierLine(
-                                new Point(pause),
-                                new Point(specCollect)),
-                        pause.getHeading()
-                ),
-                createPath( //junk file - 7
-                        new BezierLine(
-                              new Point(specCollect),
-                              new Point(pause))
-                ),
-                createPath( //specimen cycle (drop) - 8
-                        new BezierLine(
-                                new Point(specCollect),
-                                new Point(specDrop)),
-                        specCollect.getHeading(),
-                        specDrop.getHeading()
-                ),
-                createPath( //specimen cycle (collect) - 9
-                        new BezierLine(
-                                new Point(specDrop),
-                                new Point(pause)
-                        ),
-                                specDrop.getHeading(),
-                                pause.getHeading()
-                )
-        );
-
-    }
-
-    public static Path pathTo(BezierLine line, Follower follower) {
+    /*public static Path pathTo(BezierLine line, Follower follower) {
         return createPath(
                 new BezierLine(
                         new Point(follower.getPose().getX(), follower.getPose().getY()),
@@ -198,58 +151,47 @@ public class Paths {
         points.add(curve.getLastControlPoint());
 
         return createPath(new BezierCurve(points.toArray(new Point[0])));
-    }
+    }*/
 
-
+    // Constant Heading (line)
     private static Path createPath(BezierLine line, double heading) {
         Path path = new Path(line);
-        path.setConstantHeadingInterpolation(heading); // Constant heading
+        path.setConstantHeadingInterpolation(heading);
         return path;
     }
 
+    // Linear Heading (line)
     private static Path createPath(BezierLine line, double startHeading, double endHeading) {
         Path path = new Path(line);
-        path.setLinearHeadingInterpolation(startHeading, endHeading); // Linear heading
+        path.setLinearHeadingInterpolation(startHeading, endHeading);
         return path;
     }
 
+    // Tangent Heading (line)
     private static Path createPath(BezierLine line, boolean tangent) {
         Path path = new Path(line);
         if (tangent) path.setTangentHeadingInterpolation();
         return path;
     }
 
-    private static Path createPath(BezierLine line) {
-        Path path = new Path(line);
-        path.setConstantHeadingInterpolation(0);
-        return path;
-    }
-
-    private static Path createPath(BezierCurve curve) {
-        Path path = new Path(curve);
-        path.setConstantHeadingInterpolation(0);
-        return path;
-    }
-
-    // Constant Heading
+    // Constant Heading (curve)
     private static Path createPath(BezierCurve curve, double heading) {
         Path path = new Path(curve);
         path.setConstantHeadingInterpolation(heading); // Constant heading
         return path;
     }
 
-    // Linear Heading
+    // Linear Heading (curve)
     private static Path createPath(BezierCurve curve, double startHeading, double endHeading) {
         Path path = new Path(curve);
         path.setLinearHeadingInterpolation(startHeading, endHeading); // Linear heading
         return path;
     }
 
-    // Tangent or Default Constant Heading
+    // Tangent Heading (curve)
     private static Path createPath(BezierCurve curve, boolean tangent) {
         Path path = new Path(curve);
         if (tangent) path.setTangentHeadingInterpolation(); // Tangent heading
-        else path.setConstantHeadingInterpolation(0);      // Default constant heading
         return path;
     }
 }
