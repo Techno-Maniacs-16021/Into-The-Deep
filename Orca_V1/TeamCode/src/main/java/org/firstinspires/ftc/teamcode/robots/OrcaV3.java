@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.Path;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -82,12 +83,17 @@ public class OrcaV3 implements Subsystem {
     public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
         follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
     }
-    public void autoInit (Pose startPose){
+    public static void autoInit (Pose startPose){
         deposit.setDepositCommand(" ");
         deposit.autoINIT();
         intake.setIntakeCommand("standby");
         follower.setStartingPose(startPose);
     }
+
+    public static Follower follower() {
+        return follower;
+    }
+
     public static IntakeV3 intake(){
         return intake;
     }
@@ -99,7 +105,7 @@ public class OrcaV3 implements Subsystem {
 
     @NonNull
     public static Lambda setSpecimen() {
-        return new Lambda("SetSpecimen")
+        return new Lambda("set-specimen")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
@@ -119,7 +125,7 @@ public class OrcaV3 implements Subsystem {
 
     @NonNull
     public static Lambda setSample() {
-        return new Lambda("SetSample")
+        return new Lambda("set-sample")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
@@ -135,6 +141,22 @@ public class OrcaV3 implements Subsystem {
                 .setFinish(() -> {
                     // compute and return if the command is finished
                     return INSTANCE.deposit.slidesReachedTarget();
+                });
+    }
+
+    @NonNull
+    public static Lambda follow(Path path) {
+        return new Lambda("follow-path")
+                .addRequirements(follower)
+                .setInterruptible(true)
+                .setInit(() -> follower.followPath(path, true))
+                .setExecute(() -> {
+                    follower.update();
+                    //this.telemetryDebug(telemetry);
+                })
+                .setFinish(() -> !follower.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) follower.breakFollowing();
                 });
     }
 
