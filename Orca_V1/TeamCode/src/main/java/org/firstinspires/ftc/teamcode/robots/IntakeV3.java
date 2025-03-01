@@ -22,7 +22,7 @@ import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 
 public class IntakeV3 {
-    DigitalChannel colorPin0,colorPin1,colorPin2,colorPin3;
+    DigitalChannel colorPin0,colorPin1,colorPin2,colorPin3,colorPin4,colorPin5;
     //servos
     ServoImplEx tilt, rotation, gate;
     //motor
@@ -37,7 +37,7 @@ public class IntakeV3 {
             ANGLED_ROTATION = 0.2, ANGLED_TILT = 0.3,
             VERTICAL_ROTATION = 0.2 , VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0.05,
             EJECT_TILT = 0.5,
-            SPECIMEN_ROTATION = 0.4, SPECIMEN_TILT = 0.7,
+            SPECIMEN_ROTATION = 0.85, SPECIMEN_TILT = 0.7,
             TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.7,
             STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.7,
             INTAKE_DEPLOY_OFFSET = 1;
@@ -81,7 +81,8 @@ public class IntakeV3 {
         colorPin1 = hardwareMap.digitalChannel.get("crf1");
         colorPin2 = hardwareMap.digitalChannel.get("crf2");
         colorPin3 = hardwareMap.digitalChannel.get("crf3");
-
+        colorPin4 = hardwareMap.digitalChannel.get("crf4");
+        colorPin5 = hardwareMap.digitalChannel.get("crf5");
 
 
         tilt = hardwareMap.get(ServoImplEx.class,"tilt");
@@ -373,7 +374,7 @@ public class IntakeV3 {
             intakePower = STATIC_INTAKE_POWER;
         }
         else if(intakeCommand.equals("transfer")){
-            if(colorPin0.getState()||colorPin1.getState()){
+            if(colorPin0.getState()||colorPin1.getState()||colorPin4.getState()||colorPin5.getState()){
                 transferTimer.reset();
                 intakeCommand = "transferred";
             }

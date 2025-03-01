@@ -24,12 +24,12 @@ public class DepositV3 {
     AnalogInput currentRotation, currentLinkage, currentLeftDifferential, currentRightDifferential;
     DigitalChannel colorPin4,colorPin5;
     public double
-            INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 0.85, RETRACT_RIGHT_DIFF = 0.15,
+            INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 0.8, RETRACT_RIGHT_DIFF = 0.1,
             SPECIMEN_ROTATION = 0.0,SPECIMEN_LINKAGE = 1, SPECIMEN_LEFT_DIFF = 0, SPECIMEN_RIGHT_DIFF = 0.3,
-            SPECIMEN_DEPOSIT_ROTATION = 0.9,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.85, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.15,
+            SPECIMEN_DEPOSIT_ROTATION = 0.9,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.7, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.0,
             //SPECIMEN_DEPOSIT_ROTATION = 1,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.3,SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.6, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.0,
-            SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.7, TRANSFER_RIGHT_DIFF = 0,
-            STANDBY_ROTATION = .17,STANDBY_LINKAGE = 0.15, STANDBY_LEFT_DIFF = 0.85, STANDBY_RIGHT_DIFF = 0.15;
+            SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.7, TRANSFER_RIGHT_DIFF = 0.0,
+            STANDBY_ROTATION = .17,STANDBY_LINKAGE = 0.15, STANDBY_LEFT_DIFF = 0.8, STANDBY_RIGHT_DIFF = 0.1;
 
 
     final double COUNTS_PER_REV_MOTOR = 384.5;
@@ -223,7 +223,7 @@ public class DepositV3 {
             isStateComplete = false;
             if(Math.abs(2.07-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR) {
                 linkagePosition = RETRACT_LINKAGE;
-                if(Math.abs(1.38-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR){
+                if(Math.abs(1.425-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR){
                     leftDiffPosition = RETRACT_LEFT_DIFF;
                     rightDiffPosition = RETRACT_RIGHT_DIFF;
                     if((Math.abs(2.71-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(2.73-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){
