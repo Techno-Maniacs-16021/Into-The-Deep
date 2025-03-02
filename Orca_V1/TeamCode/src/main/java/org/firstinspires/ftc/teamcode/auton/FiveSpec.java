@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
+import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
 import dev.frozenmilk.mercurial.commands.groups.Parallel;
@@ -43,7 +44,7 @@ public class FiveSpec extends OpMode {
         Constants.setConstants(FConstants.class, LConstants.class);
         Paths.init();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        OrcaV3.autoInit(new Pose(63.5,11,Math.toRadians(0)));
+        OrcaV3.autoInit(new Pose(63.5,11,Math.toRadians(180)));
     }
 
     @Override
@@ -62,10 +63,14 @@ public class FiveSpec extends OpMode {
                         OrcaV3.follow(Paths.pathMap.get("firstDeposit-Spec"),true),
                         OrcaV3.setSpecimen()
                 ),
-                //@Rick: release claw
+                new Parallel(
+                        OrcaV3.retractDeposit(),
+                        OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false)
+                )
+
 
                 //STEP: collect 3 specs & ready for intake
-                new Parallel(
+                /*new Parallel(
                         new Sequential(
                                 OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
                                 OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
@@ -103,9 +108,9 @@ public class FiveSpec extends OpMode {
                 OrcaV3.follow(Paths.pathMap.get("collect-Spec"), true),
                 new Wait(0.5),
                 //@Rick: close claw
-                new Wait(0.25)
+                new Wait(0.25)*/
 
-        );
+        ).schedule();
         //is .schedule() needed?
     }
 }
