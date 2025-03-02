@@ -286,6 +286,7 @@ public class DepositV3 {
     }
     public void retract(){
         target = 0;
+        clawPosition = 0.3;
         depositCommand = "retract";
     }
     public void setSample(){
