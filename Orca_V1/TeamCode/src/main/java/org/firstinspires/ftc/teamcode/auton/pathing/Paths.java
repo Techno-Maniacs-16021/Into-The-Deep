@@ -5,7 +5,10 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
+import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
+
+import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,28 +16,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
+import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
+
 public class Paths {
     public static Map<String, Path> pathMap = new HashMap<>();
 
-    public static Pose start = new Pose(63.5,11,Math.toRadians(180));
+    public static Pose start = new Pose(65.5,11,Math.toRadians(180));
 
-    public static Point curve1 = new Point(48,48);
-    public static Point curve2 = new Point(15,35);
+    public static Point curve1 = new Point(38.5,5.5);
 
-    public static Pose pickup1 = new Pose(17.5,43.5,Math.toRadians(180));
-    public static Pose pickup2 = new Pose(17.5,55.5,Math.toRadians(180));
-    public static Pose pickup3 = new Pose(17.5,63.5,Math.toRadians(180));
+    public static Point curve2 = new Point(44.5,53);
+    public static Point curve3 = new Point(15,35);
 
-    public static Pose dropoff1 = new Pose(60,43.5,Math.toRadians(180));
-    public static Pose dropoff2 = new Pose(60,55.5,Math.toRadians(180));
-    public static Pose dropoff3 = new Pose(60,63.5,Math.toRadians(180));
+    //public static Pose pickup1 = new Pose(17.5,43.5,Math.toRadians(180));
+    public static Pose pickup1 = new Pose(15,47,Math.toRadians(180));
+    public static Pose pickup2 = new Pose(15,58,Math.toRadians(180));
+    public static Pose pickup3 = new Pose(15,64,Math.toRadians(180));
 
-    public static Pose pause = new Pose(45,42.3,Math.toRadians(180));
+    //public static Pose dropoff1 = new Pose(60,43.5,Math.toRadians(180));
+    public static Pose dropoff1 = new Pose(53,47,Math.toRadians(180));
+    public static Pose dropoff2 = new Pose(53,58,Math.toRadians(180));
+    public static Pose dropoff3 = new Pose(53,64,Math.toRadians(180));
 
-    public static Pose specDrop = new Pose(38,11,Math.toRadians(180));
-    public static Pose specCollect = new Pose(56,42.3,Math.toRadians(180));
+    public static Pose pause = new Pose(58,48,Math.toRadians(180));
+
+    public static Point dropCurve = new Point(38.5,5.5);
+
+    public static Pose specDrop = new Pose(31,5.5,Math.toRadians(180));
+    public static Pose specCollect = new Pose(63,48,Math.toRadians(180));
 
     public static void init() {
+
         pathMap.put("firstDeposit-Spec", createPath(
                 new BezierLine(
                         new Point(start),
@@ -48,6 +61,7 @@ public class Paths {
                         new Point(specDrop),
                         curve1,
                         curve2,
+                        curve3,
                         new Point(pickup1)),
                 //specDrop.getHeading(),
                 pickup1.getHeading()
@@ -112,13 +126,37 @@ public class Paths {
         ));
 
         pathMap.put("deposit-Spec", createPath(
-                new BezierLine(
+                new BezierCurve(
                         new Point(specCollect),
+                        dropCurve,
                         new Point(specDrop)),
                 //specCollect.getHeading(),
                 specDrop.getHeading()
         ));
-
+        pathMap.put("deposit-Spec3", createPath(
+                new BezierCurve(
+                        new Point(specCollect),
+                        dropCurve,
+                        new Point(specDrop)),
+                //specCollect.getHeading(),
+                specDrop.getHeading()
+        ));
+        pathMap.put("deposit-Spec4", createPath(
+                new BezierCurve(
+                        new Point(specCollect),
+                        dropCurve,
+                        new Point(specDrop)),
+                //specCollect.getHeading(),
+                specDrop.getHeading()
+        ));
+        pathMap.put("deposit-Spec5", createPath(
+                new BezierCurve(
+                        new Point(specCollect),
+                        dropCurve,
+                        new Point(specDrop)),
+                //specCollect.getHeading(),
+                specDrop.getHeading()
+        ));
         pathMap.put("align-Spec", createPath(
                 new BezierLine(
                         new Point(specDrop),
@@ -126,6 +164,7 @@ public class Paths {
                 //specDrop.getHeading(),
                 pause.getHeading()
         ));
+
     }
 
     /*public static Path pathTo(BezierLine line, Follower follower) {

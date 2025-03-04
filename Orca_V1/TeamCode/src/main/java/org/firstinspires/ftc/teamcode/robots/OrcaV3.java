@@ -10,11 +10,15 @@ import static org.threeten.bp.zone.ZoneRulesProvider.refresh;
 import androidx.annotation.NonNull;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.GoBildaPinpointDriver;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.localization.constants.PinpointConstants;
 import com.pedropathing.pathgen.Path;
+import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
@@ -81,11 +85,12 @@ public class OrcaV3 implements Subsystem {
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
-        follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX);
+        follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX,true);
+        follower.update();
     }
-    public static void autoInit (Pose startPose){
-        deposit.setDepositCommand(" ");
-        deposit.autoINIT();
+    public static void autoInit (Pose startPose, HardwareMap hardwareMap){
+        String opModeName = FeatureRegistrar.getActiveOpModeWrapper().getName();
+        deposit.setDepositCommand("init");
         intake.setIntakeCommand("standby");
         follower.setStartingPose(startPose);
     }
@@ -144,6 +149,19 @@ public class OrcaV3 implements Subsystem {
                 });
     }
     @NonNull
+    public static Lambda closeClaw() {
+        return new Lambda("close-claw")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.deposit.closeClaw();
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return true;
+                });
+    }
+    @NonNull
     public static Lambda releaseClaw() {
         return new Lambda("release-claw")
                 .addRequirements(INSTANCE)
@@ -176,7 +194,25 @@ public class OrcaV3 implements Subsystem {
                 });
     }
 
-
+    @NonNull
+    public static Lambda retractSpecimenDeposit() {
+        return new Lambda("retract-specimen-deposit")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.deposit.specimenRetract();
+                })
+                .setExecute(() -> {
+                    // do w/e
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return INSTANCE.deposit.isStateComplete()&&INSTANCE.deposit.slidesReachedTarget();
+                });
+    }
 
 
     @NonNull
@@ -197,17 +233,39 @@ public class OrcaV3 implements Subsystem {
                 });
     }
 
-    @Override
+    @NonNull
+    public static Lambda follow(Path p1, Path p2, boolean holdEnd) {
+        PathChain chain = follower.pathBuilder()
+                .addPath(p1)
+                .addPath(p2)
+                .build();
+        return new Lambda("follow-pathchain")
+                .addRequirements(INSTANCE)
+                .setInterruptible(true)
+                .setInit(() -> follower.followPath(chain, holdEnd))
+                .setExecute(() -> {
+                    follower.update();
+                    /*telemetry.addData("x", follower.getPose().getX());
+                    telemetry.addData("y", follower.getPose().getY());
+                    telemetry.addData("heading", follower.getPose().getHeading());*/
+                })
+                .setFinish(() -> !follower.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) follower.breakFollowing();
+                });
+    }
+
+
+        @Override
     public void preUserInitHook(@NonNull Wrapper opMode) {
         // default command should be set up here, not in the constructor
 
 
         deposit = new DepositV3(FeatureRegistrar.getActiveOpMode().hardwareMap);
         intake = new IntakeV3(FeatureRegistrar.getActiveOpMode().hardwareMap);
-
-        Constants.setConstants(FConstants .class, LConstants .class);
-        follower = new Follower(FeatureRegistrar.getActiveOpMode().hardwareMap);
         //follower.setStartingPose(startPose);
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(FeatureRegistrar.getActiveOpMode().hardwareMap);
     }
     // or here
     @Override

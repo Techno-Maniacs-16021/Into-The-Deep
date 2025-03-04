@@ -2,9 +2,12 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import static java.lang.Thread.sleep;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.pedropathing.pathgen.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -12,7 +15,9 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.WeakReferenceSet;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import org.firstinspires.ftc.teamcode.robots.OrcaV3;
@@ -23,6 +28,7 @@ import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent
 import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
+import dev.frozenmilk.mercurial.commands.Lambda;
 import dev.frozenmilk.mercurial.commands.groups.Parallel;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
 import dev.frozenmilk.mercurial.commands.util.Wait;
@@ -35,6 +41,16 @@ import dev.frozenmilk.mercurial.commands.util.Wait;
 public class FiveSpec extends OpMode {
 
     Timer pathTimer;
+    public double alignWait = 0.5;
+    public double grabWait = 0.5;
+    public double leaveWait = 0.25;
+    public double retractWait = 0.25;
+
+    private Telemetry telemetryA;
+
+    public PathChain depositChain;
+    // = OrcaV3.follower().pathBuilder().addPath()
+
     ElapsedTime wait = new ElapsedTime();
 
 
@@ -43,74 +59,123 @@ public class FiveSpec extends OpMode {
         pathTimer = new Timer();
         Constants.setConstants(FConstants.class, LConstants.class);
         Paths.init();
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        OrcaV3.autoInit(new Pose(63.5,11,Math.toRadians(180)));
+        telemetryA = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetryA.update();
+        OrcaV3.autoInit(Paths.start,hardwareMap);
     }
 
     @Override
     public void init_loop() {
     }
     @Override
-    public void start(){
-        wait.reset();
+    public void loop(){
+        OrcaV3.follower().telemetryDebug(telemetryA);
     }
 
     @Override
-    public void loop() {
+    public void start() {
+        wait.reset();
         new Sequential(
-                //STEP: drop first spec
+                //STEP: drop first spec (1+0)
                 new Parallel(
                         OrcaV3.follow(Paths.pathMap.get("firstDeposit-Spec"),true),
                         OrcaV3.setSpecimen()
                 ),
                 new Parallel(
-                        OrcaV3.retractDeposit(),
-                        OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false)
-                )
-
-
-                //STEP: collect 3 specs & ready for intake
-                /*new Parallel(
-                        new Sequential(
-                                OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("drop1-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("pick2-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("drop2-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("pick3-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("drop3-Spec"), false),
-                                OrcaV3.follow(Paths.pathMap.get("firstAlign-Spec"), false),
-                                new Wait(0.5)
-                        )
-                        //@Rick: ready for spec intake
+                        OrcaV3.follow(Paths.pathMap.get("pick1-Spec"), false),
+                        OrcaV3.retractSpecimenDeposit()
                 ),
 
-                //STEP: pickup spec
-                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), true),
-                new Wait(0.5),
-                //@Rick: close claw
-                new Wait(0.25),
+                //STEP: collect 3 specs & ready for intake
+                OrcaV3.follow(Paths.pathMap.get("drop1-Spec"), false),
+                OrcaV3.follow(Paths.pathMap.get("pick2-Spec"), false),
+                OrcaV3.follow(Paths.pathMap.get("drop2-Spec"), false),
+                OrcaV3.follow(Paths.pathMap.get("pick3-Spec"), false),
+                OrcaV3.follow(Paths.pathMap.get("drop3-Spec"), false),
+                //OrcaV3.follow(Paths.pathMap.get("firstAlign-Spec"),Paths.pathMap.get("collect-Spec"), true),
+                OrcaV3.follow(Paths.pathMap.get("firstAlign-Spec"), false),
+                new Wait(alignWait),
 
-                //STEP: deposit spec
+                //STEP: pickup spec
+                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), false),
+                new Wait(grabWait),
+                OrcaV3.closeClaw(),
+                new Wait(leaveWait),
+
+                //STEP: deposit spec (2+0)
                 new Parallel(
                         OrcaV3.follow(Paths.pathMap.get("deposit-Spec"), true),
                         OrcaV3.setSpecimen()
                 ),
-                //@Rick: release claw
 
                 //STEP: go to collection
                 new Parallel(
-                        OrcaV3.follow(Paths.pathMap.get("align-Spec"), false)//,
-                        //@Rick: ready for spec intake
+                        OrcaV3.follow(Paths.pathMap.get("align-Spec"), false),
+                        //OrcaV3.follow(Paths.pathMap.get("align-Spec"),Paths.pathMap.get("collect-Spec"), true),
+                        OrcaV3.retractSpecimenDeposit()
                 ),
 
                 //STEP: pickup spec
-                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), true),
-                new Wait(0.5),
-                //@Rick: close claw
-                new Wait(0.25)*/
+                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), false),
+                new Wait(grabWait),
+                OrcaV3.closeClaw(),
+                new Wait(leaveWait),
+
+                //STEP: deposit spec (3+0)
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("deposit-Spec3"), true),
+                        OrcaV3.setSpecimen()
+                ),
+
+                //STEP: go to collection
+                new Parallel(
+                        //OrcaV3.follow(Paths.pathMap.get("align-Spec"),Paths.pathMap.get("collect-Spec"), true),
+                        OrcaV3.follow(Paths.pathMap.get("align-Spec"), false),
+                        OrcaV3.retractSpecimenDeposit()
+                ),
+
+                //STEP: pickup spec
+                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), false),
+                new Wait(grabWait),
+                OrcaV3.closeClaw(),
+                new Wait(leaveWait),
+
+                //STEP: deposit spec (4+0)
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("deposit-Spec4"), true),
+                        OrcaV3.setSpecimen()
+                ),
+
+                //STEP: go to collection
+                new Parallel(
+                        //OrcaV3.follow(Paths.pathMap.get("align-Spec"),Paths.pathMap.get("collect-Spec"), true),
+                        OrcaV3.follow(Paths.pathMap.get("align-Spec"), false),
+                        OrcaV3.retractSpecimenDeposit()
+                ),
+
+                //STEP: pickup spec
+                OrcaV3.follow(Paths.pathMap.get("collect-Spec"), false),
+                new Wait(grabWait),
+                OrcaV3.closeClaw(),
+                new Wait(leaveWait),
+
+                //STEP: deposit spec (5+0)
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("deposit-Spec5"), true),
+                        OrcaV3.setSpecimen()
+                ),
+
+                //STEP: park
+                new Parallel(
+                        OrcaV3.follow(Paths.pathMap.get("align-Spec"), false),
+                        new Sequential(
+                                OrcaV3.releaseClaw(),
+                                new Wait(retractWait),
+                                OrcaV3.retractDeposit()
+                        )
+                )
 
         ).schedule();
-        //is .schedule() needed?
     }
+
 }

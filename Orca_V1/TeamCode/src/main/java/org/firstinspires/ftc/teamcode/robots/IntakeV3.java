@@ -34,12 +34,12 @@ public class IntakeV3 {
     RevBlinkinLedDriver lightBar;
 
     public double
-            ANGLED_ROTATION = 0.2, ANGLED_TILT = 0.3,
-            VERTICAL_ROTATION = 0.2 , VERTICAL_ROTATION_OFFSET = 0.25, VERTICAL_TILT = 0.05,
+            ANGLED_ROTATION = 0.15, ANGLED_TILT = 0.225,
+            VERTICAL_ROTATION = 0.2 , VERTICAL_ROTATION_OFFSET = 0.4, VERTICAL_TILT = 0.05,
             EJECT_TILT = 0.5,
-            SPECIMEN_ROTATION = 0.85, SPECIMEN_TILT = 0.7,
-            TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.7,
-            STANDBY_ROTATION = 0.85, STANDBY_TILT = 0.7,
+            SPECIMEN_ROTATION = 0.86, SPECIMEN_TILT = 0.715,
+            TRANSFER_ROTATION = 0.86, TRANSFER_TILT = 0.715,
+            STANDBY_ROTATION = 0.86, STANDBY_TILT = 0.715,
             INTAKE_DEPLOY_OFFSET = 1;
 
     double rotationPosition = STANDBY_ROTATION, tiltPosition = STANDBY_TILT, gatePosition = 0;
@@ -249,7 +249,7 @@ public class IntakeV3 {
                 this.slidesPower = -1;
             }
             else {
-                if (Math.abs(currentPos) < 0.05) {
+                if (Math.abs(currentPos) > 0.05) {
                     slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     slides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
@@ -262,7 +262,7 @@ public class IntakeV3 {
                 this.slidesPower = -1;
             }
             else {
-                if (Math.abs(currentPos) < 0.01) {
+                if (Math.abs(currentPos) > 0.05) {
                     slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     slides.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
@@ -325,7 +325,7 @@ public class IntakeV3 {
                 }
                 else{
                     intakePower = STATIC_INTAKE_POWER;
-                    if(currentPos>INTAKE_DEPLOY_OFFSET){
+                    if(currentPos>INTAKE_DEPLOY_OFFSET||rotationPosition!=STANDBY_ROTATION){
                         rotationPosition = VERTICAL_ROTATION_OFFSET;
                         tiltPosition = VERTICAL_TILT;
                     }
@@ -348,10 +348,10 @@ public class IntakeV3 {
                 if(colorEject()!=0&&currentPos<INTAKE_EJECT_SLIDES_OFFSET){
                     tiltPosition = EJECT_TILT;
                 }
-                else if(currentPos>INTAKE_DEPLOY_OFFSET){
+                else if(currentPos>INTAKE_DEPLOY_OFFSET||rotationPosition!=STANDBY_ROTATION){
                     tiltPosition = ANGLED_TILT;
                 }
-                if(currentPos>INTAKE_DEPLOY_OFFSET) {
+                if(currentPos>INTAKE_DEPLOY_OFFSET||rotationPosition!=STANDBY_ROTATION) {
                     rotationPosition = ANGLED_ROTATION;
                 }
             }
@@ -359,19 +359,24 @@ public class IntakeV3 {
             //auto sample ejection
         }
         else if(intakeCommand.equals("retract")){
-            rotationPosition = STANDBY_ROTATION;
-            tiltPosition = STANDBY_TILT;
             if(reverseIntakeButton) {
                 intakePower = -1;
             }
+            else if(currentRotation.getVoltage()>2.16-0.15&&currentTilt.getVoltage()<1.58+0.15&&!sampleColor.equals("none") && !sampleColor.equals(colorToEject)){
+                gatePosition = 1;
+                intakePower = 1;
+            }
             else {
                 intakePower = STATIC_INTAKE_POWER;
+                rotationPosition = STANDBY_ROTATION;
+                tiltPosition = STANDBY_TILT;
             }
         }
         else if(intakeCommand.equals("standby")){
             rotationPosition = STANDBY_ROTATION;
             tiltPosition = STANDBY_TILT;
             intakePower = STATIC_INTAKE_POWER;
+            gatePosition = 1;
         }
         else if(intakeCommand.equals("transfer")){
             if(colorPin0.getState()||colorPin1.getState()||colorPin4.getState()||colorPin5.getState()){
@@ -383,7 +388,7 @@ public class IntakeV3 {
         }
         else if(intakeCommand.equals("transferred")){
             if(transferTimer.milliseconds()>1000){
-                gatePosition = 0;
+                gatePosition = 1;
                 intakePower = 0;
                 intakeCommand = "standby";
             }
@@ -416,6 +421,7 @@ public class IntakeV3 {
     }
     public void startIntaking(){
         intakeCommand = "intake";
+        gatePosition = 0;
     }
     public void specimen(){
         intakeCommand = "specimen";

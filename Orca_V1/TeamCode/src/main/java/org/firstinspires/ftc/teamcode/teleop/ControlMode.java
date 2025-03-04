@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
+import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 import dev.frozenmilk.mercurial.Mercurial;
 
 @TeleOp(name = "TeleOp")
@@ -131,13 +132,15 @@ public class ControlMode extends OpMode {
             else if(gamepad1.circle){
                 OrcaV3.deposit().releaseClaw();
             }
-            else if(gamepad1.square){
-                OrcaV3.deposit().clipSpecimen();
-            }
         }
         else if(currentAction.equals("sample")){
-            if(gamepad1.right_bumper&&!OrcaV3.intake().getIntakeCommand().equals("transfer")){
-                OrcaV3.deposit().setSample();
+            if(Pasteurized.gamepad1().rightBumper().onTrue()){
+                if(OrcaV3.deposit().checkCommand("depositHighSample")){
+                    OrcaV3.deposit().setLowSample();
+                }
+                else{
+                    OrcaV3.deposit().setSample();
+                }
             }
             else if(gamepad1.left_bumper){
                 OrcaV3.deposit().retract();
