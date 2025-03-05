@@ -72,104 +72,61 @@ public class FiveSample extends OpMode {
     public void start() {
         wait.reset();
         new Sequential(
-                //STEP: drop first spec (1+0)
+                //STEP: drop first sample (0+1)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("firstDeposit-Spec"),true),
-                        OrcaV3.setSpecimen()
+                        OrcaV3.follow(Paths.samplePathMap.get("firstDeposit-Sample"),true),
+                        OrcaV3.setSample()
+                ),
+                OrcaV3.releaseClaw(),
+
+                //STEP: collect & drop sample (0+2)
+                new Parallel(
+                        OrcaV3.follow(Paths.samplePathMap.get("pick1-Sample"), false),
+                        OrcaV3.retractDeposit()
+                        //intake sample
                 ),
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), false),
-                        OrcaV3.retractSpecimenDeposit()
+                        OrcaV3.follow(Paths.samplePathMap.get("drop1-Sample"),true),
+                        OrcaV3.setSample()
                 ),
+                OrcaV3.releaseClaw(),
 
-                //STEP: collect 3 specs & ready for intake
-                OrcaV3.follow(Paths.specPathMap.get("drop1-Spec"), false),
-                OrcaV3.follow(Paths.specPathMap.get("pick2-Spec"), false),
-                OrcaV3.follow(Paths.specPathMap.get("drop2-Spec"), false),
-                OrcaV3.follow(Paths.specPathMap.get("pick3-Spec"), false),
-                OrcaV3.follow(Paths.specPathMap.get("drop3-Spec"), false),
-                //OrcaV3.follow(Paths.pathMap.get("firstAlign-Spec"),Paths.pathMap.get("collect-Spec"), true),
-                OrcaV3.follow(Paths.specPathMap.get("firstAlign-Spec"), false),
-                new Wait(alignWait),
-
-                //STEP: pickup spec
-                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false),
-                new Wait(grabWait),
-                OrcaV3.closeClaw(),
-                new Wait(leaveWait),
-
-                //STEP: deposit spec (2+0)
+                //STEP: collect & drop sample (0+3)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec"), true),
-                        OrcaV3.setSpecimen()
+                        OrcaV3.follow(Paths.samplePathMap.get("pick2-Sample"), false),
+                        OrcaV3.retractDeposit()
+                        //intake sample
                 ),
-
-                //STEP: go to collection
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
-                        //OrcaV3.follow(Paths.pathMap.get("align-Spec"),Paths.pathMap.get("collect-Spec"), true),
-                        OrcaV3.retractSpecimenDeposit()
+                        OrcaV3.follow(Paths.samplePathMap.get("drop2-Sample"),true),
+                        OrcaV3.setSample()
                 ),
+                OrcaV3.releaseClaw(),
 
-                //STEP: pickup spec
-                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false),
-                new Wait(grabWait),
-                OrcaV3.closeClaw(),
-                new Wait(leaveWait),
-
-                //STEP: deposit spec (3+0)
+                //STEP: collect & drop sample (0+4)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec3"), true),
-                        OrcaV3.setSpecimen()
+                        OrcaV3.follow(Paths.samplePathMap.get("pick3-Sample"), false),
+                        OrcaV3.retractDeposit()
+                        //intake sample
                 ),
-
-                //STEP: go to collection
                 new Parallel(
-                        //OrcaV3.follow(Paths.pathMap.get("align-Spec"),Paths.pathMap.get("collect-Spec"), true),
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
-                        OrcaV3.retractSpecimenDeposit()
+                        OrcaV3.follow(Paths.samplePathMap.get("drop3-Sample"),true),
+                        OrcaV3.setSample()
                 ),
+                OrcaV3.releaseClaw(),
 
-                //STEP: pickup spec
-                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false),
-                new Wait(grabWait),
-                OrcaV3.closeClaw(),
-                new Wait(leaveWait),
-
-                //STEP: deposit spec (4+0)
+                //STEP: collect from submersible & drop sample (0+5)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec4"), true),
-                        OrcaV3.setSpecimen()
+                        OrcaV3.follow(Paths.samplePathMap.get("collect-Sample"), false),
+                        OrcaV3.retractDeposit()
+                        //intake sample
                 ),
-
-                //STEP: go to collection
                 new Parallel(
-                        //OrcaV3.follow(Paths.pathMap.get("align-Spec"),Paths.pathMap.get("collect-Spec"), true),
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
-                        OrcaV3.retractSpecimenDeposit()
+                        OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true),
+                        OrcaV3.setSample()
                 ),
-
-                //STEP: pickup spec
-                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false),
-                new Wait(grabWait),
-                OrcaV3.closeClaw(),
-                new Wait(leaveWait),
-
-                //STEP: deposit spec (5+0)
-                new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec5"), true),
-                        OrcaV3.setSpecimen()
-                ),
-
-                //STEP: park
-                new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
-                        new Sequential(
-                                OrcaV3.releaseClaw(),
-                                new Wait(retractWait),
-                                OrcaV3.retractDeposit()
-                        )
-                )
+                OrcaV3.releaseClaw(),
+                OrcaV3.retractDeposit()
 
         ).schedule();
     }
