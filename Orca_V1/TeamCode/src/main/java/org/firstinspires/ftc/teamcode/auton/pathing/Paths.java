@@ -20,9 +20,11 @@ import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent
 import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
 
 public class Paths {
-    public static Map<String, Path> pathMap = new HashMap<>();
+    public static Map<String, Path> specPathMap = new HashMap<>();
+    public static Map<String, Path> samplePathMap = new HashMap<>();
 
-    public static Pose start = new Pose(65.5,11,Math.toRadians(180));
+    // ----------------------SPECIMEN PATHS----------------------
+    public static Pose startSpec = new Pose(65.5,11,Math.toRadians(180));
 
     public static Point curve1 = new Point(38.5,5.5);
 
@@ -45,18 +47,33 @@ public class Paths {
 
     public static Pose specDrop = new Pose(31,5.5,Math.toRadians(180));
     public static Pose specCollect = new Pose(63,48,Math.toRadians(180));
+    // ------------------------------------------------------
+
+    // ----------------------SAMPLE PATHS----------------------
+    public static Pose startSample = new Pose(65.5,-11,Math.toRadians(180));
+
+    public static Pose sample1 = new Pose(48,-60,Math.toRadians(160));
+    public static Pose sample2 = new Pose(48,-60,Math.toRadians(180));
+    public static Pose sample3 = new Pose(48,-60,Math.toRadians(200));
+
+    public static Point intakeCurve = new Point(15,-36);
+
+    public static Pose sampleIntake = new Pose(15,-24,Math.toRadians(90));
+
+    public static Pose sampleDrop = new Pose(55,-55,Math.toRadians(135));
+    // ------------------------------------------------------
 
     public static void init() {
 
-        pathMap.put("firstDeposit-Spec", createPath(
+        specPathMap.put("firstDeposit-Spec", createPath(
                 new BezierLine(
-                        new Point(start),
+                        new Point(startSpec),
                         new Point(specDrop)),
                 //start.getHeading(), --> these are commented out so that it is constant and not linear
                 specDrop.getHeading()
         ));
 
-        pathMap.put("pick1-Spec", createPath(
+        specPathMap.put("pick1-Spec", createPath(
                 new BezierCurve(
                         new Point(specDrop),
                         curve1,
@@ -67,7 +84,7 @@ public class Paths {
                 pickup1.getHeading()
         ));
 
-        pathMap.put("drop1-Spec", createPath(
+        specPathMap.put("drop1-Spec", createPath(
                 new BezierLine(
                         new Point(pickup1),
                         new Point(dropoff1)),
@@ -75,7 +92,7 @@ public class Paths {
                 dropoff1.getHeading()
         ));
 
-        pathMap.put("pick2-Spec", createPath(
+        specPathMap.put("pick2-Spec", createPath(
                 new BezierCurve(
                         new Point(dropoff1),
                         new Point(pickup1),
@@ -84,7 +101,7 @@ public class Paths {
                 pickup2.getHeading()
         ));
 
-        pathMap.put("drop2-Spec", createPath(
+        specPathMap.put("drop2-Spec", createPath(
                 new BezierLine(
                         new Point(pickup2),
                         new Point(dropoff2)),
@@ -92,7 +109,7 @@ public class Paths {
                 dropoff2.getHeading()
         ));
 
-        pathMap.put("pick3-Spec", createPath(
+        specPathMap.put("pick3-Spec", createPath(
                 new BezierCurve(
                         new Point(dropoff2),
                         new Point(pickup2),
@@ -101,7 +118,7 @@ public class Paths {
                 pickup3.getHeading()
         ));
 
-        pathMap.put("drop3-Spec", createPath(
+        specPathMap.put("drop3-Spec", createPath(
                 new BezierLine(
                         new Point(pickup3),
                         new Point(dropoff3)),
@@ -109,7 +126,7 @@ public class Paths {
                 dropoff3.getHeading()
         ));
 
-        pathMap.put("firstAlign-Spec", createPath(
+        specPathMap.put("firstAlign-Spec", createPath(
                 new BezierLine(
                         new Point(dropoff3),
                         new Point(pause)),
@@ -117,7 +134,7 @@ public class Paths {
                 pause.getHeading()
         ));
 
-        pathMap.put("collect-Spec", createPath(
+        specPathMap.put("collect-Spec", createPath(
                 new BezierLine(
                         new Point(pause),
                         new Point(specCollect)),
@@ -125,7 +142,7 @@ public class Paths {
                 specCollect.getHeading()
         ));
 
-        pathMap.put("deposit-Spec", createPath(
+        specPathMap.put("deposit-Spec", createPath(
                 new BezierCurve(
                         new Point(specCollect),
                         dropCurve,
@@ -133,7 +150,7 @@ public class Paths {
                 //specCollect.getHeading(),
                 specDrop.getHeading()
         ));
-        pathMap.put("deposit-Spec3", createPath(
+        specPathMap.put("deposit-Spec3", createPath(
                 new BezierCurve(
                         new Point(specCollect),
                         dropCurve,
@@ -141,7 +158,7 @@ public class Paths {
                 //specCollect.getHeading(),
                 specDrop.getHeading()
         ));
-        pathMap.put("deposit-Spec4", createPath(
+        specPathMap.put("deposit-Spec4", createPath(
                 new BezierCurve(
                         new Point(specCollect),
                         dropCurve,
@@ -149,7 +166,7 @@ public class Paths {
                 //specCollect.getHeading(),
                 specDrop.getHeading()
         ));
-        pathMap.put("deposit-Spec5", createPath(
+        specPathMap.put("deposit-Spec5", createPath(
                 new BezierCurve(
                         new Point(specCollect),
                         dropCurve,
@@ -157,13 +174,89 @@ public class Paths {
                 //specCollect.getHeading(),
                 specDrop.getHeading()
         ));
-        pathMap.put("align-Spec", createPath(
+        specPathMap.put("align-Spec", createPath(
                 new BezierLine(
                         new Point(specDrop),
                         new Point(pause)),
                 //specDrop.getHeading(),
                 pause.getHeading()
         ));
+
+        samplePathMap.put("firstDeposit-Sample",createPath(
+                new BezierLine(
+                        new Point(startSample),
+                        new Point(sampleDrop)),
+                startSample.getHeading(),
+                sampleDrop.getHeading()
+        ));
+
+        samplePathMap.put("pick1-Sample",createPath(
+                new BezierLine(
+                        new Point(sampleDrop),
+                        new Point(sample1)),
+                sampleDrop.getHeading(),
+                sample1.getHeading()
+        ));
+
+        samplePathMap.put("drop1-Sample",createPath(
+                new BezierLine(
+                        new Point(sample1),
+                        new Point(sampleDrop)),
+                sample1.getHeading(),
+                sampleDrop.getHeading()
+        ));
+
+        samplePathMap.put("pick2-Sample",createPath(
+                new BezierLine(
+                        new Point(sampleDrop),
+                        new Point(sample2)),
+                sampleDrop.getHeading(),
+                sample2.getHeading()
+        ));
+
+        samplePathMap.put("drop2-Sample",createPath(
+                new BezierLine(
+                        new Point(sample2),
+                        new Point(sampleDrop)),
+                sample2.getHeading(),
+                sampleDrop.getHeading()
+        ));
+
+        samplePathMap.put("pick3-Sample",createPath(
+                new BezierLine(
+                        new Point(sampleDrop),
+                        new Point(sample3)),
+                sampleDrop.getHeading(),
+                sample3.getHeading()
+        ));
+
+        samplePathMap.put("drop3-Sample",createPath(
+                new BezierLine(
+                        new Point(sample3),
+                        new Point(sampleDrop)),
+                sample3.getHeading(),
+                sampleDrop.getHeading()
+        ));
+
+        samplePathMap.put("collect-Sample",createPath(
+                new BezierCurve(
+                        new Point(sampleDrop),
+                        intakeCurve,
+                        new Point(sampleIntake)),
+                sampleDrop.getHeading(),
+                sampleIntake.getHeading()
+        ));
+
+        samplePathMap.put("deposit-Sample",createPath(
+                new BezierCurve(
+                        new Point(sampleIntake),
+                        intakeCurve,
+                        new Point(sampleDrop)),
+                sampleIntake.getHeading(),
+                sampleDrop.getHeading()
+        ));
+
+
 
     }
 

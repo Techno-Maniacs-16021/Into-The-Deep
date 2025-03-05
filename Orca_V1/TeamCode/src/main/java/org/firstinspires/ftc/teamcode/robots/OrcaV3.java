@@ -234,10 +234,14 @@ public class OrcaV3 implements Subsystem {
     }
 
     @NonNull
-    public static Lambda follow(Path p1, Path p2, boolean holdEnd) {
+    public static Lambda follow(Path p1, Path p2, Path p3, Path p4, Path p5, Path p6, boolean holdEnd) {
         PathChain chain = follower.pathBuilder()
                 .addPath(p1)
                 .addPath(p2)
+                .addPath(p3)
+                .addPath(p4)
+                .addPath(p5)
+                .addPath(p6)
                 .build();
         return new Lambda("follow-pathchain")
                 .addRequirements(INSTANCE)

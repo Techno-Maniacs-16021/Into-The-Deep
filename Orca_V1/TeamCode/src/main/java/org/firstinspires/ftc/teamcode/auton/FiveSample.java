@@ -38,13 +38,9 @@ import dev.frozenmilk.mercurial.commands.util.Wait;
 @OrcaV3.Attach
 @Autonomous
 @Config
-public class FiveSpec extends OpMode {
+public class FiveSample extends OpMode {
 
     Timer pathTimer;
-    public double alignWait = 0.5;
-    public double grabWait = 0.5;
-    public double leaveWait = 0.25;
-    public double retractWait = 0.25;
 
     private Telemetry telemetryA;
 
@@ -61,7 +57,7 @@ public class FiveSpec extends OpMode {
         Paths.init();
         telemetryA = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetryA.update();
-        OrcaV3.autoInit(Paths.startSpec,hardwareMap);
+        OrcaV3.autoInit(Paths.startSample,hardwareMap);
     }
 
     @Override
@@ -82,22 +78,17 @@ public class FiveSpec extends OpMode {
                         OrcaV3.setSpecimen()
                 ),
                 new Parallel(
-                        //OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), false),
-                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"),
-                                Paths.specPathMap.get("drop1-Spec"),
-                                Paths.specPathMap.get("pick2-Spec"),
-                                Paths.specPathMap.get("drop2-Spec"),
-                                Paths.specPathMap.get("pick3-Spec"),
-                                Paths.specPathMap.get("drop3-Spec"), false),
+                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), false),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
                 //STEP: collect 3 specs & ready for intake
-                /*OrcaV3.follow(Paths.specPathMap.get("drop1-Spec"), false),
+                OrcaV3.follow(Paths.specPathMap.get("drop1-Spec"), false),
                 OrcaV3.follow(Paths.specPathMap.get("pick2-Spec"), false),
                 OrcaV3.follow(Paths.specPathMap.get("drop2-Spec"), false),
                 OrcaV3.follow(Paths.specPathMap.get("pick3-Spec"), false),
-                OrcaV3.follow(Paths.specPathMap.get("drop3-Spec"), false),*/
+                OrcaV3.follow(Paths.specPathMap.get("drop3-Spec"), false),
+                //OrcaV3.follow(Paths.pathMap.get("firstAlign-Spec"),Paths.pathMap.get("collect-Spec"), true),
                 OrcaV3.follow(Paths.specPathMap.get("firstAlign-Spec"), false),
                 new Wait(alignWait),
 
