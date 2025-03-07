@@ -19,6 +19,7 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
@@ -68,6 +69,7 @@ public class OrcaV3 implements Subsystem {
     static DepositV3 deposit;
     static IntakeV3 intake;
     static Follower follower;
+    ElapsedTime intakeAttemptTimer = new ElapsedTime();
 
 
     // init code might go in here
@@ -134,7 +136,9 @@ public class OrcaV3 implements Subsystem {
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
+                    //xxINSTANCE.deposit.resetGrabTimer();
                     INSTANCE.deposit.setSample();
+
                 })
                 .setExecute(() -> {
                     // do w/e
@@ -145,7 +149,7 @@ public class OrcaV3 implements Subsystem {
                 })
                 .setFinish(() -> {
                     // compute and return if the command is finished
-                    return INSTANCE.deposit.slidesReachedTarget();
+                    return INSTANCE.deposit.slidesReachedTarget()&&INSTANCE.deposit.isStateComplete();
                 });
     }
     @NonNull
@@ -214,6 +218,153 @@ public class OrcaV3 implements Subsystem {
                 });
     }
 
+    @NonNull
+    public static Lambda setIntake(double target) {
+        return new Lambda("set-intake")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.intake.startIntaking();
+                    INSTANCE.intake.enablePID();
+                    INSTANCE.intake.setTarget(target);
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    boolean isFinished = INSTANCE.intake.slidesReachedTarget();
+                    if(isFinished){
+                        INSTANCE.intake.disablePID();
+                    }
+                    // compute and return if the command is finished
+                    return isFinished;
+                });
+    }
+
+    @NonNull
+    public static Lambda attemptIntake(double slidePower) {
+        return new Lambda("attempt-intake")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.intake.startIntaking();
+                    INSTANCE.intake.angledIntakeMode();
+                    INSTANCE.intake.enableIntakeMotor();
+                    INSTANCE.intake.disablePID();
+                    INSTANCE.intake.setSlidesPower = slidePower;
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    boolean isFinished =
+                            (!INSTANCE.intake.getSampleColor().equals(INSTANCE.intake.colorToEject)
+                            &&!INSTANCE.intake.getSampleColor().equals("none"))
+                            ||INSTANCE.intake.slidesReachedTarget();
+                    if(isFinished){
+
+                    }
+                    // compute and return if the command is finished
+                    return isFinished;
+                });
+    }
+
+    @NonNull
+    public static Lambda attemptSubIntake() {
+
+        return new Lambda("attempt-intake-sub")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.intake.startIntaking();
+                    INSTANCE.intake.verticalIntakeMode();
+                    INSTANCE.intake.enableIntakeMotor();
+                    INSTANCE.intake.disablePID();
+                    INSTANCE.intakeAttemptTimer.reset();
+
+                })
+                .setExecute(() -> {
+                    // do w/e
+                    if(INSTANCE.intakeAttemptTimer.milliseconds()<1000){
+                        INSTANCE.intake.enableIntakeMotor();
+                    }
+                    else if(INSTANCE.intakeAttemptTimer.milliseconds()<1500){
+                        INSTANCE.intake.disableIntakeMotor();
+                        INSTANCE.intake.setSlidePower(0.75);
+                    }
+                    else{
+                        INSTANCE.intakeAttemptTimer.reset();
+                        INSTANCE.intake.setSlidePower(0);
+                    }
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    boolean isFinished =
+                            (!INSTANCE.intake.getSampleColor().equals(INSTANCE.intake.colorToEject)
+                            &&!INSTANCE.intake.getSampleColor().equals("none"))
+                            ||INSTANCE.intake.slidesReachedTarget();
+                    if(isFinished){
+                        INSTANCE.intake.enableIntakeMotor();
+                    }
+                    // compute and return if the command is finished
+                    return isFinished;
+                });
+    }
+    @NonNull
+    public static Lambda retractIntake() {
+        return new Lambda("attempt-intake")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.intake.setSlidePower(0);
+                    INSTANCE.intake.disableIntakeMotor();
+                    INSTANCE.intake.verticalIntakeMode();
+                    INSTANCE.intake.retract();
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return true;
+                });
+    }
+
+    @NonNull
+    public static Lambda waitForTransfer() {
+        return new Lambda("wait-for-transfer")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return INSTANCE.deposit.checkCommand("depositSample")&&INSTANCE.deposit.isStateComplete();
+                });
+    }
+
 
     @NonNull
     public static Lambda follow(Path path, boolean holdEnd) {
@@ -233,17 +384,59 @@ public class OrcaV3 implements Subsystem {
                 });
     }
 
+
     @NonNull
-    public static Lambda follow(Path p1, Path p2, Path p3, Path p4, Path p5, Path p6, boolean holdEnd) {
+    public static Lambda follow(Path p1, Path p2, boolean holdEnd) {
+        PathChain chain = follower.pathBuilder()
+                .addPath(p1)
+                .addPath(p2)
+                .build();
+        return new Lambda("follow-pathchain")
+                .addRequirements(INSTANCE)
+                .setInterruptible(true)
+                .setInit(() -> follower.followPath(chain, holdEnd))
+                .setExecute(() -> {
+                    follower.update();
+                    /*telemetry.addData("x", follower.getPose().getX());
+                    telemetry.addData("y", follower.getPose().getY());
+                    telemetry.addData("heading", follower.getPose().getHeading());*/
+                })
+                .setFinish(() -> !follower.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) follower.breakFollowing();
+                });
+    }
+
+    public static Lambda follow(Path p1, Path p2, Path p3, boolean holdEnd) {
         PathChain chain = follower.pathBuilder()
                 .addPath(p1)
                 .addPath(p2)
                 .addPath(p3)
-                .addPath(p4)
-                .addPath(p5)
-                .addPath(p6)
                 .build();
-        return new Lambda("follow-pathchain")
+        return new Lambda("follow-pathchain-3")
+                .addRequirements(INSTANCE)
+                .setInterruptible(true)
+                .setInit(() -> follower.followPath(chain, holdEnd))
+                .setExecute(() -> {
+                    follower.update();
+                    /*telemetry.addData("x", follower.getPose().getX());
+                    telemetry.addData("y", follower.getPose().getY());
+                    telemetry.addData("heading", follower.getPose().getHeading());*/
+                })
+                .setFinish(() -> !follower.isBusy())
+                .setEnd((interrupted) -> {
+                    if (interrupted) follower.breakFollowing();
+                });
+    }
+
+    @NonNull
+    public static Lambda follow(Path p1, Path p2, double zpam, boolean holdEnd) {
+        PathChain chain = follower.pathBuilder()
+                .addPath(p1)
+                .addPath(p2)
+                .setZeroPowerAccelerationMultiplier(zpam)
+                .build();
+        return new Lambda("follow-pathchain-zpam")
                 .addRequirements(INSTANCE)
                 .setInterruptible(true)
                 .setInit(() -> follower.followPath(chain, holdEnd))

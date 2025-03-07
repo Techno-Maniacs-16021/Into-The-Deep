@@ -38,7 +38,7 @@ public class IntakeV3 {
             VERTICAL_ROTATION = 0.2 , VERTICAL_ROTATION_OFFSET = 0.4, VERTICAL_TILT = 0.05,
             EJECT_TILT = 0.5,
             SPECIMEN_ROTATION = 0.86, SPECIMEN_TILT = 0.715,
-            TRANSFER_ROTATION = 0.86, TRANSFER_TILT = 0.715,
+            TRANSFER_ROTATION = 0.8, TRANSFER_TILT = 0.715,
             STANDBY_ROTATION = 0.86, STANDBY_TILT = 0.715,
             INTAKE_DEPLOY_OFFSET = 1;
 
@@ -53,6 +53,7 @@ public class IntakeV3 {
     boolean isIntakeMotorActive = false;
     double target,currentPos;
     double ALLOWED_ERROR = 0.0125;
+    double setSlidesPower = 0.0;
     double p = 0.0,i = 0,d = 0,f=0;
     int globalTime = 0;
     boolean recentlyEjected = false;
@@ -65,6 +66,7 @@ public class IntakeV3 {
 
     int posLogLength = 12;
     ArrayList<Double> positionLog = new ArrayList<>();
+    boolean isTransfering = false;
 
     ElapsedTime transferTimer = new ElapsedTime();
 
@@ -217,6 +219,9 @@ public class IntakeV3 {
                         : "none"
         );
     }
+    public String getSampleColor(){
+        return sampleColor;
+    }
     /*public void updateSampleDetails(){
         boolean red,blue;
         //System.out.println(colorPin0.getState()+" "+colorPin2.getState()+" "+ colorPin1.getState()+" "+colorPin3.getState()+" "+ colorPin4.getState()+" "+colorPin5.getState());
@@ -270,7 +275,7 @@ public class IntakeV3 {
 
                 this.slidesPower = -0.25;
 
-                if (!sampleColor.equals("none") && !sampleColor.equals(colorToEject)) {
+                if ((!sampleColor.equals("none") && !sampleColor.equals(colorToEject))||isTransfering) {
                     intakeCommand = "transfer";
                     //TODO: remove when servo is fixed
                     //intakePower = REVERSE_INTAKE_POWER_TILT;
@@ -286,6 +291,9 @@ public class IntakeV3 {
         else if(isPIDActive){
             slidesPID.setPID(p, i, d);
             this.slidesPower = slidesPID.calculate(currentPos, target)+f;
+        }
+        else if(intakeSlidesTrigger==0){
+            this.slidesPower = setSlidesPower;
         }
         else {
             this.slidesPower = intakeSlidesTrigger;
@@ -363,6 +371,7 @@ public class IntakeV3 {
                 intakePower = -1;
             }
             else if(currentRotation.getVoltage()>2.16-0.15&&currentTilt.getVoltage()<1.58+0.15&&!sampleColor.equals("none") && !sampleColor.equals(colorToEject)){
+                isTransfering = true;
                 gatePosition = 1;
                 intakePower = 1;
             }
@@ -379,7 +388,8 @@ public class IntakeV3 {
             gatePosition = 1;
         }
         else if(intakeCommand.equals("transfer")){
-            if(colorPin0.getState()||colorPin1.getState()||colorPin4.getState()||colorPin5.getState()){
+            if(colorPin0.getState()||colorPin1.getState()||colorPin4.getState()||colorPin5.getState()||isTransfering){
+                isTransfering = false;
                 transferTimer.reset();
                 intakeCommand = "transferred";
             }
@@ -510,6 +520,10 @@ public class IntakeV3 {
     public String colorPins(){
         return "0:" + colorPin0.getState() + " 1:" + colorPin1.getState() + " 2:" + colorPin2.getState() + " 3:" + colorPin3.getState();
     }
+    public void setSlidePower(double pwr){
+        setSlidesPower = pwr;
+    }
+
 
 
 }
