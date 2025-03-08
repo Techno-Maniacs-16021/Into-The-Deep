@@ -83,7 +83,7 @@ public class OrcaV3 implements Subsystem {
     static IntakeV3 intake;
     static Follower follower;
     static OpenCvWebcam webcam;
-    static IMRec pipeline;
+    static IMRec pipeline = new IMRec();
 
     private static Limelight3A limelight;
 
@@ -123,7 +123,7 @@ public class OrcaV3 implements Subsystem {
     public static void startWebacm(){
         int cameraMonitorViewId = FeatureRegistrar.getActiveOpMode().hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", FeatureRegistrar.getActiveOpMode().hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(FeatureRegistrar.getActiveOpMode().hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        IMRec pipeline = new IMRec();
+        pipeline = new IMRec();
         webcam.setPipeline(pipeline);
 
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -427,8 +427,9 @@ public class OrcaV3 implements Subsystem {
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
-                    double newX = follower.getPose().getX()+0.5;
-                            //(0.5-pipeline.getMidX()*5);
+                    double newX =
+                            (0.5-pipeline.getMidX()*5);
+//                    follower.getPose().getX()+0.5;
 
                     Path align = new Path(
                             new BezierLine(
