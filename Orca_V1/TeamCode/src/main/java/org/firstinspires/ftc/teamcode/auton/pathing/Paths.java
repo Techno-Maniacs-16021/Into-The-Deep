@@ -62,9 +62,9 @@ public class Paths {
 
     public static Pose sampleIntake = new Pose(15,-27,Math.toRadians(90));
 
-    public static Pose sampleDrop = new Pose(56,-58,Math.toRadians(135));
+    public static Pose sampleDrop = new Pose(56,-58,Math.toRadians(133));
     public static Pose firstSampleDrop = new Pose(58,-57,Math.toRadians(135));
-    public static Pose finalSampleDrop = new Pose(55,-59,Math.toRadians(135));
+    public static Pose finalSampleDrop = new Pose(55,-59,Math.toRadians(133));
 
     public static Pose park = new Pose(48,-48,Math.toRadians(135));
     // ------------------------------------------------------
