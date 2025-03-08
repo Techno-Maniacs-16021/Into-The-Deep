@@ -73,6 +73,8 @@ public class IntakeV3 {
     boolean intakeButton = Pasteurized.gamepad1().a().state()||Pasteurized.gamepad1().b().state();
     boolean reverseIntakeButton = Pasteurized.gamepad1().y().state();
     double intakeSlidesTrigger = Pasteurized.gamepad1().rightTrigger().state()-Pasteurized.gamepad1().leftTrigger().state();
+    RevBlinkinLedDriver.BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.WHITE;
+
     public IntakeV3(HardwareMap hardwareMap) {
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
@@ -130,17 +132,24 @@ public class IntakeV3 {
     }
 
     public void refresh (){
+        RevBlinkinLedDriver.BlinkinPattern newPattern = RevBlinkinLedDriver.BlinkinPattern.WHITE;
+
         if(sampleColor.equals("red")){
-            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+            newPattern = RevBlinkinLedDriver.BlinkinPattern.RED;
         }
         else if(sampleColor.equals("blue")){
-            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+            newPattern = RevBlinkinLedDriver.BlinkinPattern.BLUE;
         }
         else if(sampleColor.equals("yellow")){
-            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+            newPattern = RevBlinkinLedDriver.BlinkinPattern.YELLOW;
         }
         else{
-            lightBar.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+            newPattern = RevBlinkinLedDriver.BlinkinPattern.WHITE;
+        }
+
+        if(!currentPattern.equals(newPattern)){
+            currentPattern = newPattern;
+            lightBar.setPattern(currentPattern);
         }
 
         intakeSlidesTrigger = Pasteurized.gamepad1().rightTrigger().state()-Pasteurized.gamepad1().leftTrigger().state();
