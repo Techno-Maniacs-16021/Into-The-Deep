@@ -120,6 +120,23 @@ public class OrcaV3 implements Subsystem {
         intake.setIntakeCommand("standby");
         follower.setStartingPose(startPose);
     }
+    public static void startWebacm(){
+        int cameraMonitorViewId = FeatureRegistrar.getActiveOpMode().hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", FeatureRegistrar.getActiveOpMode().hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(FeatureRegistrar.getActiveOpMode().hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        IMRec pipeline = new IMRec();
+        webcam.setPipeline(pipeline);
+
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
 
     public static Follower follower() {
         return follower;
@@ -311,6 +328,7 @@ public class OrcaV3 implements Subsystem {
                 })
                 .setExecute(() -> {
                     // do w/e
+                    System.out.println("setIntake");
 
                 })
                 .setEnd(interrupted -> {
@@ -405,12 +423,12 @@ public class OrcaV3 implements Subsystem {
 
     @NonNull
     public static Lambda setSubIntakeEGAC() {
-
         return new Lambda("set-intake-sub-egac")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
-                    double newX = follower.getPose().getX()+(0.5-pipeline.getMidX()*5);
+                    double newX = follower.getPose().getX()+0.5;
+                            //(0.5-pipeline.getMidX()*5);
 
                     Path align = new Path(
                             new BezierLine(
@@ -419,31 +437,34 @@ public class OrcaV3 implements Subsystem {
                     ));
                     align.setConstantHeadingInterpolation(follower.getPose().getHeading());
 
-                    INSTANCE.intake.startIntaking();
+                    follower.followPath(align,true);
+
+                    INSTANCE.intake.verticalIntakeMode();
                     INSTANCE.intake.enablePID();
                     INSTANCE.intakeAttemptTimer.reset();
 
-                    follower.followPath(align, true);
 
+                    double slide = 1.5;//pipeline.getMidY()*1+1;
 
-
-                    double slide = pipeline.getMidY()*1+1;
-
-                    INSTANCE.intake.startIntaking();
-                    INSTANCE.intake.enablePID();
                     INSTANCE.intake.setTarget(slide);
+
+
+                    /*new Parallel(
+                            OrcaV3.setIntake(slide),
+                            OrcaV3.follow(align,true,0)
+                    ).schedule();*/
                 })
                 .setExecute(() -> {
-                    follower.update();
                     // do w/e
+                    follower.update();
+                    System.out.println("setSubIntakeEGAC: " + INSTANCE.intake.slidesReachedTarget()+" "+!follower.isBusy());
+                    /*if((Math.abs(follower.getCurrentPath().getLastControlPoint().getX()-follower.getPose().getX())<1&&Math.abs(follower.getCurrentPath().getLastControlPoint().getY()-follower.getPose().getY())<1)){
+                        follower.breakFollowing();
+                    }*/
 
                 })
                 .setEnd(interrupted -> {
                     // do w/e
-                    if (interrupted) {
-                        follower.breakFollowing();
-                        INSTANCE.intake.disablePID();
-                    }
                 })
                 .setFinish(() -> {
                     // compute and return if the command is finished
@@ -453,6 +474,7 @@ public class OrcaV3 implements Subsystem {
                     }
                     // compute and return if the command is finished
                     return isFinished;
+                    //return true;
                 });
     }
 
@@ -536,50 +558,8 @@ public class OrcaV3 implements Subsystem {
     }
 
     @NonNull
-    public static Lambda pauseViewPort() {
-        return new Lambda("pause-cam")
-                .addRequirements(INSTANCE)
-                .setInit(() -> {
-                    // do w/e
-                    webcam.pauseViewport();
-                })
-                .setExecute(() -> {
-                    // do w/e
-
-                })
-                .setEnd(interrupted -> {
-                    // do w/e
-                })
-                .setFinish(() -> {
-                    // compute and return if the command is finished
-                    return true;
-                });
-    }
-
-    @NonNull
-    public static Lambda resumeViewPort() {
-        return new Lambda("pause-cam")
-                .addRequirements(INSTANCE)
-                .setInit(() -> {
-                    // do w/e
-                    webcam.resumeViewport();
-                })
-                .setExecute(() -> {
-                    // do w/e
-
-                })
-                .setEnd(interrupted -> {
-                    // do w/e
-                })
-                .setFinish(() -> {
-                    // compute and return if the command is finished
-                    return true;
-                });
-    }
-
-    @NonNull
-    public static Lambda stopStreaming() {
-        return new Lambda("pause-cam")
+    public static Lambda stopStream() {
+        return new Lambda("stop-cam")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
@@ -597,6 +577,28 @@ public class OrcaV3 implements Subsystem {
                     return true;
                 });
     }
+
+    @NonNull
+    public static Lambda startStream() {
+        return new Lambda("start-cam")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    startWebacm();
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return true;
+                });
+    }
+
 
     @NonNull
     public static Lambda follow(Path path, boolean holdEnd, double allowedPositionError) {
@@ -707,23 +709,6 @@ public class OrcaV3 implements Subsystem {
         //follower.setStartingPose(startPose);
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(FeatureRegistrar.getActiveOpMode().hardwareMap);
-
-            int cameraMonitorViewId = FeatureRegistrar.getActiveOpMode().hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", FeatureRegistrar.getActiveOpMode().hardwareMap.appContext.getPackageName());
-            webcam = OpenCvCameraFactory.getInstance().createWebcam(FeatureRegistrar.getActiveOpMode().hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-            IMRec pipeline = new IMRec();
-            webcam.setPipeline(pipeline);
-
-            webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                @Override
-                public void onOpened() {
-                    webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                }
-            });
-            webcam.pauseViewport();
     }
     // or here
     @Override
