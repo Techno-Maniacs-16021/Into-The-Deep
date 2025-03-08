@@ -7,6 +7,11 @@ import static com.pedropathing.follower.FollowerConstants.rightRearMotorName;
 
 import static org.threeten.bp.zone.ZoneRulesProvider.refresh;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.pedropathing.follower.Follower;
@@ -19,10 +24,16 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.auton.IMRec;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -70,8 +81,8 @@ public class OrcaV3 implements Subsystem {
     static IntakeV3 intake;
     static Follower follower;
 
-    
     ElapsedTime intakeAttemptTimer = new ElapsedTime();
+
 
 
 

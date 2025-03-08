@@ -55,6 +55,8 @@ dependencies {
     implementation "dev.frozenmilk:Sinister:1.0.0"
     implementation "dev.frozenmilk.sinister:Sloth:0.0.1"
     implementation "dev.frozenmilk.sinister.sloth:DashFix:0.0.0"
+    implementation 'org.openftc:easyopencv:1.7.3'
+
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
