@@ -406,12 +406,11 @@ public class OrcaV3 implements Subsystem {
     @NonNull
     public static Lambda setSubIntakeEGAC() {
 
-        return new Lambda("attempt-intake-sub")
+        return new Lambda("set-intake-sub-egac")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
                     double newX = follower.getPose().getX()+(0.5-pipeline.getMidX()*5);
-                    double slide = pipeline.getMidY()*1+1;
 
                     Path align = new Path(
                             new BezierLine(
@@ -424,32 +423,43 @@ public class OrcaV3 implements Subsystem {
                     INSTANCE.intake.enablePID();
                     INSTANCE.intakeAttemptTimer.reset();
 
-                    new Parallel(
-                            follow(align,true,0),
-                            setIntake(slide)
-                    ).schedule();
+                    follower.followPath(align, true);
 
 
 
+                    double slide = pipeline.getMidY()*1+1;
 
+                    INSTANCE.intake.startIntaking();
+                    INSTANCE.intake.enablePID();
+                    INSTANCE.intake.setTarget(slide);
                 })
                 .setExecute(() -> {
+                    follower.update();
                     // do w/e
 
                 })
                 .setEnd(interrupted -> {
                     // do w/e
+                    if (interrupted) {
+                        follower.breakFollowing();
+                        INSTANCE.intake.disablePID();
+                    }
                 })
                 .setFinish(() -> {
                     // compute and return if the command is finished
-                    return true;
+                    boolean isFinished = INSTANCE.intake.slidesReachedTarget()&&!follower.isBusy();
+                    if(isFinished){
+                        INSTANCE.intake.disablePID();
+                    }
+                    // compute and return if the command is finished
+                    return isFinished;
                 });
     }
 
     @NonNull
     public static Lambda attemptSubIntakeEGAC() {
 
-        return new Lambda("attempt-intake-sub")
+        return new Lambda("attempt-intake-sub-egac")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e

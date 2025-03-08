@@ -56,13 +56,14 @@ public class Paths {
 
     public static Pose sample1 = new Pose(49,-60,Math.toRadians(153.5));
     public static Pose sample2 = new Pose(47,-60,Math.toRadians(180));
-    public static Pose sample3 = new Pose(48,-60,Math.toRadians(203));
+    public static Pose sample3 = new Pose(48,-60,Math.toRadians(204));
 
     public static Point intakeCurve = new Point(15,-42);
 
     public static Pose sampleIntake = new Pose(15,-27,Math.toRadians(90));
 
-    public static Pose sampleDrop = new Pose(58,-58,Math.toRadians(135));
+    public static Pose sampleDrop = new Pose(56,-58,Math.toRadians(135));
+    public static Pose firstSampleDrop = new Pose(57.5,-58,Math.toRadians(135));
 
     public static Pose park = new Pose(48,-48,Math.toRadians(135));
     // ------------------------------------------------------
@@ -196,16 +197,16 @@ public class Paths {
         samplePathMap.put("firstDeposit-Sample",createPath(
                 new BezierLine(
                         new Point(startSample),
-                        new Point(sampleDrop)),
+                        new Point(firstSampleDrop)),
                 startSample.getHeading(),
-                sampleDrop.getHeading()
+                firstSampleDrop.getHeading()
         ));
 
         samplePathMap.put("pick1-Sample",createPath(
                 new BezierLine(
-                        new Point(sampleDrop),
+                        new Point(firstSampleDrop),
                         new Point(sample1)),
-                sampleDrop.getHeading(),
+                firstSampleDrop.getHeading(),
                 sample1.getHeading()
         ));
 
