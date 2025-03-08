@@ -199,6 +199,30 @@ public class OrcaV3 implements Subsystem {
                     return INSTANCE.deposit.slidesReachedTarget()&&INSTANCE.deposit.isStateComplete();
                 });
     }
+
+    @NonNull
+    public static Lambda setSample(boolean first) {
+        return new Lambda("set-sample-first")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    //xxINSTANCE.deposit.resetGrabTimer();
+                    INSTANCE.deposit.setSampleAuto();
+
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return INSTANCE.deposit.slidesReachedTarget()&&INSTANCE.deposit.isStateComplete();
+                });
+    }
+
     @NonNull
     public static Lambda closeClaw() {
         return new Lambda("close-claw")

@@ -94,7 +94,7 @@ public class FiveSample extends OpMode {
                 //STEP: drop first sample (0+1)
                 new Parallel(
                         OrcaV3.follow(Paths.samplePathMap.get("firstDeposit-Sample"),true,defaultError),
-                        OrcaV3.setSample()
+                        OrcaV3.setSample(true)
                 ),
                 OrcaV3.releaseClaw(),
 
