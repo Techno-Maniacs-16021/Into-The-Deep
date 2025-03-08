@@ -428,13 +428,13 @@ public class OrcaV3 implements Subsystem {
                 .setInit(() -> {
                     // do w/e
                     double newX =
-                            (0.5-pipeline.getMidX()*5);
+                            ((pipeline.getMidX()-0.5)*5);
 //                    follower.getPose().getX()+0.5;
 
                     Path align = new Path(
                             new BezierLine(
                                 new Point(follower.getPose().getX(),follower.getPose().getY()),
-                                new Point(newX,follower.getPose().getY())
+                                new Point(follower.getPose().getX()+newX,follower.getPose().getY())
                     ));
                     align.setConstantHeadingInterpolation(follower.getPose().getHeading());
 
