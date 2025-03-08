@@ -311,6 +311,12 @@ public class DepositV3 {
         target = SAMPLE_DEPOSIT;
         depositCommand = "depositHighSample";
     }
+    public void setSampleAuto(){
+        target = SAMPLE_DEPOSIT;
+        depositCommand = "depositHighSample";
+        rotationPosition = SAMPLE_DEPOSIT_ROTATION;
+        rotation.setPosition(rotationPosition);
+    }
     public void resetGrabTimer(){
         grabTimer.reset();
     }
