@@ -15,9 +15,11 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class IMRec extends LinearOpMode {
+import dev.frozenmilk.dairy.core.FeatureRegistrar;
+import dev.frozenmilk.mercurial.Mercurial;
 
-    public class ImgPipe extends OpenCvPipeline {
+@Mercurial.Attach
+    public class IMRec extends OpenCvPipeline {
 
         Mat maskRed = new Mat();
         Mat maskBlue = new Mat();
@@ -75,7 +77,7 @@ public abstract class IMRec extends LinearOpMode {
 //            Imgproc.drawContours(org,contours,-1,new Scalar(0,255,0),3);
             if(!contours.isEmpty()){
 //                max = contours.get(0);
-                for (int i = 0; i < contours.size() && !opModeIsActive() && !isStopRequested(); i++){
+                for (int i = 0; i < contours.size(); i++){
                     if(Imgproc.contourArea(contours.get(i))>1000){
                         tempMat2f = new MatOfPoint2f(contours.get(i).toArray());
                         epsilon = 0.05 * Imgproc.arcLength(tempMat2f,true);
@@ -90,26 +92,7 @@ public abstract class IMRec extends LinearOpMode {
 
 
             Imgproc.drawContours(input,Non2fRectangles,-1,new Scalar(255,0,0),3);
-//            if(!max.empty()){
-//                size = Imgproc.boundingRect(max);
-//                midx = size.x+size.width/2;
-//                if(!opModeIsActive()){
-//                    if(midx<input.size().width/3){
-//                        telemetry.addLine("Left detected");
-//                    }else if (midx>input.size().width*2/3){
-//                        telemetry.addLine("Right detected    ");
-//                    }else{
-//                        telemetry.addLine("Middle detected");
-//                    }
-//                }
-//            }
 
-//            if(max_list.size()!=0){
-//                Imgproc.drawContours(org,max_list,-1,new Scalar(0,255,0),3);
-//            }
-//            telemetry.addData("X pos",midx);
-            telemetry.update();
-//            org.release();
             maskBlue.release();
             maskRed.release();
             maskYellow.release();
@@ -132,4 +115,4 @@ public abstract class IMRec extends LinearOpMode {
             return input;
         }
     }
-}
+

@@ -41,9 +41,11 @@ import dev.frozenmilk.mercurial.commands.util.Wait;
 public class FiveSpec extends OpMode {
 
     Timer pathTimer;
-    public double grabWait = 0.0;
-    public double leaveWait = 0.0;
-    public double retractWait = 0.25; //this is good
+    public static double grabWait = 0.0;
+    public static double leaveWait = 0.0;
+    public static double retractWait = 0.25; //this is good
+
+    public static double defaultError = 1.5;
 
     private Telemetry telemetryA;
 
@@ -66,6 +68,15 @@ public class FiveSpec extends OpMode {
 
     @Override
     public void init_loop() {
+        telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
+        telemetry.addData("currently selected alliance: ", OrcaV3.intake().getColorToEject().equals("red") ? "blue" : "red");
+        if(gamepad1.cross){
+            OrcaV3.intake().setColorToEject("red");
+        }
+        else if(gamepad1.triangle){
+            OrcaV3.intake().setColorToEject("blue");
+        }
+        telemetry.update();
     }
     @Override
     public void loop(){
@@ -78,18 +89,17 @@ public class FiveSpec extends OpMode {
         new Sequential(
                 //STEP: drop first spec (1+0)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("firstDeposit-Spec"),true),
+                        OrcaV3.follow(Paths.specPathMap.get("firstDeposit-Spec"),true,defaultError),
                         OrcaV3.setSpecimen()
                 ),
                 new Parallel(
                         //OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), false),
-                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), Paths.specPathMap.get("drop1-Spec"),6, false),
+                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), Paths.specPathMap.get("drop1-Spec"),3, false,defaultError),
                         OrcaV3.retractSpecimenDeposit()
                 ),
-                OrcaV3.follow(Paths.specPathMap.get("pick2-Spec"), Paths.specPathMap.get("drop2-Spec"),6,false),
-                OrcaV3.follow(Paths.specPathMap.get("pick3-Spec"), Paths.specPathMap.get("drop3-Spec"), 6,false),
-
-                OrcaV3.follow(Paths.specPathMap.get("firstCollect-Spec"),false),
+                OrcaV3.follow(Paths.specPathMap.get("pick2-Spec"), Paths.specPathMap.get("drop2-Spec"),4.5,false,defaultError),
+                OrcaV3.follow(Paths.specPathMap.get("pick3-Spec"), Paths.specPathMap.get("drop3-Spec"), 3,false,defaultError),
+                OrcaV3.follow(Paths.specPathMap.get("firstCollect-Spec"),false,defaultError),
 
                 //STEP: collect 3 specs & ready for intake
 
@@ -101,14 +111,14 @@ public class FiveSpec extends OpMode {
 
                 //STEP: deposit spec (2+0)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec2"), true),
+                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec2"), true,defaultError),
                         OrcaV3.setSpecimen()
                 ),
 
                 //STEP: go to collection
                 new Parallel(
-                        //OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
-                        OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
+                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), Paths.specPathMap.get("collect-Spec"), false,defaultError),
+                        //OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
@@ -120,14 +130,14 @@ public class FiveSpec extends OpMode {
 
                 //STEP: deposit spec (3+0)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec3"), true),
+                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec3"), true,defaultError),
                         OrcaV3.setSpecimen()
                 ),
 
                 //STEP: go to collection
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
-                        //OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
+                        //OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
+                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), Paths.specPathMap.get("collect-Spec"), false,defaultError),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
@@ -139,14 +149,14 @@ public class FiveSpec extends OpMode {
 
                 //STEP: deposit spec (4+0)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec4"), true),
+                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec4"), true,defaultError),
                         OrcaV3.setSpecimen()
                 ),
 
                 //STEP: go to collection
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
-                        //OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
+                        //OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
+                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), Paths.specPathMap.get("collect-Spec"), false,defaultError),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
@@ -158,13 +168,13 @@ public class FiveSpec extends OpMode {
 
                 //STEP: deposit spec (5+0)
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec5"), true),
+                        OrcaV3.follow(Paths.specPathMap.get("deposit-Spec5"), true,defaultError),
                         OrcaV3.setSpecimen()
                 ),
 
                 //STEP: park
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false),
+                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false,defaultError),
                         new Sequential(
                                 OrcaV3.releaseClaw(),
                                 new Wait(retractWait),

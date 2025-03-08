@@ -32,22 +32,23 @@ public class Paths {
     public static Point curve3 = new Point(15,35);
 
     //public static Pose pickup1 = new Pose(17.5,43.5,Math.toRadians(180));
-    public static Pose pickup1 = new Pose(15,47,Math.toRadians(180));
-    public static Pose pickup2 = new Pose(15,58,Math.toRadians(180));
-    public static Pose pickup3 = new Pose(15,64,Math.toRadians(180));
+    public static Pose pickup1 = new Pose(18,47,Math.toRadians(180));
+    public static Pose pickup2 = new Pose(18,58,Math.toRadians(180));
+    public static Pose pickup3 = new Pose(18,64.5,Math.toRadians(180));
 
     //public static Pose dropoff1 = new Pose(60,43.5,Math.toRadians(180));
     public static Pose dropoff1 = new Pose(53,47,Math.toRadians(180));
     public static Pose dropoff2 = new Pose(53,58,Math.toRadians(180));
-    public static Pose dropoff3 = new Pose(53,64,Math.toRadians(180));
+    public static Pose dropoff3 = new Pose(53,64.5,Math.toRadians(180));
 
-    public static Pose pause = new Pose(58,48,Math.toRadians(180));
+    public static Pose pause = new Pose(53,48,Math.toRadians(180));
 
     public static Point dropCurve = new Point(38.5,5.5);
+    public static Point firstDropCurve = new Point(43,5.5);
 
     public static Pose specDrop = new Pose(31,5.5,Math.toRadians(180));
-    public static Pose specCollect = new Pose(62,48,Math.toRadians(180));
-    public static Pose firstCollect = new Pose(62,64,Math.toRadians(180));
+    public static Pose specCollect = new Pose(61,48,Math.toRadians(180));
+    public static Pose firstCollect = new Pose(61,64,Math.toRadians(180));
     // ------------------------------------------------------
 
     // ----------------------SAMPLE PATHS----------------------
@@ -148,7 +149,7 @@ public class Paths {
         specPathMap.put("deposit-Spec2", createPath(
                 new BezierCurve(
                         new Point(firstCollect),
-                        dropCurve,
+                        firstDropCurve,
                         new Point(specDrop)),
                 //specCollect.getHeading(),
                 specDrop.getHeading()
@@ -249,6 +250,15 @@ public class Paths {
         ));
 
         samplePathMap.put("collect-Sample",createPath(
+                new BezierCurve(
+                        new Point(sampleDrop),
+                        intakeCurve,
+                        new Point(sampleIntake)),
+                sampleDrop.getHeading(),
+                sampleIntake.getHeading()
+        ));
+
+        samplePathMap.put("collect-Sample2",createPath(
                 new BezierCurve(
                         new Point(sampleDrop),
                         intakeCurve,

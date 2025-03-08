@@ -69,7 +69,10 @@ public class OrcaV3 implements Subsystem {
     static DepositV3 deposit;
     static IntakeV3 intake;
     static Follower follower;
+
+    
     ElapsedTime intakeAttemptTimer = new ElapsedTime();
+
 
 
     // init code might go in here
@@ -267,8 +270,8 @@ public class OrcaV3 implements Subsystem {
                 .setFinish(() -> {
                     boolean isFinished =
                             (!INSTANCE.intake.getSampleColor().equals(INSTANCE.intake.colorToEject)
-                            &&!INSTANCE.intake.getSampleColor().equals("none"))
-                            ||INSTANCE.intake.slidesReachedTarget();
+                            &&!INSTANCE.intake.getSampleColor().equals("none"));
+                            //||INSTANCE.intake.slidesReachedTarget();
                     if(isFinished){
 
                     }
@@ -367,7 +370,7 @@ public class OrcaV3 implements Subsystem {
 
 
     @NonNull
-    public static Lambda follow(Path path, boolean holdEnd) {
+    public static Lambda follow(Path path, boolean holdEnd, double allowedPositionError) {
         return new Lambda("follow-path")
                 .addRequirements(INSTANCE)
                 .setInterruptible(true)
@@ -377,8 +380,11 @@ public class OrcaV3 implements Subsystem {
                     /*telemetry.addData("x", follower.getPose().getX());
                     telemetry.addData("y", follower.getPose().getY());
                     telemetry.addData("heading", follower.getPose().getHeading());*/
+                    if((Math.abs(path.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(path.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower.breakFollowing();
+                    }
                 })
-                .setFinish(() -> !follower.isBusy())
+                .setFinish(() -> (!follower.isBusy()))
                 .setEnd((interrupted) -> {
                     if (interrupted) follower.breakFollowing();
                 });
@@ -386,7 +392,7 @@ public class OrcaV3 implements Subsystem {
 
 
     @NonNull
-    public static Lambda follow(Path p1, Path p2, boolean holdEnd) {
+    public static Lambda follow(Path p1, Path p2, boolean holdEnd, double allowedPositionError) {
         PathChain chain = follower.pathBuilder()
                 .addPath(p1)
                 .addPath(p2)
@@ -400,14 +406,17 @@ public class OrcaV3 implements Subsystem {
                     /*telemetry.addData("x", follower.getPose().getX());
                     telemetry.addData("y", follower.getPose().getY());
                     telemetry.addData("heading", follower.getPose().getHeading());*/
+                    if((Math.abs(p2.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(p2.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower.breakFollowing();
+                    }
                 })
-                .setFinish(() -> !follower.isBusy())
+                .setFinish(() -> (!follower.isBusy()))
                 .setEnd((interrupted) -> {
                     if (interrupted) follower.breakFollowing();
                 });
     }
 
-    public static Lambda follow(Path p1, Path p2, Path p3, boolean holdEnd) {
+    public static Lambda follow(Path p1, Path p2, Path p3, boolean holdEnd, double allowedPositionError) {
         PathChain chain = follower.pathBuilder()
                 .addPath(p1)
                 .addPath(p2)
@@ -422,15 +431,18 @@ public class OrcaV3 implements Subsystem {
                     /*telemetry.addData("x", follower.getPose().getX());
                     telemetry.addData("y", follower.getPose().getY());
                     telemetry.addData("heading", follower.getPose().getHeading());*/
+                    if((Math.abs(p3.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(p3.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower.breakFollowing();
+                    }
                 })
-                .setFinish(() -> !follower.isBusy())
+                .setFinish(() -> (!follower.isBusy()))
                 .setEnd((interrupted) -> {
                     if (interrupted) follower.breakFollowing();
                 });
     }
 
     @NonNull
-    public static Lambda follow(Path p1, Path p2, double zpam, boolean holdEnd) {
+    public static Lambda follow(Path p1, Path p2, double zpam, boolean holdEnd, double allowedPositionError) {
         PathChain chain = follower.pathBuilder()
                 .addPath(p1)
                 .addPath(p2)
@@ -445,8 +457,11 @@ public class OrcaV3 implements Subsystem {
                     /*telemetry.addData("x", follower.getPose().getX());
                     telemetry.addData("y", follower.getPose().getY());
                     telemetry.addData("heading", follower.getPose().getHeading());*/
+                    if((Math.abs(p2.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(p2.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower().breakFollowing();
+                    }
                 })
-                .setFinish(() -> !follower.isBusy())
+                .setFinish(() -> (!follower.isBusy()))
                 .setEnd((interrupted) -> {
                     if (interrupted) follower.breakFollowing();
                 });

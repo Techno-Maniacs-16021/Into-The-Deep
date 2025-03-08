@@ -30,6 +30,7 @@ import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
 import dev.frozenmilk.mercurial.commands.Lambda;
 import dev.frozenmilk.mercurial.commands.groups.Parallel;
+import dev.frozenmilk.mercurial.commands.groups.Race;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
 import dev.frozenmilk.mercurial.commands.util.Wait;
 
@@ -48,9 +49,14 @@ public class FiveSample extends OpMode {
     // = OrcaV3.follower().pathBuilder().addPath()
 
     ElapsedTime wait = new ElapsedTime();
-    double intakeWait = 0.4;
-    double retractDepositWait = 0.5;
-    double driveBackWait = 0.2;
+    public static double intakeWait = 0.4;
+    public static double intakeRace = 3.0;
+    public static double retractDepositWait = 0.5;
+    public static double driveBackWait = 0.2;
+
+    public static double sampleReturnWait = 0.5;
+
+    public static double defaultError = 1.0;
 
 
     @Override
@@ -66,6 +72,15 @@ public class FiveSample extends OpMode {
 
     @Override
     public void init_loop() {
+        telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
+        telemetry.addData("currently selected alliance: ", OrcaV3.intake().getColorToEject().equals("red") ? "blue" : "red");
+        if(gamepad1.cross){
+            OrcaV3.intake().setColorToEject("red");
+        }
+        else if(gamepad1.triangle){
+            OrcaV3.intake().setColorToEject("blue");
+        }
+        telemetry.update();
     }
     @Override
     public void loop(){
@@ -78,18 +93,21 @@ public class FiveSample extends OpMode {
         new Sequential(
                 //STEP: drop first sample (0+1)
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("firstDeposit-Sample"),true),
+                        OrcaV3.follow(Paths.samplePathMap.get("firstDeposit-Sample"),true,defaultError),
                         OrcaV3.setSample()
                 ),
                 OrcaV3.releaseClaw(),
 
                 //STEP: collect & drop sample (0+2)
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("pick1-Sample"), false),
+                        OrcaV3.follow(Paths.samplePathMap.get("pick1-Sample"), false,defaultError),
                         new Sequential(
                                 //new Wait(0.4),
                                 OrcaV3.setIntake(2),
-                                OrcaV3.attemptIntake(0.75),
+                                new Race(
+                                        OrcaV3.attemptIntake(0.75),
+                                        new Wait(intakeRace)
+                                ),
                                 new Wait(intakeWait),
                                 OrcaV3.retractIntake()
 
@@ -104,7 +122,7 @@ public class FiveSample extends OpMode {
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
-                                OrcaV3.follow(Paths.samplePathMap.get("drop1-Sample"),true)
+                                OrcaV3.follow(Paths.samplePathMap.get("drop1-Sample"),true,defaultError)
                         ),
                         OrcaV3.setSample()
                 ),
@@ -112,11 +130,14 @@ public class FiveSample extends OpMode {
 
                 //STEP: collect & drop sample (0+3)
                new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("pick2-Sample"), false),
+                        OrcaV3.follow(Paths.samplePathMap.get("pick2-Sample"), false,defaultError),
                         new Sequential(
                                // new Wait(0.5),
                                 OrcaV3.setIntake(1.0),
-                                OrcaV3.attemptIntake(0.75),
+                                new Race(
+                                        OrcaV3.attemptIntake(0.75),
+                                        new Wait(intakeRace)
+                                ),
                                 new Wait(intakeWait),
                                 OrcaV3.retractIntake()
                         ),
@@ -124,13 +145,13 @@ public class FiveSample extends OpMode {
                                 new Wait(retractDepositWait),
                                 OrcaV3.retractDeposit()
                         )
-                ),
+               ),
 
                 OrcaV3.waitForTransfer(),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
-                                OrcaV3.follow(Paths.samplePathMap.get("drop2-Sample"),true)
+                                OrcaV3.follow(Paths.samplePathMap.get("drop2-Sample"),true,defaultError)
                         ),
                         OrcaV3.setSample()
                 ),
@@ -138,11 +159,14 @@ public class FiveSample extends OpMode {
 
                 //STEP: collect & drop sample (0+4)
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("pick3-Sample"), false),
+                        OrcaV3.follow(Paths.samplePathMap.get("pick3-Sample"), false,defaultError),
                         new Sequential(
                                 //new Wait(1.0),
                                 OrcaV3.setIntake(2),
-                                OrcaV3.attemptIntake(0.75),
+                                new Race(
+                                        OrcaV3.attemptIntake(0.75),
+                                        new Wait(intakeRace)
+                                ),
                                 new Wait(intakeWait),
                                 OrcaV3.retractIntake()
                         ),
@@ -156,7 +180,7 @@ public class FiveSample extends OpMode {
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
-                                OrcaV3.follow(Paths.samplePathMap.get("drop3-Sample"),true)
+                                OrcaV3.follow(Paths.samplePathMap.get("drop3-Sample"),true,defaultError)
                         ),
                         OrcaV3.setSample()
                 ),
@@ -165,19 +189,22 @@ public class FiveSample extends OpMode {
                 //STEP: collect from submersible & drop sample (0+5)
               new Parallel(
                       new Sequential(
-                              OrcaV3.follow(Paths.samplePathMap.get("collect-Sample"), false),
+                              OrcaV3.follow(Paths.samplePathMap.get("collect-Sample"), false,defaultError),
                               OrcaV3.setIntake(1.5)
                       ),
                         new Sequential(
                                 new Wait(retractDepositWait),
                                 OrcaV3.retractDeposit()
                         )
-                ),
+              ),
                 OrcaV3.attemptSubIntake(),
                 new Wait(intakeWait),
                 OrcaV3.retractIntake(),
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true),
+                        new Sequential(
+                                new Wait(sampleReturnWait),
+                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true,defaultError)
+                        ),
                         new Sequential(
                                 OrcaV3.waitForTransfer(),
                                 OrcaV3.setSample()
@@ -188,7 +215,7 @@ public class FiveSample extends OpMode {
                 //STEP: collect from submersible & drop sample (0+6)
                 new Parallel(
                         new Sequential(
-                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample"), false),
+                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError),
                                 OrcaV3.setIntake(1.5)
                         ),
                         new Sequential(
@@ -200,7 +227,10 @@ public class FiveSample extends OpMode {
                 new Wait(intakeWait),
                 OrcaV3.retractIntake(),
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample2"),true),
+                        new Sequential(
+                                new Wait(sampleReturnWait),
+                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample2"),true,defaultError)
+                        ),
                         new Sequential(
                                 OrcaV3.waitForTransfer(),
                                 OrcaV3.setSample()
@@ -210,7 +240,7 @@ public class FiveSample extends OpMode {
 
                 //end auto
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("park-Sample"), false),
+                        OrcaV3.follow(Paths.samplePathMap.get("park-Sample"), false,defaultError),
                         new Sequential(
                                 new Wait(retractDepositWait),
                                 OrcaV3.retractDeposit()
