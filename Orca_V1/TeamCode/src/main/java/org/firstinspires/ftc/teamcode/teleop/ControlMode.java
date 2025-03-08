@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 import org.firstinspires.ftc.teamcode.robots.OrcaV3;
+import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
@@ -30,6 +31,8 @@ public class ControlMode extends OpMode {
     double slidePower = 0.0;
     public static double p,i,d,f,target;
     boolean intakeCross = false, intakeCircle = false, intakeTriangle = false, intakeSquare = false;
+    double leftTrigger = 0;
+
     /*
     public static double
             INTERMEDIATE_ROTATION = 0, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 0, RETRACT_RIGHT_DIFF = 0,
@@ -119,6 +122,7 @@ public class ControlMode extends OpMode {
 
 
         if(currentAction.equals("specimen")){
+
             if(gamepad1.right_bumper){
                 OrcaV3.deposit().depositSpecimen();
             }
@@ -131,6 +135,13 @@ public class ControlMode extends OpMode {
             }
             else if(gamepad1.circle){
                 OrcaV3.deposit().releaseClaw();
+            }
+            if(gamepad1.left_trigger>0&&leftTrigger==0){
+                leftTrigger = gamepad1.left_trigger;
+                OrcaV3.specimenTeleOp(Paths.pause,Paths.specPathMap.get("collect-Spec"),false,1.5);
+            }
+            else{
+                leftTrigger = 0;
             }
         }
         else if(currentAction.equals("sample")){
