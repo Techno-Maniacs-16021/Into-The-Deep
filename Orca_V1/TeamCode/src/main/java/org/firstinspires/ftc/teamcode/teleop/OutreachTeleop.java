@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 import org.firstinspires.ftc.teamcode.robots.OutreachChassis;
 
-@TeleOp
+//@TeleOp
 
 public class OutreachTeleop extends OpMode {
     OutreachChassis chassis;

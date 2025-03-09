@@ -27,10 +27,10 @@ public class DepositV3 {
             INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 1, RETRACT_RIGHT_DIFF = 0.3,
             SPECIMEN_ROTATION = 0.08,SPECIMEN_LINKAGE = 1, SPECIMEN_LEFT_DIFF = 0.2, SPECIMEN_RIGHT_DIFF = 0.5,
             //INIT_ROTATION = 0.25, INIT_LINKAGE = 0.15, INIT_LEFT_DIFF = 0.3, INIT_RIGHT_DIFF = 0.6,
-            SPEC_INIT_ROTATION = 0.25, SPEC_INIT_LINKAGE = 0.15, SPEC_INIT_LEFT_DIFF = 0.5, SPEC_INIT_RIGHT_DIFF = 0.8,
+            SPEC_INIT_ROTATION = 0.25, SPEC_INIT_LINKAGE = 0.25, SPEC_INIT_LEFT_DIFF = 0.5, SPEC_INIT_RIGHT_DIFF = 0.8,
             SAMPLE_INIT_ROTATION = 0.25, SAMPLE_INIT_LINKAGE = 0.15,SAMPLE_INIT_LEFT_DIFF = 0.85, SAMPLE_INIT_RIGHT_DIFF = 0.15,
 
-            SPECIMEN_DEPOSIT_ROTATION = 0.89,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.87, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.17,
+            SPECIMEN_DEPOSIT_ROTATION = 0.89,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.87, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.17, SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.75, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.05,
             //SPECIMEN_DEPOSIT_ROTATION = 1,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.3,SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.6, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.0,
             SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.75, TRANSFER_RIGHT_DIFF = 0.05,
             STANDBY_ROTATION = .155,STANDBY_LINKAGE = 0.1, STANDBY_LEFT_DIFF = 1, STANDBY_RIGHT_DIFF = 0.3;
@@ -224,11 +224,18 @@ public class DepositV3 {
                 rotationPosition = SAMPLE_INIT_ROTATION;
             }
         }
-        else if(depositCommand.equals("depositSpecimen")){
+        else if(depositCommand.equals("depositSpecimen")||depositCommand.equals("depositSpecimenClip")){
             linkagePosition = SPECIMEN_DEPOSIT_LINKAGE;
-            leftDiffPosition = SPECIMEN_DEPOSIT_LEFT_DIFF;
-            rightDiffPosition = SPECIMEN_DEPOSIT_RIGHT_DIFF;
             rotationPosition = SPECIMEN_DEPOSIT_ROTATION;
+
+            if(depositCommand.equals("depositSpecimen")){
+                leftDiffPosition = SPECIMEN_DEPOSIT_LEFT_DIFF;
+                rightDiffPosition = SPECIMEN_DEPOSIT_RIGHT_DIFF;
+            }
+            else{
+                leftDiffPosition = SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF;
+                rightDiffPosition = SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF;
+            }
 
             //TODO: FIND RIGHT POSITION
             if(Math.abs(0.96-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR){
@@ -327,6 +334,9 @@ public class DepositV3 {
     public void releaseClaw(){
         clawPosition = 0;
     }
+    public void clipSpecimen(){
+        depositCommand = "depositSpecimenClip";
+    }
 
     public String getDepositCommand(){
         return depositCommand;
@@ -354,6 +364,9 @@ public class DepositV3 {
     }
     public String colorPins(){
         return "4:" + colorPin4.getState() + " 5:" + colorPin5.getState();
+    }
+    public boolean isSampleDetected(){
+        return colorPin4.getState()||colorPin5.getState();
     }
     public void specInit(){
         specInit = true;

@@ -1,19 +1,14 @@
 package org.firstinspires.ftc.teamcode.robots;
 
-import static com.pedropathing.follower.FollowerConstants.automaticHoldEnd;
 import static com.pedropathing.follower.FollowerConstants.leftFrontMotorName;
 import static com.pedropathing.follower.FollowerConstants.leftRearMotorName;
 import static com.pedropathing.follower.FollowerConstants.rightFrontMotorName;
 import static com.pedropathing.follower.FollowerConstants.rightRearMotorName;
 
-import static org.threeten.bp.zone.ZoneRulesProvider.refresh;
-
 import androidx.annotation.NonNull;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.localization.GoBildaPinpointDriver;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.localization.constants.PinpointConstants;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
@@ -28,7 +23,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.auton.IMRec;
+import org.firstinspires.ftc.teamcode.auton.imageRec.IMRec;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -511,6 +506,26 @@ public class OrcaV3 implements Subsystem {
                     }
                     // compute and return if the command is finished
                     return isFinished;
+                });
+    }
+
+    @NonNull
+    public static Lambda sampleDetected() {
+        return new Lambda("sample-detected")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return !INSTANCE.deposit.isStateComplete();
                 });
     }
 

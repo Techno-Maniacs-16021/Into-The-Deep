@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
-@TeleOp
+//@TeleOp
 @Config
 public class ElectronicsTesting extends OpMode {
     ServoImplEx tilt, lDiff, rDiff, intRotation, depLinkage, depRotation, gate, claw;

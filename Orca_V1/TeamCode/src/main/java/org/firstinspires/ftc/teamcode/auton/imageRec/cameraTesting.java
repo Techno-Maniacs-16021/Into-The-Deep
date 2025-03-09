@@ -1,21 +1,16 @@
-package org.firstinspires.ftc.teamcode.auton;
+package org.firstinspires.ftc.teamcode.auton.imageRec;
 
 import static java.lang.Thread.sleep;
-
-import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.pathgen.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.WeakReferenceSet;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -24,20 +19,15 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
-import dev.frozenmilk.dairy.core.util.controller.calculation.pid.DoubleComponent;
-import dev.frozenmilk.dairy.core.util.controller.calculation.pid.UnitComponent;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
-import dev.frozenmilk.mercurial.commands.Lambda;
-import dev.frozenmilk.mercurial.commands.groups.Parallel;
-import dev.frozenmilk.mercurial.commands.groups.Race;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
 import dev.frozenmilk.mercurial.commands.util.Wait;
 
 @Mercurial.Attach
 @BulkRead.Attach
 @OrcaV3.Attach
-@Autonomous
+//@Autonomous
 @Config
 public class cameraTesting extends OpMode {
 

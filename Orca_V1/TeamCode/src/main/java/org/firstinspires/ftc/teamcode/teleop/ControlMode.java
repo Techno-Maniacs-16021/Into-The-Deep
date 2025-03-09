@@ -136,6 +136,9 @@ public class ControlMode extends OpMode {
             else if(gamepad1.circle){
                 OrcaV3.deposit().releaseClaw();
             }
+            else if(gamepad1.square){
+                OrcaV3.deposit().clipSpecimen();
+            }
             if(gamepad1.left_trigger>0&&leftTrigger==0){
                 leftTrigger = gamepad1.left_trigger;
                 OrcaV3.specimenTeleOp(Paths.pause,Paths.specPathMap.get("collect-Spec"),false,1.5);

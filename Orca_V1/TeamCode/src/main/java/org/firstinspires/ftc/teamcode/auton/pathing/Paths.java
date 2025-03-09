@@ -46,7 +46,7 @@ public class Paths {
     public static Point dropCurve = new Point(38.5,5.5);
     public static Point firstDropCurve = new Point(43,5.5);
 
-    public static Pose specDrop = new Pose(31,5.5,Math.toRadians(180));
+    public static Pose specDrop = new Pose(30.5,5.5,Math.toRadians(180));
     public static Pose specCollect = new Pose(61,48,Math.toRadians(180));
     public static Pose firstCollect = new Pose(61,64,Math.toRadians(180));
     // ------------------------------------------------------

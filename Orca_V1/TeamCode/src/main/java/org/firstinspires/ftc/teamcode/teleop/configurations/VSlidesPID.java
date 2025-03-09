@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.mercurial.Mercurial;
 
-@TeleOp
+//@TeleOp
 @Config
 @Mercurial.Attach
 @BulkRead.Attach
