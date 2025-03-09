@@ -125,11 +125,7 @@ public class FiveSample extends OpMode {
                         )
                 ),
 
-                new Race(
-                        null,
-                        OrcaV3.waitForTransfer(),
-                        new Wait(intakeRace)
-                ),
+                OrcaV3.waitForTransfer(),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
@@ -161,11 +157,7 @@ public class FiveSample extends OpMode {
                         )
                ),
 
-                new Race(
-                        null,
-                        OrcaV3.waitForTransfer(),
-                        new Wait(intakeRace)
-                ),
+                OrcaV3.waitForTransfer(),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
@@ -196,11 +188,7 @@ public class FiveSample extends OpMode {
                                 OrcaV3.retractDeposit()
                         )
                 ),
-                new Race(
-                        null,
-                        OrcaV3.waitForTransfer(),
-                        new Wait(intakeRace)
-                ),
+                OrcaV3.waitForTransfer(),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),

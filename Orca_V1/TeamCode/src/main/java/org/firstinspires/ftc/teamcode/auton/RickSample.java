@@ -261,10 +261,7 @@ public class RickSample extends OpMode {
                                                 new Wait(sampleReturnWait),
                                                 OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true,defaultError)
                                         ),
-                                        new Sequential(
-                                                OrcaV3.waitForTransfer(),
-                                                OrcaV3.setSample()
-                                        )
+                                        OrcaV3.setSample()
                                 ),
                                 OrcaV3.releaseClaw(),
 
