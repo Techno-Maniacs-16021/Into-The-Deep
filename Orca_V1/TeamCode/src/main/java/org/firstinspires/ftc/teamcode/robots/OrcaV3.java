@@ -82,6 +82,8 @@ public class OrcaV3 implements Subsystem {
 
     private static Limelight3A limelight;
 
+    public static boolean continueTransfering = false;
+
     
     ElapsedTime intakeAttemptTimer = new ElapsedTime();
 
@@ -525,7 +527,27 @@ public class OrcaV3 implements Subsystem {
                 })
                 .setFinish(() -> {
                     // compute and return if the command is finished
-                    return !INSTANCE.deposit.isStateComplete();
+                    return !continueTransfering;
+                });
+    }
+    @NonNull
+    public static Lambda transferCompleted() {
+        return new Lambda("transfer-completed")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    continueTransfering = false;
+                })
+                .setExecute(() -> {
+                    // do w/e
+
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return true;
                 });
     }
 
@@ -559,9 +581,22 @@ public class OrcaV3 implements Subsystem {
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
+                    if(INSTANCE.deposit.isSampleDetected()){
+                        continueTransfering = true;
+                    }
+                    else{
+                        continueTransfering = false;
+                    }
+
                 })
                 .setExecute(() -> {
                     // do w/e
+                    if(INSTANCE.deposit.isSampleDetected()){
+                        continueTransfering = true;
+                    }
+                    else{
+                        continueTransfering = false;
+                    }
 
                 })
                 .setEnd(interrupted -> {

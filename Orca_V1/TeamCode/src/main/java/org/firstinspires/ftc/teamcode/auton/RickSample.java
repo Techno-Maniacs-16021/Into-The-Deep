@@ -50,7 +50,7 @@ public class RickSample extends OpMode {
 
     ElapsedTime wait = new ElapsedTime();
     public static double intakeWait = 0.4;
-    public static double intakeRace = 3.0;
+    public static double intakeRace = 1.5;
     public static double retractDepositWait = 0.5;
     public static double driveBackWait = 0.2;
 
@@ -145,6 +145,7 @@ public class RickSample extends OpMode {
                         ),
                         OrcaV3.sampleDetected()
                 ),
+                OrcaV3.transferCompleted(),
                 //STEP: collect & drop sample (0+3)
                 new Parallel(
                         OrcaV3.follow(Paths.samplePathMap.get("pick2-Sample"), false,defaultError),
@@ -185,6 +186,8 @@ public class RickSample extends OpMode {
                         ),
                         OrcaV3.sampleDetected()
                 ),
+                OrcaV3.transferCompleted(),
+
                 //STEP: collect & drop sample (0+4)
                 new Parallel(
                         OrcaV3.follow(Paths.samplePathMap.get("pick3-Sample"), false,defaultError),
@@ -225,6 +228,8 @@ public class RickSample extends OpMode {
                         ),
                         OrcaV3.sampleDetected()
                 ),
+                OrcaV3.transferCompleted(),
+
                 //OrcaV3.startStream(),
                 //STEP: collect from submersible & drop sample (0+5)
                 new Parallel(
@@ -277,34 +282,8 @@ public class RickSample extends OpMode {
                                 )
                         ),
                         OrcaV3.sampleDetected()
-                )
-
-                //OrcaV3.setSubIntakeEGAC(),
-                //OrcaV3.attemptSubIntakeEGAC(),
-                /*OrcaV3.attemptSubIntake(),
-                new Wait(intakeWait),
-                OrcaV3.retractIntake(),
-                new Parallel(
-                        new Sequential(
-                                new Wait(sampleReturnWait),
-                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample2"),true,defaultError)
-                        ),
-                        new Sequential(
-                                OrcaV3.waitForTransfer(),
-                                OrcaV3.setSample()
-                        )
                 ),
-                OrcaV3.releaseClaw(),
-
-                //end auto
-                new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("park-Sample"), false,defaultError),
-                        new Sequential(
-                                new Wait(retractDepositWait),
-                                OrcaV3.retractDeposit()
-                        )
-                )*/
-
+                OrcaV3.transferCompleted()
         ).schedule();
     }
 
