@@ -125,7 +125,11 @@ public class FiveSample extends OpMode {
                         )
                 ),
 
-                OrcaV3.waitForTransfer(),
+                new Race(
+                        null,
+                        OrcaV3.waitForTransfer(),
+                        new Wait(intakeRace)
+                ),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
@@ -157,7 +161,11 @@ public class FiveSample extends OpMode {
                         )
                ),
 
-                OrcaV3.waitForTransfer(),
+                new Race(
+                        null,
+                        OrcaV3.waitForTransfer(),
+                        new Wait(intakeRace)
+                ),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
@@ -188,8 +196,11 @@ public class FiveSample extends OpMode {
                                 OrcaV3.retractDeposit()
                         )
                 ),
-
-                OrcaV3.waitForTransfer(),
+                new Race(
+                        null,
+                        OrcaV3.waitForTransfer(),
+                        new Wait(intakeRace)
+                ),
                 new Parallel(
                         new Sequential(
                                 new Wait(driveBackWait),
@@ -231,21 +242,21 @@ public class FiveSample extends OpMode {
                 ),
                 OrcaV3.releaseClaw(),
 
-                //STEP: collect from submersible & drop sample (0+6)
+                //STEP: park at submersible
                 new Parallel(
                         new Sequential(
-                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError),
+                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError)
                                 //OrcaV3.setIntake(0.5)
-                                OrcaV3.setIntake(1.5)
+                                //OrcaV3.setIntake(1.5)
                         ),
                         new Sequential(
                                 new Wait(retractDepositWait),
                                 OrcaV3.retractDeposit()
                         )
-                ),
+                )
                 //OrcaV3.setSubIntakeEGAC(),
                 //OrcaV3.attemptSubIntakeEGAC(),
-                OrcaV3.attemptSubIntake(),
+                /*OrcaV3.attemptSubIntake(),
                 new Wait(intakeWait),
                 OrcaV3.retractIntake(),
                 new Parallel(
@@ -267,7 +278,7 @@ public class FiveSample extends OpMode {
                                 new Wait(retractDepositWait),
                                 OrcaV3.retractDeposit()
                         )
-                )
+                )*/
 
         ).schedule();
     }

@@ -90,6 +90,7 @@ public class cameraTesting extends OpMode {
     @Override
     public void start() {
         wait.reset();
+//        telemetry.addData("cam_value",OrcaV3.pipeline.getMidX());
         new Sequential(
                 OrcaV3.retractDeposit(),
                 OrcaV3.startStream(),

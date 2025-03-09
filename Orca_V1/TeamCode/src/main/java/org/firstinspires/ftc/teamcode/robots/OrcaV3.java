@@ -83,7 +83,7 @@ public class OrcaV3 implements Subsystem {
     static IntakeV3 intake;
     static Follower follower;
     static OpenCvWebcam webcam;
-    static IMRec pipeline = new IMRec();
+    public static IMRec pipeline = new IMRec();
 
     private static Limelight3A limelight;
 
@@ -428,7 +428,7 @@ public class OrcaV3 implements Subsystem {
                 .setInit(() -> {
                     // do w/e
                     double newX =
-                            ((pipeline.getMidX()-0.5)*5);
+                            ((pipeline.getMidX()-0.5)*-10);
 //                    follower.getPose().getX()+0.5;
 
                     Path align = new Path(
@@ -436,7 +436,7 @@ public class OrcaV3 implements Subsystem {
                                 new Point(follower.getPose().getX(),follower.getPose().getY()),
                                 new Point(follower.getPose().getX()+newX,follower.getPose().getY())
                     ));
-                    align.setConstantHeadingInterpolation(follower.getPose().getHeading());
+                    align.setLinearHeadingInterpolation(follower.getPose().getHeading(),Math.toRadians(90));
 
                     follower.followPath(align,true);
 
