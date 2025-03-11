@@ -54,7 +54,7 @@ public class RickSample extends OpMode {
     public static double retractDepositWait = 0.5;
     public static double driveBackWait = 0.2;
 
-    public static double sampleReturnWait = 0.5;
+    public static double sampleReturnWait = 0.2;
 
     public static double defaultError = 0.0;
 
@@ -76,10 +76,10 @@ public class RickSample extends OpMode {
     public void init_loop() {
         telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
         telemetry.addData("currently selected alliance: ", OrcaV3.intake().getColorToEject().equals("red") ? "blue" : "red");
-        if(gamepad1.cross){
+        if(gamepad1.cross||gamepad2.cross){
             OrcaV3.intake().setColorToEject("red");
         }
-        else if(gamepad1.triangle){
+        else if(gamepad1.triangle||gamepad2.triangle){
             OrcaV3.intake().setColorToEject("blue");
         }
         telemetry.update();
@@ -234,7 +234,7 @@ public class RickSample extends OpMode {
                 //STEP: collect from submersible & drop sample (0+5)
                 new Parallel(
                         new Sequential(
-                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample"), false,defaultError),
+                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample"), false,defaultError,3.5),
                                 //OrcaV3.setIntake(0.5)
                                 OrcaV3.setIntake(1.5)
                         ),
@@ -248,37 +248,29 @@ public class RickSample extends OpMode {
                 OrcaV3.attemptSubIntake(),
                 new Wait(intakeWait),
                 OrcaV3.retractIntake(),
-                new Race(
-                        null,
-                        OrcaV3.waitForTransfer(),
-                        new Wait(intakeRace)
-                ),
-                new Race(
-                        null,
+                new Parallel(
                         new Sequential(
-                                new Parallel(
-                                        new Sequential(
-                                                new Wait(sampleReturnWait),
-                                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true,defaultError)
-                                        ),
-                                        OrcaV3.setSample()
-                                ),
-                                OrcaV3.releaseClaw(),
-
-                                //STEP: park at submersible
-                                new Parallel(
-                                        new Sequential(
-                                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError)
-                                                //OrcaV3.setIntake(0.5)
-                                                //OrcaV3.setIntake(1.5)
-                                        ),
-                                        new Sequential(
-                                                new Wait(retractDepositWait),
-                                                OrcaV3.retractDeposit()
-                                        )
-                                )
+                                new Wait(sampleReturnWait),
+                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true,defaultError,3.5)
                         ),
-                        OrcaV3.sampleDetected()
+                        new Sequential(
+                                OrcaV3.waitForTransfer(),
+                                OrcaV3.setSample()
+                        )
+                ),
+                OrcaV3.releaseClaw(),
+
+                //STEP: park at submersible
+                new Parallel(
+                        new Sequential(
+                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError)
+                                //OrcaV3.setIntake(0.5)
+                                //OrcaV3.setIntake(1.5)
+                        ),
+                        new Sequential(
+                                new Wait(retractDepositWait),
+                                OrcaV3.retractDeposit()
+                        )
                 ),
                 OrcaV3.transferCompleted()
         ).schedule();

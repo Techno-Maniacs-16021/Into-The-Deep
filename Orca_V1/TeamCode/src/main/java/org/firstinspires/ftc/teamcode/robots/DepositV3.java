@@ -18,6 +18,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import java.util.ArrayList;
 
+import dev.frozenmilk.dairy.pasteurized.Pasteurized;
+
 public class DepositV3 {
     ServoImplEx rotation, claw, linkage, leftDifferential, rightDifferential;
     DcMotorEx leftSlides,rightSlides;
@@ -25,7 +27,7 @@ public class DepositV3 {
     DigitalChannel colorPin4,colorPin5;
     public double
             INTERMEDIATE_ROTATION = 0.3, RETRACT_LINKAGE = 0, RETRACT_LEFT_DIFF = 1, RETRACT_RIGHT_DIFF = 0.3,
-            SPECIMEN_ROTATION = 0.08,SPECIMEN_LINKAGE = 1, SPECIMEN_LEFT_DIFF = 0.2, SPECIMEN_RIGHT_DIFF = 0.5,
+            SPECIMEN_ROTATION = 0.04,SPECIMEN_LINKAGE = 1, SPECIMEN_LEFT_DIFF = 0.15, SPECIMEN_RIGHT_DIFF = 0.45,
             //INIT_ROTATION = 0.25, INIT_LINKAGE = 0.15, INIT_LEFT_DIFF = 0.3, INIT_RIGHT_DIFF = 0.6,
             SPEC_INIT_ROTATION = 0.25, SPEC_INIT_LINKAGE = 0.25, SPEC_INIT_LEFT_DIFF = 0.5, SPEC_INIT_RIGHT_DIFF = 0.8,
             SAMPLE_INIT_ROTATION = 0.25, SAMPLE_INIT_LINKAGE = 0.15,SAMPLE_INIT_LEFT_DIFF = 0.85, SAMPLE_INIT_RIGHT_DIFF = 0.15,
@@ -54,6 +56,7 @@ public class DepositV3 {
     double slidePower;
     String depositCommand = "standby";
     ElapsedTime grabTimer = new ElapsedTime();
+    boolean resetOveride = false;
     public DepositV3(HardwareMap hardwareMap){
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -102,6 +105,8 @@ public class DepositV3 {
         }
     }
     public void refresh(){
+        resetOveride = Pasteurized.gamepad2().a().state();
+
         leftSlides.setPower(slidePower);
         rightSlides.setPower(slidePower);
 
@@ -121,7 +126,10 @@ public class DepositV3 {
 
     }
     public void slidesLoop(){
-        if(target != 0){
+        if(resetOveride){
+            slidePower = -1;
+        }
+        else if(target != 0){
             slidesPID.setPID(p,i,d);
             slidePower = slidesPID.calculate(currentPos,target)+f;
         }
@@ -198,7 +206,7 @@ public class DepositV3 {
                 leftDiffPosition = SPECIMEN_LEFT_DIFF;
                 rightDiffPosition = SPECIMEN_RIGHT_DIFF;
             }
-            if((Math.abs(0.83-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(1.67-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){
+            if((Math.abs(0.68-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(1.84-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){
                 rotationPosition = SPECIMEN_ROTATION;
                 //TODO: FIND RIGHT POSITION
                 if((Math.abs(2.42-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR)){
@@ -238,7 +246,7 @@ public class DepositV3 {
             }
 
             //TODO: FIND RIGHT POSITION
-            if(Math.abs(0.96-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR){
+            if(Math.abs(0.98-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR){
                 isStateComplete = true;
             }
             else{

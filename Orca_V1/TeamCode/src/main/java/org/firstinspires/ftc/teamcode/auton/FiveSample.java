@@ -76,10 +76,10 @@ public class FiveSample extends OpMode {
     public void init_loop() {
         telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
         telemetry.addData("currently selected alliance: ", OrcaV3.intake().getColorToEject().equals("red") ? "blue" : "red");
-        if(gamepad1.cross){
+        if(gamepad1.cross||gamepad2.cross){
             OrcaV3.intake().setColorToEject("red");
         }
-        else if(gamepad1.triangle){
+        else if(gamepad1.triangle||gamepad2.triangle){
             OrcaV3.intake().setColorToEject("blue");
         }
         telemetry.update();

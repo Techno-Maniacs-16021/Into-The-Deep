@@ -42,7 +42,7 @@ public class FiveSpec extends OpMode {
 
     Timer pathTimer;
     public static double grabWait = 0.0;
-    public static double leaveWait = 0.0;
+    public static double leaveWait = 0.25;
     public static double retractWait = 0.25; //this is good
 
     public static double defaultError = 1.5;
@@ -70,10 +70,10 @@ public class FiveSpec extends OpMode {
     public void init_loop() {
         telemetry.addLine("press cross for blue alliance, press triangle for red alliance");
         telemetry.addData("currently selected alliance: ", OrcaV3.intake().getColorToEject().equals("red") ? "blue" : "red");
-        if(gamepad1.cross){
+        if(gamepad1.cross||gamepad2.cross){
             OrcaV3.intake().setColorToEject("red");
         }
-        else if(gamepad1.triangle){
+        else if(gamepad1.triangle||gamepad2.triangle){
             OrcaV3.intake().setColorToEject("blue");
         }
         telemetry.update();

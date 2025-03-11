@@ -671,6 +671,27 @@ public class OrcaV3 implements Subsystem {
                     if (interrupted) follower.breakFollowing();
                 });
     }
+    @NonNull
+    public static Lambda follow(Path path, boolean holdEnd, double allowedPositionError,double zpam) {
+        path.setZeroPowerAccelerationMultiplier(zpam);
+        return new Lambda("follow-path-zpam")
+                .addRequirements(INSTANCE)
+                .setInterruptible(true)
+                .setInit(() -> follower.followPath(path, holdEnd))
+                .setExecute(() -> {
+                    follower.update();
+                    /*telemetry.addData("x", follower.getPose().getX());
+                    telemetry.addData("y", follower.getPose().getY());
+                    telemetry.addData("heading", follower.getPose().getHeading());*/
+                    if((Math.abs(path.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(path.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower.breakFollowing();
+                    }
+                })
+                .setFinish(() -> (!follower.isBusy()))
+                .setEnd((interrupted) -> {
+                    if (interrupted) follower.breakFollowing();
+                });
+    }
 
 
     @NonNull
