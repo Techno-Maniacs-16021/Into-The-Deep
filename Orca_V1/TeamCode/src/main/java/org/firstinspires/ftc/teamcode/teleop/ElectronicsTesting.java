@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
-//@TeleOp
+@TeleOp
 @Config
 public class ElectronicsTesting extends OpMode {
     ServoImplEx tilt, lDiff, rDiff, intRotation, depLinkage, depRotation, gate, claw;
@@ -44,8 +44,8 @@ public class ElectronicsTesting extends OpMode {
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        //m0 = hardwareMap.get(DcMotorEx.class,"m0");
-        //m1 = hardwareMap.get(DcMotorEx.class,"m1");
+        leftVert = hardwareMap.get(DcMotorEx.class,"vLSlides");
+        rightVert = hardwareMap.get(DcMotorEx.class,"vRSlides");
         horizontal = hardwareMap.get(DcMotorEx.class,"intake");
         intake = hardwareMap.get(DcMotorEx.class,"hSlides");
 
@@ -110,39 +110,35 @@ public class ElectronicsTesting extends OpMode {
         lDiff.setPosition(Range.clip(gamepad1.left_stick_y+0.5,0,1));
         claw.setPosition(Range.clip(gamepad1.right_stick_x+0.5,0,1));
         depRotation.setPosition(Range.clip(gamepad1.left_stick_x+0.5,0,1));
-        depLinkage.setPosition(Range.clip(gamepad1.left_trigger,0,1));
+        depLinkage.setPosition(Range.clip(gamepad2.left_stick_x,0,1));
         gate.setPosition(Range.clip(gamepad2.right_stick_x+0.5,0,1));
         tilt.setPosition(Range.clip(gamepad2.right_stick_y+0.5,0,1));
         intRotation.setPosition(Range.clip(gamepad2.left_stick_y+0.5,0,1));
 
+        leftBack.setPower(gamepad1.left_trigger);
+        rightBack.setPower(gamepad1.right_trigger);
+        if(gamepad1.left_bumper){
+            leftFront.setPower(0.5);
+
+        }if(gamepad1.right_bumper){
+            rightFront.setPower(0.5);}
 
 
-
-        /*telemetry.addData("c0: ",c0.getVoltage());
-        telemetry.addData("c1: ",c1.getVoltage());
-        telemetry.addData("c2: ",c2.getVoltage());
-        telemetry.addData("c3: ",c3.getVoltage());
-        telemetry.addData("e0: ",e0.getVoltage());
-        telemetry.addData("e1: ",e1.getVoltage());
-        telemetry.addData("e2: ",e2.getVoltage());
-        telemetry.addData("e3: ",e3.getVoltage());
-        telemetry.addData("ccp0:", ccp0.getState());
-        telemetry.addData("ccp1:", ccp1.getState());
-        telemetry.addData("ccp2:", ccp2.getState());
-        telemetry.addData("ccp3:", ccp3.getState());
-        telemetry.addData("ccp4:", ccp4.getState());
-        telemetry.addData("ccp5:", ccp5.getState());
-        telemetry.addData("ccp6:", ccp6.getState());
-        telemetry.addData("ccp7:", ccp7.getState());
-        telemetry.addData("ecp0:", ecp0.getState());
-        telemetry.addData("ecp1:", ecp1.getState());
-        telemetry.addData("ecp2:", ecp2.getState());
-        telemetry.addData("ecp3:", ecp3.getState());
-        telemetry.addData("ecp4:", ecp4.getState());
-        telemetry.addData("ecp5:", ecp5.getState());
-        telemetry.addData("ecp6:", ecp6.getState());
-        telemetry.addData("ecp7:", ecp7.getState());
-        telemetry.update();*/
+        telemetry.addData("tilt: ",cTilt.getVoltage());
+        telemetry.addData("deplink: ",cDepLinkage.getVoltage());
+        telemetry.addData("introt: ",cIntRotation.getVoltage());
+        telemetry.addData("deprot: ",cDepRotation.getVoltage());
+        telemetry.addData("ld: ",cLeftDiff.getVoltage());
+        telemetry.addData("rd: ",cRightDiff.getVoltage());
+        //telemetry.addData("e2: ",e2.getVoltage());
+        //telemetry.addData("e3: ",e3.getVoltage());
+        telemetry.addData("crf0:", crf0.getState());
+        telemetry.addData("crf1:", crf1.getState());
+        telemetry.addData("crf2:", crf2.getState());
+        telemetry.addData("crf3:", crf3.getState());
+        telemetry.addData("crf4:", crf4.getState());
+        telemetry.addData("crf5:", crf5.getState());
+        telemetry.update();
 
     }
     @Override
