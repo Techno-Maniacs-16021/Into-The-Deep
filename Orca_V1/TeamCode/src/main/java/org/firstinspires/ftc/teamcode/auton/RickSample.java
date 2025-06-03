@@ -49,16 +49,16 @@ public class RickSample extends OpMode {
     // = OrcaV3.follower().pathBuilder().addPath()
 
     ElapsedTime wait = new ElapsedTime();
-    public static double intakeWait = 0.4;
-    public static double intakeRace = 1.5;
-    public static double retractDepositWait = 0.5;
-    public static double driveBackWait = 0.2;
+    public static double intakeWait = 0.4; //how long to spend intaking
+    public static double intakeRace = 1.5; //how long to wait before giving up
+    public static double retractDepositWait = 0.5; //retract deposit after depositing sample
+    public static double driveBackWait = 0.4; //drive back after picking up sample
 
-    public static double sampleReturnWait = 0.2;
+    public static double sampleReturnWait = 0.2; //wait before leaving submersible
 
     public static double defaultError = 0.0;
 
-    public static double depositLeave = 0.1;
+    public static double depositLeave = 0.1; //drive away from deposit
 
 
     @Override
@@ -85,9 +85,8 @@ public class RickSample extends OpMode {
         telemetry.update();
     }
     @Override
-    public void loop(){
-        //OrcaV3.follower().telemetryDebug(telemetryA);
-    }
+    public void loop(){OrcaV3.follower().telemetryDebug(telemetryA);
+         }
 
     @Override
     public void start() {
@@ -97,8 +96,8 @@ public class RickSample extends OpMode {
                 new Parallel(
                         OrcaV3.setSample(true),
                         new Sequential(
-                                new Wait(0.2),
-                                OrcaV3.follow(Paths.samplePathMap.get("firstDeposit-Sample"),true,defaultError)
+                                //new Wait(0.2),
+                                OrcaV3.follow(Paths.samplePathMap.get("firstDeposit-Sample"),true,1.0,1)
                         )
                 ),
                 OrcaV3.releaseClaw(),
@@ -106,7 +105,7 @@ public class RickSample extends OpMode {
 
                 //STEP: collect & drop sample (0+2)
                 new Parallel(
-                        OrcaV3.follow(Paths.samplePathMap.get("pick1-Sample"), false,defaultError),
+                        OrcaV3.follow(Paths.samplePathMap.get("pick1-Sample"), false,defaultError,2),
                         new Sequential(
                                 //new Wait(0.4),
                                 OrcaV3.setIntake(2),
@@ -126,20 +125,24 @@ public class RickSample extends OpMode {
                 ),
                 new Race(
                         null,
-                        OrcaV3.waitForTransfer(),
+                        new Parallel(
+                                OrcaV3.follow(Paths.samplePathMap.get("align1-Sample"),true,defaultError),
+                                OrcaV3.waitForTransfer()
+                        ),
                         new Wait(intakeRace)
                 ),
                 new Race(
                         null,
                         new Sequential(
+                                new Wait(0.01),//prevents unintentional extension before checking sample
                                 new Parallel(
                                         new Sequential(
                                                 new Wait(driveBackWait),
-                                                OrcaV3.follow(Paths.samplePathMap.get("drop1-Sample"),true,defaultError)
+                                                OrcaV3.follow(Paths.samplePathMap.get("drop1-Sample"),true,1.0)
                                         ),
                                         OrcaV3.setSample()
                                 ),
-                                new Wait(0.2),
+                                //new Wait(0.2),
                                 OrcaV3.releaseClaw(),
                                 new Wait(depositLeave)
                         ),
@@ -150,7 +153,7 @@ public class RickSample extends OpMode {
                 new Parallel(
                         OrcaV3.follow(Paths.samplePathMap.get("pick2-Sample"), false,defaultError),
                         new Sequential(
-                                new Wait(0.5), //allows intake to get into position
+                                //new Wait(0.5), //allows intake to get into position
                                 OrcaV3.setIntake(1.0),
                                 new Race(
                                         null,
@@ -167,20 +170,24 @@ public class RickSample extends OpMode {
                 ),
                 new Race(
                         null,
-                        OrcaV3.waitForTransfer(),
+                        new Parallel(
+                                OrcaV3.follow(Paths.samplePathMap.get("align2-Sample"),true,defaultError),
+                                OrcaV3.waitForTransfer()
+                        ),
                         new Wait(intakeRace)
                 ),
                 new Race(
                         null,
                         new Sequential(
+                                new Wait(0.01),//prevents unintentional extension before checking sample
                                 new Parallel(
                                         new Sequential(
                                                 new Wait(driveBackWait),
-                                                OrcaV3.follow(Paths.samplePathMap.get("drop2-Sample"),true,defaultError)
+                                                OrcaV3.follow(Paths.samplePathMap.get("drop2-Sample"),true,0.75)
                                         ),
                                         OrcaV3.setSample()
                                 ),
-                                new Wait(0.3),
+                                //new Wait(0.3),
                                 OrcaV3.releaseClaw(),
                                 new Wait(depositLeave)
                         ),
@@ -209,12 +216,16 @@ public class RickSample extends OpMode {
                 ),
                 new Race(
                         null,
-                        OrcaV3.waitForTransfer(),
+                        new Parallel(
+                                OrcaV3.follow(Paths.samplePathMap.get("align3-Sample"),true,defaultError),
+                                OrcaV3.waitForTransfer()
+                        ),
                         new Wait(intakeRace)
                 ),
                 new Race(
                         null,
                         new Sequential(
+                                new Wait(0.01),//prevents unintentional extension before checking sample
                                 new Parallel(
                                         new Sequential(
                                                 new Wait(driveBackWait),
@@ -222,7 +233,7 @@ public class RickSample extends OpMode {
                                         ),
                                         OrcaV3.setSample()
                                 ),
-                                new Wait(0.5), //allows deposit to stop swaying
+                                new Wait(0.2), //allows deposit to stop swaying
                                 OrcaV3.releaseClaw(),
                                 new Wait(depositLeave)
                         ),
@@ -248,22 +259,81 @@ public class RickSample extends OpMode {
                 OrcaV3.attemptSubIntake(),
                 new Wait(intakeWait),
                 OrcaV3.retractIntake(),
+                new Race(
+                        null,
+                        new Parallel(
+                                OrcaV3.follow(Paths.samplePathMap.get("align-Sample"),true,defaultError),
+                                OrcaV3.waitForTransfer()
+                        ),
+                        new Wait(intakeRace)
+                ),
+                new Race(
+                        null,
+                        new Sequential(
+                                new Wait(0.01),//prevents unintentional extension before checking sample
+                                new Parallel(
+                                        new Sequential(
+                                                new Wait(sampleReturnWait),
+                                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true,defaultError,3.5)
+                                        ),
+                                        OrcaV3.setSample()
+                                ),
+                                //new Wait(0.5), //allows deposit to stop swaying
+                                OrcaV3.releaseClaw(),
+                                new Wait(depositLeave)
+                        ),
+                        OrcaV3.sampleDetected()
+                ),
+                OrcaV3.releaseClaw(),
+
+                //STEP: (0+6)
                 new Parallel(
                         new Sequential(
-                                new Wait(sampleReturnWait),
-                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample"),true,defaultError,3.5)
+                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError,3.5),
+                                //OrcaV3.setIntake(0.5)
+                                OrcaV3.setIntake(1.5)
                         ),
                         new Sequential(
-                                OrcaV3.waitForTransfer(),
-                                OrcaV3.setSample()
+                                new Wait(retractDepositWait),
+                                OrcaV3.retractDeposit()
                         )
+                ),
+                //OrcaV3.setSubIntakeEGAC(),
+                //OrcaV3.attemptSubIntakeEGAC(),
+                OrcaV3.attemptSubIntake(),
+                new Wait(intakeWait),
+                OrcaV3.retractIntake(),
+                new Race(
+                        null,
+                        new Parallel(
+                                OrcaV3.follow(Paths.samplePathMap.get("align-Sample2"),true,defaultError),
+                                OrcaV3.waitForTransfer()
+                        ),
+                        new Wait(intakeRace)
+                ),
+                new Race(
+                        null,
+                        new Sequential(
+                                new Wait(0.01),//prevents unintentional extension before checking sample
+                                new Parallel(
+                                        new Sequential(
+                                                new Wait(sampleReturnWait),
+                                                OrcaV3.follow(Paths.samplePathMap.get("deposit-Sample2"),true,defaultError,3.5)
+                                        ),
+                                        OrcaV3.setSample()
+                                ),
+                                //new Wait(0.5), //allows deposit to stop swaying
+                                OrcaV3.releaseClaw(),
+                                new Wait(depositLeave)
+                        ),
+                        OrcaV3.sampleDetected()
                 ),
                 OrcaV3.releaseClaw(),
 
                 //STEP: park at submersible
                 new Parallel(
                         new Sequential(
-                                OrcaV3.follow(Paths.samplePathMap.get("collect-Sample2"), false,defaultError)
+                                OrcaV3.follow(Paths.samplePathMap.get("park-Sample"), false,defaultError)
                                 //OrcaV3.setIntake(0.5)
                                 //OrcaV3.setIntake(1.5)
                         ),

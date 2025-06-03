@@ -37,7 +37,7 @@ import dev.frozenmilk.mercurial.commands.util.Wait;
 @Mercurial.Attach
 @BulkRead.Attach
 @OrcaV3.Attach
-@Autonomous
+//@Autonomous
 @Config
 public class FiveSample extends OpMode {
 

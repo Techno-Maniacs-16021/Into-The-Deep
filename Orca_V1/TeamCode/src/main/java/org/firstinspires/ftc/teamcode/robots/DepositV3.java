@@ -35,7 +35,7 @@ public class DepositV3 {
             SPECIMEN_DEPOSIT_ROTATION = 0.89,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.87, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.17, SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.75, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.05,
             //SPECIMEN_DEPOSIT_ROTATION = 1,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.3,SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.6, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.0,
             SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.75, TRANSFER_RIGHT_DIFF = 0.05,
-            STANDBY_ROTATION = .155,STANDBY_LINKAGE = 0.1, STANDBY_LEFT_DIFF = 1, STANDBY_RIGHT_DIFF = 0.3;
+            STANDBY_ROTATION = .2,STANDBY_LINKAGE = 0.1, STANDBY_LEFT_DIFF = 1, STANDBY_RIGHT_DIFF = 0.3;
 
 
     final double COUNTS_PER_REV_MOTOR = 384.5;
@@ -253,14 +253,21 @@ public class DepositV3 {
                 isStateComplete = false;
             }
         }
-        else if(depositCommand.equals("retract")){
+        else if(depositCommand.equals("retract")||depositCommand.equals("retractSpecimenFinal")){
             rotationPosition = INTERMEDIATE_ROTATION;
-            clawPosition = 0.3;
-            claw.setPosition(clawPosition);
             isStateComplete = false;
-            if(Math.abs(2.07-currentRotation.getVoltage())<ALLOWED_SERVO_ERROR) {
+            if(depositCommand.equals("retract")){
+                clawPosition = 0.3;
+                claw.setPosition(clawPosition);
+            }
+            else{
+                clawPosition = 0;
+                claw.setPosition(clawPosition);
+            }
+            if(Math.abs(2.07-currentRotation.getVoltage())<3*ALLOWED_SERVO_ERROR) {
                 linkagePosition = RETRACT_LINKAGE;
-                if(Math.abs(1.425-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR||currentLinkage.getVoltage()>1.44){
+                depositCommand = "retract";
+                if(Math.abs(1.68-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR){
                     leftDiffPosition = RETRACT_LEFT_DIFF;
                     rightDiffPosition = RETRACT_RIGHT_DIFF;
                     if((Math.abs(3.18-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(2.28-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){
@@ -315,8 +322,13 @@ public class DepositV3 {
     }
     public void specimenRetract(){
         clawPosition = 0;
+        claw.setPosition(clawPosition);
         target = 0;
         depositCommand = "specimen";
+    }
+    public void specimenRetractFinal(){
+        target = 0;
+        depositCommand = "retractSpecimenFinal";
     }
     public void retract(){
         target = 0;

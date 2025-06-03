@@ -34,7 +34,7 @@ public class IntakeV3 {
     RevBlinkinLedDriver lightBar;
 
     public double
-            ANGLED_ROTATION = 0.15, ANGLED_TILT = 0.225,
+            ANGLED_ROTATION = 0.18, ANGLED_TILT = 0.225,
             VERTICAL_ROTATION = 0.2 , VERTICAL_ROTATION_OFFSET = 0.4, VERTICAL_TILT = 0.05,
             EJECT_TILT = 0.5,
             SPECIMEN_ROTATION = 0.86, SPECIMEN_TILT = 0.715,
@@ -72,6 +72,7 @@ public class IntakeV3 {
 
     boolean intakeButton = Pasteurized.gamepad1().a().state()||Pasteurized.gamepad1().b().state();
     boolean reverseIntakeButton = Pasteurized.gamepad1().y().state();
+    boolean gateButton = Pasteurized.gamepad1().leftBumper().state()||Pasteurized.gamepad1().rightBumper().state();
     double intakeSlidesTrigger = Pasteurized.gamepad1().rightTrigger().state()-Pasteurized.gamepad1().leftTrigger().state();
     RevBlinkinLedDriver.BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.WHITE;
 
@@ -154,6 +155,7 @@ public class IntakeV3 {
 
         intakeSlidesTrigger = Pasteurized.gamepad1().rightTrigger().state()-Pasteurized.gamepad1().leftTrigger().state();
         intakeButton = Pasteurized.gamepad1().a().state()||Pasteurized.gamepad1().b().state();
+        gateButton = Pasteurized.gamepad1().leftBumper().state()||Pasteurized.gamepad1().rightBumper().state();
         reverseIntakeButton = Pasteurized.gamepad1().y().state();
 
         tilt.setPosition(tiltPosition);
@@ -317,7 +319,12 @@ public class IntakeV3 {
 //            }
 //            else
             if(intakeMode.equals("vertical")){
-                gatePosition = 0;
+                if(gateButton){
+                    gatePosition = 1;
+                }
+                else{
+                    gatePosition = 0;
+                }
                 //intake vertically(90 degrees)
                 //rotation set to a higher angle
                 //moves down when intaking
@@ -341,19 +348,28 @@ public class IntakeV3 {
                     }
                 }
                 else{
-                    intakePower = STATIC_INTAKE_POWER;
+                    if(gateButton){
+                        intakePower = 1;
+                    }
+                    else{
+                        intakePower = STATIC_INTAKE_POWER;
+                    }
                     if(currentPos>INTAKE_DEPLOY_OFFSET||rotationPosition!=STANDBY_ROTATION){
                         rotationPosition = VERTICAL_ROTATION_OFFSET;
-                        tiltPosition = VERTICAL_TILT;
+                        tiltPosition = VERTICAL_TILT+0.1;
                     }
                 }
             }
             else{
-                gatePosition = 0;
-                //intake flat on floor(45 degrees)
+                if(gateButton){
+                    gatePosition = 1;
+                }
+                else{
+                    gatePosition = 0;
+                }                //intake flat on floor(45 degrees)
                 //rotation set to lower angle
                 //does not move up or down when intaking
-                if(isIntakeMotorActive||intakeButton){
+                if(isIntakeMotorActive||intakeButton||gateButton){
                     intakePower = 1;
                 }
                 else if(reverseIntakeButton){

@@ -43,7 +43,7 @@ public class FiveSpec extends OpMode {
     Timer pathTimer;
     public static double grabWait = 0.0;
     public static double leaveWait = 0.25;
-    public static double retractWait = 0.25; //this is good
+    public static double retractWait = 0 ; //this is good
 
     public static double defaultError = 1.5;
 
@@ -93,13 +93,17 @@ public class FiveSpec extends OpMode {
                         OrcaV3.setSpecimen()
                 ),
                 new Parallel(
+                        new Wait(0.25),
+                        OrcaV3.releaseClaw()
+                ),
+                new Parallel(
                         //OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), false),
-                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), Paths.specPathMap.get("drop1-Spec"),3, false,defaultError),
+                        OrcaV3.follow(Paths.specPathMap.get("pick1-Spec"), Paths.specPathMap.get("drop1-Spec"),5, false,defaultError),
                         OrcaV3.retractSpecimenDeposit()
                 ),
-                OrcaV3.follow(Paths.specPathMap.get("pick2-Spec"), Paths.specPathMap.get("drop2-Spec"),4.5,false,defaultError),
-                OrcaV3.follow(Paths.specPathMap.get("pick3-Spec"), Paths.specPathMap.get("drop3-Spec"), 3,false,defaultError),
-                OrcaV3.follow(Paths.specPathMap.get("firstCollect-Spec"),false,defaultError),
+                OrcaV3.follow(Paths.specPathMap.get("pick2-Spec"), Paths.specPathMap.get("drop2-Spec"),5,false,defaultError),
+                OrcaV3.follow(Paths.specPathMap.get("pick3-Spec"), Paths.specPathMap.get("drop3-Spec"),5,false,defaultError),
+                OrcaV3.follow(Paths.specPathMap.get("firstCollect-Spec"),false,defaultError,5),
 
                 //STEP: collect 3 specs & ready for intake
 
@@ -117,8 +121,11 @@ public class FiveSpec extends OpMode {
 
                 //STEP: go to collection
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), Paths.specPathMap.get("collect-Spec"), false,defaultError),
-                        //OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
+                        new Sequential(
+                                OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"), false,4*defaultError),
+                                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false,defaultError,6)
+                                //OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"),Paths.specPathMap.get("collect-Spec"),false,defaultError)
+                        ),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
@@ -136,8 +143,11 @@ public class FiveSpec extends OpMode {
 
                 //STEP: go to collection
                 new Parallel(
-                        //OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), Paths.specPathMap.get("collect-Spec"), false,defaultError),
+                        new Sequential(
+                                OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"), false,4*defaultError),
+                                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false,defaultError,6)
+                                //OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"),Paths.specPathMap.get("collect-Spec"),false,defaultError)
+                        ),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
@@ -155,8 +165,11 @@ public class FiveSpec extends OpMode {
 
                 //STEP: go to collection
                 new Parallel(
-                        //OrcaV3.follow(Paths.specPathMap.get("collectNoAlign-Spec"), false),
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), Paths.specPathMap.get("collect-Spec"), false,defaultError),
+                        new Sequential(
+                                OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"), false,4*defaultError),
+                                OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false,defaultError,6)
+                                //OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"),Paths.specPathMap.get("collect-Spec"),false,defaultError)
+                        ),
                         OrcaV3.retractSpecimenDeposit()
                 ),
 
@@ -174,11 +187,11 @@ public class FiveSpec extends OpMode {
 
                 //STEP: park
                 new Parallel(
-                        OrcaV3.follow(Paths.specPathMap.get("align-Spec"), false,defaultError),
+                        OrcaV3.follow(Paths.specPathMap.get("specPark"), false,defaultError),
                         new Sequential(
                                 OrcaV3.releaseClaw(),
-                                new Wait(retractWait),
-                                OrcaV3.retractDeposit()
+                                //new Wait(retractWait),
+                                OrcaV3.retractSpecimenDepositFinal()
                         )
                 )
 

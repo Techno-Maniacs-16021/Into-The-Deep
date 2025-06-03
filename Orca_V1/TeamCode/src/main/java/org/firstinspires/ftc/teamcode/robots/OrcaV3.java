@@ -9,7 +9,9 @@ import androidx.annotation.NonNull;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
@@ -22,8 +24,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.auton.imageRec.IMRec;
+import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -43,6 +47,7 @@ import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
 import dev.frozenmilk.mercurial.commands.Lambda;
 import dev.frozenmilk.mercurial.commands.groups.Parallel;
+import dev.frozenmilk.mercurial.commands.groups.Sequential;
 import dev.frozenmilk.mercurial.subsystems.Subsystem;
 import kotlin.annotation.MustBeDocumented;
 
@@ -107,9 +112,21 @@ public class OrcaV3 implements Subsystem {
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX){
-        follower.setTeleOpMovementVectors(-gamepad1LeftStickY, -gamepad1LeftStickX, -gamepad1RightStickX,true);
-        follower.update();
+    public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX, boolean gamepad1LeftStickButton, boolean gamepad1RightStickButton){
+        double movementScalar = 1;
+        double turnScalar = 1;
+
+        if(gamepad1LeftStickButton) movementScalar = 0.5;
+        if(gamepad1RightStickButton) turnScalar = 0.5;
+        if(!follower.isBusy()){
+            follower.setTeleOpMovementVectors(
+                    -gamepad1LeftStickY*movementScalar,
+                    -gamepad1LeftStickX*movementScalar,
+                    -gamepad1RightStickX*turnScalar,
+                    true);
+            follower.update();
+        }
+
     }
     public static void autoInit (Pose startPose, HardwareMap hardwareMap){
         String opModeName = FeatureRegistrar.getActiveOpModeWrapper().getName();
@@ -147,27 +164,87 @@ public class OrcaV3 implements Subsystem {
     public static DepositV3 deposit(){
         return deposit;
     }
-
     @NonNull
-    public static Lambda specimenTeleOp(Pose pause, Path deposit, boolean holdEnd, double allowedPositionError) {
+    public static Lambda specimenTeleOp(Point curve, Pose leadInPause, Pose pause, Path collect, boolean holdEnd, double allowedPositionError) {
         Pose current = follower.getPose();
 
         LLResult result = limelight.getLatestResult();
+
         if (result != null) {
             if (result.isValid()) {
                 Pose3D botpose = result.getBotpose();
-                current = new Pose(botpose.getPosition().x,botpose.getPosition().y,botpose.getOrientation().getYaw());
+                double xOffset;
+                double yOffset;
+                double headingOffset;
+
+                if(result.getFiducialResults().get(0).getFiducialId()==15){
+                    xOffset = 3; // 48+45+3
+                    yOffset = -3; //
+                    headingOffset = Math.PI*0.5; //180
+
+                    current = new Pose(botpose.getPosition().y*-39.37+xOffset,botpose.getPosition().x*39.37+yOffset,botpose.getOrientation().getYaw(AngleUnit.RADIANS)+headingOffset);
+                }
+                else{
+                    xOffset = 3;
+                    yOffset = -3;
+                    headingOffset = Math.PI*-0.5;
+
+                    current = new Pose(botpose.getPosition().y*39.37+xOffset,-1*botpose.getPosition().x*39.37+yOffset,botpose.getOrientation().getYaw(AngleUnit.RADIANS)+headingOffset);
+
+                }
+
+                System.out.println("x: "+ current.getX() + " y: " + current.getY()+" heading: "+current.getHeading());
+
             }
         }
-        Path path = new Path(new BezierLine(current,pause));
+
+        Path path = new Path(new BezierCurve(
+                new Point(current),
+                curve,
+                new Point(leadInPause),
+                new Point(pause)
+        ));
         path.setLinearHeadingInterpolation(current.getHeading(),pause.getHeading());
+
+        PathChain chain = follower.pathBuilder()
+                .addPath(path)
+                .addPath(collect)
+                .build();
+        System.out.println("path created");
+
+        Pose current2 = current;
+
         return new Lambda("specimen-teleop")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
-                    new Parallel(
-                            INSTANCE.follow(path,deposit, holdEnd, allowedPositionError),
-                            INSTANCE.retractSpecimenDeposit()
-                    ).schedule();
+                    //follower.
+                    //follower.breakFollowing();
+                    follower.setStartingPose(current2);
+                    follower.followPath(chain, holdEnd);
+                    System.out.println("path sceduled");
+                })
+                .setExecute(() -> {
+                    follower.update();
+                    //if((Math.abs(collect.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(collect.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        //follower.breakFollowing();
+                    //}
+                })
+                .setEnd(interrupted -> {
+                    if (interrupted) follower.breakFollowing();
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return !follower.isBusy();
+                });
+    }
+
+    @NonNull
+    public static Lambda printx(String str) {
+        return new Lambda("print")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    System.out.println(str);
                 })
                 .setExecute(() -> {
                     // do w/e
@@ -177,7 +254,7 @@ public class OrcaV3 implements Subsystem {
                 })
                 .setFinish(() -> {
                     // compute and return if the command is finished
-                    return true;
+                    return INSTANCE.deposit.isStateComplete();
                 });
     }
 
@@ -280,6 +357,24 @@ public class OrcaV3 implements Subsystem {
                 .setInit(() -> {
                     // do w/e
                     INSTANCE.deposit.retract();
+                })
+                .setExecute(() -> {
+                    // do w/e
+                })
+                .setEnd(interrupted -> {
+                    // do w/e
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return INSTANCE.deposit.isStateComplete()&&INSTANCE.deposit.slidesReachedTarget();
+                });
+    }
+    public static Lambda retractSpecimenDepositFinal() {
+        return new Lambda("retract-specimen-deposit-final")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    // do w/e
+                    INSTANCE.deposit.specimenRetractFinal();
                 })
                 .setExecute(() -> {
                     // do w/e

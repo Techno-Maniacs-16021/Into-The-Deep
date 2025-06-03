@@ -10,11 +10,13 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robots.OrcaV2;
 import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
+import dev.frozenmilk.dairy.core.dependency.meta.Or;
 import dev.frozenmilk.dairy.core.util.features.BulkRead;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 import dev.frozenmilk.mercurial.Mercurial;
@@ -32,6 +34,8 @@ public class ControlMode extends OpMode {
     public static double p,i,d,f,target;
     boolean intakeCross = false, intakeCircle = false, intakeTriangle = false, intakeSquare = false;
     double leftTrigger = 0;
+    private Telemetry telemetryA;
+
 
     /*
     public static double
@@ -131,20 +135,16 @@ public class ControlMode extends OpMode {
                 //currentAction = "intake";
             }
             else if(gamepad1.cross){
+                //OrcaV3.follower().breakFollowing();
+                //OrcaV3.follower().startTeleopDrive();
                 OrcaV3.deposit().closeClaw();
+
             }
             else if(gamepad1.circle){
                 OrcaV3.deposit().releaseClaw();
             }
             else if(gamepad1.square){
                 OrcaV3.deposit().clipSpecimen();
-            }
-            if(gamepad1.left_trigger>0&&leftTrigger==0){
-                leftTrigger = gamepad1.left_trigger;
-                OrcaV3.specimenTeleOp(Paths.pause,Paths.specPathMap.get("collect-Spec"),false,1.5);
-            }
-            else{
-                leftTrigger = 0;
             }
         }
         else if(currentAction.equals("sample")){
@@ -200,7 +200,7 @@ public class ControlMode extends OpMode {
             slidePower = 0;
         }
 
-        OrcaV3.teleopRefresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x);
+        OrcaV3.teleopRefresh(gamepad1.left_stick_x,gamepad1.left_stick_y,gamepad1.right_stick_x, gamepad1.left_stick_button, gamepad1.right_stick_button);
 
         //TODO: remove readSampleDetails
 
