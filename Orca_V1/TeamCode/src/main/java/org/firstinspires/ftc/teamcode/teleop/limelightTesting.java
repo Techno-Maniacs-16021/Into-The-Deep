@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
+import com.pedropathing.pathgen.Point;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxI2cDeviceSynch;
@@ -17,23 +19,40 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
+import com.pedropathing.pathgen.Path;
+
+
+import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
+import org.firstinspires.ftc.teamcode.robots.OrcaV3;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
+import dev.frozenmilk.dairy.core.util.features.BulkRead;
+import dev.frozenmilk.dairy.pasteurized.Pasteurized;
+import dev.frozenmilk.mercurial.Mercurial;
+import dev.frozenmilk.mercurial.commands.groups.Parallel;
+import dev.frozenmilk.mercurial.commands.groups.Sequential;
 
 @TeleOp
 @Config
+@Mercurial.Attach
+@BulkRead.Attach
+@OrcaV3.Attach
 public class limelightTesting extends OpMode {
 
     private static Limelight3A limelight;
+    public static double defaultError = 1.5;
 
 
     @Override
     public void init() {
         //claw = hardwareMap.get(ServoImplEx.class,"claw");
         //claw.setDirection(Servo.Direction.REVERSE);
+        OrcaV3.teleopInit();
+        Paths.init();
         limelight = FeatureRegistrar.getActiveOpMode().hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
         limelight.start();
@@ -50,6 +69,7 @@ public class limelightTesting extends OpMode {
 
     @Override
     public void loop() {
+
         Pose current = new Pose(0,0,0);
         boolean red = false;
         LLResult result = limelight.getLatestResult();
@@ -86,6 +106,34 @@ public class limelightTesting extends OpMode {
                 telemetry.addData("h: ",Math.toDegrees(current.getHeading()));
                 telemetry.addData("red?: ",red);
                 telemetry.update();
+
+                if (Pasteurized.gamepad1().x().onTrue()) {
+                    OrcaV3.follower().breakFollowing();
+                    OrcaV3.follower().setStartingPose(current);
+                    Path limelightPath = new Path(
+                            new BezierCurve(
+                                    new Point(current),
+                                    Paths.clearSubCurve,
+                                    new Point(Paths.leadInPause),
+                                    new Point(Paths.pause)
+                            )
+                    );
+                    limelightPath.setConstantHeadingInterpolation(Paths.pause.getHeading());
+
+                    new Parallel(
+                            new Sequential(
+                                    OrcaV3.follow(limelightPath, false,4*defaultError),
+                                    OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false,defaultError,6)
+                                    //OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"),Paths.specPathMap.get("collect-Spec"),false,defaultError)
+                            ),
+                            OrcaV3.retractSpecimenDeposit()
+                    ).schedule();
+                }
+
+                if (Pasteurized.gamepad1().circle().onTrue()) {
+                    OrcaV3.follower().breakFollowing();
+                    OrcaV3.follower().startTeleopDrive();
+                }
 
             }
         }
