@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.Point;
@@ -22,6 +24,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.pedropathing.pathgen.Path;
 
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.auton.pathing.Paths;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -45,12 +48,16 @@ public class limelightTesting extends OpMode {
 
     private static Limelight3A limelight;
     public static double defaultError = 1.5;
+    private Telemetry telemetryA;
+    boolean tele = false;
 
 
     @Override
     public void init() {
         //claw = hardwareMap.get(ServoImplEx.class,"claw");
         //claw.setDirection(Servo.Direction.REVERSE);
+        telemetryA = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetryA.update();
         OrcaV3.teleopInit();
         Paths.init();
         limelight = FeatureRegistrar.getActiveOpMode().hardwareMap.get(Limelight3A.class, "limelight");
@@ -69,7 +76,8 @@ public class limelightTesting extends OpMode {
 
     @Override
     public void loop() {
-
+        if(tele)
+            OrcaV3.follower().telemetryDebug(telemetryA);
         Pose current = new Pose(0,0,0);
         boolean red = false;
         LLResult result = limelight.getLatestResult();
@@ -107,7 +115,8 @@ public class limelightTesting extends OpMode {
                 telemetry.addData("red?: ",red);
                 telemetry.update();
 
-                if (Pasteurized.gamepad1().x().onTrue()) {
+                if (Pasteurized.gamepad1().cross().onTrue()) {
+                    tele = true;
                     OrcaV3.follower().breakFollowing();
                     OrcaV3.follower().setStartingPose(current);
                     Path limelightPath = new Path(
@@ -119,18 +128,20 @@ public class limelightTesting extends OpMode {
                             )
                     );
                     limelightPath.setConstantHeadingInterpolation(Paths.pause.getHeading());
+                    //OrcaV3.follow(limelightPath, false,4*defaultError).schedule();
 
                     new Parallel(
                             new Sequential(
                                     OrcaV3.follow(limelightPath, false,4*defaultError),
                                     OrcaV3.follow(Paths.specPathMap.get("collect-Spec"), false,defaultError,6)
                                     //OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"),Paths.specPathMap.get("collect-Spec"),false,defaultError)
-                            ),
-                            OrcaV3.retractSpecimenDeposit()
+                            )//,
+                            //OrcaV3.retractSpecimenDeposit()
                     ).schedule();
                 }
 
                 if (Pasteurized.gamepad1().circle().onTrue()) {
+                    tele = false;
                     OrcaV3.follower().breakFollowing();
                     OrcaV3.follower().startTeleopDrive();
                 }
