@@ -165,7 +165,7 @@ public class OrcaV3 implements Subsystem {
         return deposit;
     }
     @NonNull
-    public static Lambda specimenTeleOp(Point curve, Pose leadInPause, Pose pause, Path collect, boolean holdEnd, double allowedPositionError) {
+    public static Lambda specimenTeleOp(boolean holdEnd, double allowedPositionError) {
         Pose current = follower.getPose();
 
         LLResult result = limelight.getLatestResult();
@@ -198,17 +198,23 @@ public class OrcaV3 implements Subsystem {
             }
         }
 
-        Path path = new Path(new BezierCurve(
+        Path limelightPath = new Path(new BezierCurve(
                 new Point(current),
-                curve,
-                new Point(leadInPause),
-                new Point(pause)
+                Paths.clearSubCurve,
+                new Point(Paths.leadInPause),
+                new Point(Paths.pause)
         ));
-        path.setLinearHeadingInterpolation(current.getHeading(),pause.getHeading());
+        limelightPath.setLinearHeadingInterpolation(current.getHeading(),Paths.pause.getHeading());
+
+        Path specCollectPath = new Path(new BezierLine(
+                new Point(Paths.pause),
+                new Point(Paths.specCollect)
+        ));
+        specCollectPath.setConstantHeadingInterpolation(Paths.specCollect.getHeading());
 
         PathChain chain = follower.pathBuilder()
-                .addPath(path)
-                .addPath(collect)
+                .addPath(limelightPath)
+                .addPath(specCollectPath)
                 .build();
         System.out.println("path created");
 
@@ -744,7 +750,6 @@ public class OrcaV3 implements Subsystem {
                     return true;
                 });
     }
-
 
     @NonNull
     public static Lambda follow(Path path, boolean holdEnd, double allowedPositionError) {
