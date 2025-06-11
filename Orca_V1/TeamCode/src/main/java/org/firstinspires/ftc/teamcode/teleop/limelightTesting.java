@@ -53,7 +53,6 @@ public class limelightTesting extends OpMode {
     private Telemetry telemetryA;
     boolean tele = false;
 
-
     @Override
     public void init() {
         //claw = hardwareMap.get(ServoImplEx.class,"claw");
@@ -73,7 +72,6 @@ public class limelightTesting extends OpMode {
     }
     @Override
     public void start(){
-
     }
 
     @Override
@@ -86,7 +84,7 @@ public class limelightTesting extends OpMode {
             Pose current = getCurrentLPose();
             tele = true;
             OrcaV3.follower().breakFollowing();
-            OrcaV3.follower().setStartingPose(current);
+            OrcaV3.follower().setPose(current);
             Path limelightPath = new Path(
                     new BezierCurve(
                             new Point(current),
@@ -97,44 +95,35 @@ public class limelightTesting extends OpMode {
             );
             limelightPath.setConstantHeadingInterpolation(Paths.pause.getHeading());
 
+            telemetry.addData("Current X: ",current.getX());
+            telemetry.addData("Current Y: ",current.getY());
+            telemetry.update();
+
             Path specCollectPath = new Path(
                     new BezierLine(
                             new Point(Paths.pause),
                             new Point(Paths.specCollect)
                     )
             );
-            /*
-            PathChain autoBucketTo =
-                    follower.pathBuilder()
-                            .addPath(
-                                    new BezierCurve(
-                                            new Point(follower.getPose()),
-                                            new Point(58.000, 119.000),
-                                            new Point(autoBucketToEndPose)
-                                    )
-                            )
-                            .setLinearHeadingInterpolation(follower.getPose().getHeading(), autoBucketToEndPose.getHeading())
-                            .build();
-             */
 
             specCollectPath.setConstantHeadingInterpolation(Paths.specCollect.getHeading());
 
             PathChain fullPath = OrcaV3.follower().pathBuilder().addPath(limelightPath).addPath(specCollectPath).build();
 
-            new Parallel(
+            /*new Parallel(
                     new Sequential(
                             OrcaV3.follow(limelightPath, false,4*defaultError),
                             OrcaV3.follow(specCollectPath, false,defaultError,6)
-                            //OrcaV3.follow(Paths.specPathMap.get("align-Spec-Curve"),Paths.specPathMap.get("collect-Spec"),false,defaultError)
                     )
-            ).schedule();
+            ).schedule();*/
+
+            OrcaV3.followChain(fullPath,false,defaultError).schedule();
         }
 
 
         if (Pasteurized.gamepad1().circle().onTrue()) {
             tele = false;
             OrcaV3.follower().breakFollowing();
-            OrcaV3.follower().setStartingPose(new Pose(0,0,0));
             //OrcaV3.follower().startTeleopDrive();
         }
     }

@@ -224,7 +224,7 @@ public class OrcaV3 implements Subsystem {
                 .setInit(() -> {
                     //follower.
                     //follower.breakFollowing();
-                    follower.setStartingPose(currentFinal);
+                    follower.setPose(currentFinal);
                     follower.followPath(chain, holdEnd);
                     System.out.println("path scheduled");
                 })
@@ -890,6 +890,27 @@ public class OrcaV3 implements Subsystem {
                     telemetry.addData("y", follower.getPose().getY());
                     telemetry.addData("heading", follower.getPose().getHeading());*/
                     if((Math.abs(p2.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(p2.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower.breakFollowing();
+                    }
+                })
+                .setFinish(() -> (!follower.isBusy()))
+                .setEnd((interrupted) -> {
+                    if (interrupted) follower.breakFollowing();
+                });
+    }
+
+    @NonNull
+    public static Lambda followChain(PathChain chain, boolean holdEnd, double allowedPositionError) {
+        return new Lambda("follow-pathchain")
+                .addRequirements(INSTANCE)
+                .setInterruptible(true)
+                .setInit(() -> follower.followPath(chain, holdEnd))
+                .setExecute(() -> {
+                    follower.update();
+                    /*telemetry.addData("x", follower.getPose().getX());
+                    telemetry.addData("y", follower.getPose().getY());
+                    telemetry.addData("heading", follower.getPose().getHeading());*/
+                    if((Math.abs(chain.getPath(chain.size()-1).getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(chain.getPath(chain.size()-1).getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
                         follower.breakFollowing();
                     }
                 })
