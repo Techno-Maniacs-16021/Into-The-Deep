@@ -164,6 +164,86 @@ public class OrcaV3 implements Subsystem {
     public static DepositV3 deposit(){
         return deposit;
     }
+
+    @NonNull
+    public static Lambda autoSpecCollect(boolean holdEnd, double allowedPositionError) {
+        Pose current = follower.getPose();
+
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null && result.isValid()) {
+
+            Pose3D botpose = result.getBotpose();
+            double xOffset;
+            double yOffset;
+            double headingOffset;
+
+            if(result.getFiducialResults().get(0).getFiducialId()==15){
+                xOffset = 3; // 48+45+3
+                yOffset = -3; //
+                headingOffset = Math.PI*0.5; //180
+
+                current = new Pose(botpose.getPosition().y*-39.37+xOffset,botpose.getPosition().x*39.37+yOffset,botpose.getOrientation().getYaw(AngleUnit.RADIANS)+headingOffset);
+            }
+            else{
+                xOffset = 3;
+                yOffset = -3;
+                headingOffset = Math.PI*-0.5;
+
+                current = new Pose(botpose.getPosition().y*39.37+xOffset,-1*botpose.getPosition().x*39.37+yOffset,botpose.getOrientation().getYaw(AngleUnit.RADIANS)+headingOffset);
+
+            }
+
+            System.out.println("x: "+ current.getX() + " y: " + current.getY()+" heading: "+current.getHeading());
+    }
+
+        Path limelightPath = new Path(new BezierCurve(
+                new Point(current),
+                Paths.clearSubCurve,
+                new Point(Paths.leadInPause),
+                new Point(Paths.pause)
+        ));
+        limelightPath.setLinearHeadingInterpolation(current.getHeading(),Paths.pause.getHeading());
+
+        Path specCollectPath = new Path(new BezierLine(
+                new Point(Paths.pause),
+                new Point(Paths.specCollect)
+        ));
+        specCollectPath.setConstantHeadingInterpolation(Paths.specCollect.getHeading());
+
+        PathChain chain = follower.pathBuilder()
+                .addPath(limelightPath)
+                .addPath(specCollectPath)
+                .build();
+        System.out.println("path created");
+
+        Pose currentFinal = current;
+
+        return new Lambda("specimen-teleop")
+                .addRequirements(INSTANCE)
+                .setInit(() -> {
+                    //follower.
+                    //follower.breakFollowing();
+                    follower.setStartingPose(currentFinal);
+                    follower.followPath(chain, holdEnd);
+                    System.out.println("path scheduled");
+                })
+                .setExecute(() -> {
+                    follower.update();
+                    //if((Math.abs(collect.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(collect.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                    //follower.breakFollowing();
+                    //}
+                })
+                .setEnd(interrupted -> {
+                    if (interrupted) follower.breakFollowing();
+                })
+                .setFinish(() -> {
+                    // compute and return if the command is finished
+                    return !follower.isBusy();
+                });
+    }
+
+
     @NonNull
     public static Lambda specimenTeleOp(boolean holdEnd, double allowedPositionError) {
         Pose current = follower.getPose();

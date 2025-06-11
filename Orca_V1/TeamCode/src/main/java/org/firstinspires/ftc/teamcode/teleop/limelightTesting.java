@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -80,9 +81,9 @@ public class limelightTesting extends OpMode {
         if(tele)
             OrcaV3.follower().telemetryDebug(telemetryA);
 
-        Pose current = getCurrentLPose();
 
         if (Pasteurized.gamepad1().cross().onTrue()) {
+            Pose current = getCurrentLPose();
             tele = true;
             OrcaV3.follower().breakFollowing();
             OrcaV3.follower().setStartingPose(current);
@@ -102,7 +103,23 @@ public class limelightTesting extends OpMode {
                             new Point(Paths.specCollect)
                     )
             );
+            /*
+            PathChain autoBucketTo =
+                    follower.pathBuilder()
+                            .addPath(
+                                    new BezierCurve(
+                                            new Point(follower.getPose()),
+                                            new Point(58.000, 119.000),
+                                            new Point(autoBucketToEndPose)
+                                    )
+                            )
+                            .setLinearHeadingInterpolation(follower.getPose().getHeading(), autoBucketToEndPose.getHeading())
+                            .build();
+             */
+
             specCollectPath.setConstantHeadingInterpolation(Paths.specCollect.getHeading());
+
+            PathChain fullPath = OrcaV3.follower().pathBuilder().addPath(limelightPath).addPath(specCollectPath).build();
 
             new Parallel(
                     new Sequential(
