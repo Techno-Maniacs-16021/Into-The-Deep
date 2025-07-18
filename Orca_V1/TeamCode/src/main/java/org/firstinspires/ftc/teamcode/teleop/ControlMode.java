@@ -130,10 +130,6 @@ public class ControlMode extends OpMode {
             if(gamepad1.right_bumper){
                 OrcaV3.deposit().depositSpecimen();
             }
-            else if(gamepad1.left_bumper){
-                OrcaV3.deposit().specimenRetract();
-                //currentAction = "intake";
-            }
             else if(gamepad1.cross){
                 //OrcaV3.follower().breakFollowing();
                 //OrcaV3.follower().startTeleopDrive();
@@ -145,6 +141,10 @@ public class ControlMode extends OpMode {
             }
             else if(gamepad1.square){
                 OrcaV3.deposit().clipSpecimen();
+            }
+            else if(Pasteurized.gamepad1().leftBumper().onTrue()){
+                OrcaV3.deposit().specimenRetract();
+                OrcaV3.autoSpecCollect(true, 1).schedule();
             }
         }
         else if(currentAction.equals("sample")){

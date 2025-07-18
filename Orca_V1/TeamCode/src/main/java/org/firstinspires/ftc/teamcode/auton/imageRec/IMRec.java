@@ -19,6 +19,7 @@ import dev.frozenmilk.mercurial.Mercurial;
     public class IMRec extends OpenCvPipeline {
 
         Rect size = new Rect();
+
         Mat org = new Mat();
         Mat maskYellow = new Mat();
         double midx;
@@ -42,10 +43,16 @@ import dev.frozenmilk.mercurial.Mercurial;
         Size blur = new Size(21,21);
         Point bottomLeft = new Point(0,0);
         Point topRight = new Point(0,0);
+
+
+
+
+        Rect croped = new Rect(0, 240, 640, 239);
+
         @Override
         public Mat processFrame(Mat input) {
 
-
+            input = input.submat(croped);
             input.copyTo(org);
 
             Imgproc.cvtColor(org,org,Imgproc.COLOR_RGB2HSV);

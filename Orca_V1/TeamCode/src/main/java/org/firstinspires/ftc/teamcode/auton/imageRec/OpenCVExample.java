@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.auton.imageRec;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -8,7 +9,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-//@TeleOp
+@TeleOp
 public class OpenCVExample extends LinearOpMode {
     OpenCvWebcam webcam;
 
@@ -36,7 +37,8 @@ public class OpenCVExample extends LinearOpMode {
          * This REPLACES waitForStart!
          */
         while (!isStarted() && !isStopRequested()) {
-
+            telemetry.addLine("BEST PT: "+pipeline.getMidX()+","+pipeline.getMidY());
+            telemetry.update();
             // Don't burn CPU cycles busy-looping in this sample
             sleep(50);
         }

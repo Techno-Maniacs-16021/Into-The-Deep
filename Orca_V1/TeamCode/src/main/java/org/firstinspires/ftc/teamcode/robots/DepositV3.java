@@ -36,7 +36,7 @@ public class DepositV3 {
             //SPECIMEN_DEPOSIT_ROTATION = 1,SPECIMEN_DEPOSIT_LINKAGE = 0, SPECIMEN_DEPOSIT_LEFT_DIFF = 0.0, SPECIMEN_DEPOSIT_RIGHT_DIFF = 0.3,SPECIMEN_DEPOSIT_CLIP_LEFT_DIFF = 0.6, SPECIMEN_DEPOSIT_CLIP_RIGHT_DIFF = 0.0,
             SAMPLE_DEPOSIT_ROTATION = 0.5, TRANSFER_LINKAGE = 1, TRANSFER_LEFT_DIFF = 0.75, TRANSFER_RIGHT_DIFF = 0.05,
             STANDBY_ROTATION = .2,STANDBY_LINKAGE = 0.1, STANDBY_LEFT_DIFF = 1, STANDBY_RIGHT_DIFF = 0.3;
-
+            //0.2
 
     final double COUNTS_PER_REV_MOTOR = 384.5;
     final double ALLOWED_SERVO_ERROR = 0.15;
@@ -182,7 +182,9 @@ public class DepositV3 {
                 rotationPosition = INTERMEDIATE_ROTATION;
                 linkagePosition = RETRACT_LINKAGE;
             }
-            if(currentRotation.getVoltage()<(2+ALLOWED_SERVO_ERROR)){
+            //fix this
+            //if(currentRotation.getVoltage()<(2.02+ALLOWED_SERVO_ERROR)){
+            if(Math.abs(2.05-currentRotation.getVoltage())<0.6*ALLOWED_SERVO_ERROR || currentRotation.getVoltage()< 1.8) {
                 linkagePosition = TRANSFER_LINKAGE;
                 leftDiffPosition = TRANSFER_LEFT_DIFF;
                 rightDiffPosition = TRANSFER_RIGHT_DIFF;
@@ -201,7 +203,7 @@ public class DepositV3 {
             }
         }
         else if(depositCommand.equals("specimen")){
-            if(currentRotation.getVoltage()<(2+ALLOWED_SERVO_ERROR)){
+            if(currentRotation.getVoltage()<(2.02+ALLOWED_SERVO_ERROR)){
                 linkagePosition = SPECIMEN_LINKAGE;
                 leftDiffPosition = SPECIMEN_LEFT_DIFF;
                 rightDiffPosition = SPECIMEN_RIGHT_DIFF;
@@ -267,7 +269,7 @@ public class DepositV3 {
             if(Math.abs(2.07-currentRotation.getVoltage())<3*ALLOWED_SERVO_ERROR) {
                 linkagePosition = RETRACT_LINKAGE;
                 depositCommand = "retract";
-                if(Math.abs(1.68-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR){
+                if(Math.abs(1.68-currentLinkage.getVoltage())<ALLOWED_SERVO_ERROR||Math.abs(1.94-currentLinkage.getVoltage())<1.75*ALLOWED_SERVO_ERROR){
                     leftDiffPosition = RETRACT_LEFT_DIFF;
                     rightDiffPosition = RETRACT_RIGHT_DIFF;
                     if((Math.abs(3.18-currentLeftDifferential.getVoltage())<ALLOWED_SERVO_ERROR)&&(Math.abs(2.28-currentRightDifferential.getVoltage())<ALLOWED_SERVO_ERROR)){

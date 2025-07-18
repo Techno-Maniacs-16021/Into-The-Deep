@@ -133,7 +133,7 @@ public class IntakeV3 {
     }
 
     public void refresh (){
-        RevBlinkinLedDriver.BlinkinPattern newPattern = RevBlinkinLedDriver.BlinkinPattern.WHITE;
+        RevBlinkinLedDriver.BlinkinPattern newPattern;
 
         if(sampleColor.equals("red")){
             newPattern = RevBlinkinLedDriver.BlinkinPattern.RED;
@@ -413,7 +413,8 @@ public class IntakeV3 {
             gatePosition = 1;
         }
         else if(intakeCommand.equals("transfer")){
-            if(colorPin0.getState()||colorPin1.getState()||colorPin4.getState()||colorPin5.getState()||isTransfering){
+            //if(colorPin0.getState()||colorPin1.getState()||colorPin4.getState()||colorPin5.getState()||isTransfering){
+            if(colorPin4.getState()||colorPin5.getState()||isTransfering){
                 isTransfering = false;
                 transferTimer.reset();
                 intakeCommand = "transferred";

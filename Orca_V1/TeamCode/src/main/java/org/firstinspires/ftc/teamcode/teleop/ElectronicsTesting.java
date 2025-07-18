@@ -115,13 +115,11 @@ public class ElectronicsTesting extends OpMode {
         tilt.setPosition(Range.clip(gamepad2.right_stick_y+0.5,0,1));
         intRotation.setPosition(Range.clip(gamepad2.left_stick_y+0.5,0,1));
 
-        leftBack.setPower(gamepad1.left_trigger);
-        rightBack.setPower(gamepad1.right_trigger);
-        if(gamepad1.left_bumper){
-            leftFront.setPower(0.5);
+        leftFront.setPower(gamepad1.left_trigger);
+        rightFront.setPower(gamepad1.right_trigger);
+        leftFront.setPower(-gamepad2.left_trigger);
+        rightFront.setPower(-gamepad2.right_trigger);
 
-        }if(gamepad1.right_bumper){
-            rightFront.setPower(0.5);}
 
 
         telemetry.addData("tilt: ",cTilt.getVoltage());

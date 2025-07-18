@@ -70,6 +70,7 @@ public class FiveSample extends OpMode {
         telemetryA.update();
         OrcaV3.autoInit(Paths.startSample,hardwareMap);
         OrcaV3.deposit().sampleInit();
+        //OrcaV3.setFollowerPower(0.95);
     }
 
     @Override

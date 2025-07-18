@@ -45,6 +45,7 @@ import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.dependency.Dependency;
 import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
+import dev.frozenmilk.mercurial.Mercurial;
 import dev.frozenmilk.mercurial.commands.Lambda;
 import dev.frozenmilk.mercurial.commands.groups.Parallel;
 import dev.frozenmilk.mercurial.commands.groups.Sequential;
@@ -89,6 +90,9 @@ public class OrcaV3 implements Subsystem {
 
     public static boolean continueTransfering = false;
 
+    private static boolean teleDrive = true;
+    public static boolean driving = true;
+
     
     ElapsedTime intakeAttemptTimer = new ElapsedTime();
 
@@ -111,6 +115,10 @@ public class OrcaV3 implements Subsystem {
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        leftRear.setDirection(DcMotorEx.Direction.REVERSE);
+        leftFront.setDirection(DcMotorEx.Direction.REVERSE);
+
     }
     public static void teleopRefresh(double gamepad1LeftStickX, double gamepad1LeftStickY, double gamepad1RightStickX, boolean gamepad1LeftStickButton, boolean gamepad1RightStickButton){
         double movementScalar = 1;
@@ -118,7 +126,21 @@ public class OrcaV3 implements Subsystem {
 
         if(gamepad1LeftStickButton) movementScalar = 0.5;
         if(gamepad1RightStickButton) turnScalar = 0.5;
-        if(!follower.isBusy()){
+        if(!teleDrive){
+            if(gamepad1LeftStickX != 0 || gamepad1LeftStickY != 0 || gamepad1RightStickX != 0){
+
+                follower.breakFollowing();
+                teleDrive = true;
+                driving = false;
+            }
+        }
+        else{
+            if(!driving) {
+                follower.startTeleopDrive();
+                driving = true;
+                System.out.println("starting teleop drive");
+            }
+
             follower.setTeleOpMovementVectors(
                     -gamepad1LeftStickY*movementScalar,
                     -gamepad1LeftStickX*movementScalar,
@@ -128,6 +150,17 @@ public class OrcaV3 implements Subsystem {
         }
 
     }
+    public static void setFollowerPower(double pwr){
+        follower.setMaxPower(pwr);
+    }
+
+    public static void startTeleDrive(){
+        teleDrive = true;
+    }
+    public static void stopTeleDrive(){
+        teleDrive = false;
+    }
+
     public static void autoInit (Pose startPose, HardwareMap hardwareMap){
         String opModeName = FeatureRegistrar.getActiveOpModeWrapper().getName();
         deposit.setDepositCommand("init");
@@ -167,8 +200,9 @@ public class OrcaV3 implements Subsystem {
 
     @NonNull
     public static Lambda autoSpecCollect(boolean holdEnd, double allowedPositionError) {
+        stopTeleDrive();
+        boolean cancel = false;
         Pose current = follower.getPose();
-
         LLResult result = limelight.getLatestResult();
 
         if (result != null && result.isValid()) {
@@ -195,7 +229,11 @@ public class OrcaV3 implements Subsystem {
             }
 
             System.out.println("x: "+ current.getX() + " y: " + current.getY()+" heading: "+current.getHeading());
-    }
+        }
+        else{
+            cancel = true;
+            System.out.println("no target--canceled");
+        }
 
         Path limelightPath = new Path(new BezierCurve(
                 new Point(current),
@@ -219,27 +257,38 @@ public class OrcaV3 implements Subsystem {
 
         Pose currentFinal = current;
 
+        boolean isCanceled = cancel;
+
         return new Lambda("specimen-teleop")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     //follower.
                     //follower.breakFollowing();
-                    follower.setPose(currentFinal);
-                    follower.followPath(chain, holdEnd);
-                    System.out.println("path scheduled");
+                    if(!isCanceled){
+                        follower.setPose(currentFinal);
+                        follower.followPath(chain, holdEnd);
+                        System.out.println("path scheduled");
+                    }
+
                 })
                 .setExecute(() -> {
-                    follower.update();
-                    //if((Math.abs(collect.getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(collect.getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
-                    //follower.breakFollowing();
-                    //}
+                    if(!isCanceled)
+                        follower.update();
+                    if((Math.abs(chain.getPath(1).getLastControlPoint().getX()-follower.getPose().getX())<allowedPositionError&&Math.abs(chain.getPath(1).getLastControlPoint().getY()-follower.getPose().getY())<allowedPositionError)){
+                        follower.breakFollowing();
+                    }
                 })
                 .setEnd(interrupted -> {
                     if (interrupted) follower.breakFollowing();
                 })
                 .setFinish(() -> {
                     // compute and return if the command is finished
-                    return !follower.isBusy();
+                    boolean isFinish = isCanceled || !follower.isBusy();
+                        if(isFinish) {
+                            driving = false;
+                            startTeleDrive();
+                        }
+                    return isFinish;
                 });
     }
 
@@ -601,31 +650,39 @@ public class OrcaV3 implements Subsystem {
 
     @NonNull
     public static Lambda setSubIntakeEGAC() {
+
         return new Lambda("set-intake-sub-egac")
                 .addRequirements(INSTANCE)
                 .setInit(() -> {
                     // do w/e
+
                     double newX =
-                            ((pipeline.getMidX()-0.5)*-10);
+
+                            ((pipeline.getMidX()-0.5)*16);
 //                    follower.getPose().getX()+0.5;
 
                     Path align = new Path(
                             new BezierLine(
-                                new Point(follower.getPose().getX(),follower.getPose().getY()),
-                                new Point(follower.getPose().getX()+newX,follower.getPose().getY())
+                                new Point(follower.getPose().getX(),0),
+                                new Point(follower.getPose().getX()+newX,0)
                     ));
-                    align.setLinearHeadingInterpolation(follower.getPose().getHeading(),Math.toRadians(90));
+//                    align.setLinearHeadingInterpolation(follower.getPose().getHeading(),Math.toRadians(90));
 
                     follower.followPath(align,true);
 
-                    INSTANCE.intake.verticalIntakeMode();
-                    INSTANCE.intake.enablePID();
-                    INSTANCE.intakeAttemptTimer.reset();
 
 
-                    double slide = 1.5;//pipeline.getMidY()*1+1;
-
-                    INSTANCE.intake.setTarget(slide);
+//
+//
+//
+//                    INSTANCE.intake.verticalIntakeMode();
+//                    INSTANCE.intake.enablePID();
+//                    INSTANCE.intakeAttemptTimer.reset();
+//
+//
+//                    double slide = 1.5;//pipeline.getMidY()*1+1;
+//
+//                    INSTANCE.intake.setTarget(slide);
 
 
                     /*new Parallel(

@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.pathgen.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import com.pedropathing.util.Constants;
@@ -27,7 +28,7 @@ import dev.frozenmilk.mercurial.commands.util.Wait;
 @Mercurial.Attach
 @BulkRead.Attach
 @OrcaV3.Attach
-//@Autonomous
+@Autonomous
 @Config
 public class cameraTesting extends OpMode {
 
@@ -70,26 +71,34 @@ public class cameraTesting extends OpMode {
         else if(gamepad1.triangle){
             OrcaV3.intake().setColorToEject("blue");
         }
+        OrcaV3.startStream();
+
         telemetry.update();
     }
     @Override
     public void loop(){
         //OrcaV3.follower().telemetryDebug(telemetryA);
+        telemetry.addData("cam_value",OrcaV3.pipeline.getMidX());
+        telemetry.update();
     }
 
     @Override
     public void start() {
         wait.reset();
-//        telemetry.addData("cam_value",OrcaV3.pipeline.getMidX());
+
+        OrcaV3.startStream();
+        new Wait(3);
+        telemetry.addData("cam_value",OrcaV3.pipeline.getMidX());
+        telemetry.update();
         new Sequential(
                 OrcaV3.retractDeposit(),
-                OrcaV3.startStream(),
-                OrcaV3.setIntake(0.5),
+//                OrcaV3.startStream(),
+//                OrcaV3.setIntake(0.5),
                 new Wait(3),
-                OrcaV3.setSubIntakeEGAC(),
-                OrcaV3.attemptSubIntakeEGAC(),
-                new Wait(intakeWait),
-                OrcaV3.retractIntake()
+                OrcaV3.setSubIntakeEGAC()
+//                OrcaV3.attemptSubIntakeEGAC(),
+//                new Wait(intakeWait),
+//                OrcaV3.retractIntake()
 
         ).schedule();
     }
